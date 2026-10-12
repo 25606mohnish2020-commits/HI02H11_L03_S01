@@ -1,0 +1,90 @@
+/* Shared underwater theme. Decorative layers never intercept learning interactions. */
+/* Keep the fixed 16:9 game canvas and its margins unchanged; only colour the viewport gutters
+   around the Bubble Matching / Fill-in-the-Blanks screens so a wide display never shows white. */
+html:has(.mtp-stage),body:has(.mtp-stage),
+html:has(.fvd),body:has(.fvd){background:#d5f4fc;}
+.stage:has(.mtp-stage),.stage:has(.fvd){background:radial-gradient(ellipse at 45% 0,#f1feff,transparent 64%),linear-gradient(#d5f4fc,#9bdfef);}
+.ocean-decor{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:inherit;}
+.ocean-sea-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.94;}
+.ocean-video-wash{position:absolute;inset:0;background:linear-gradient(180deg,rgba(221,250,255,.10),rgba(186,239,249,.18));}
+.ocean-rise-bubbles{position:absolute;inset:0;overflow:hidden;}
+.ocean-rise-bubbles i{position:absolute;left:var(--x);bottom:-34px;width:var(--size);height:var(--size);border-radius:50%;
+  border:1.5px solid rgba(237,253,255,.72);background:radial-gradient(circle at 31% 27%,rgba(255,255,255,.72) 0 12%,rgba(219,249,255,.2) 17% 56%,rgba(124,220,239,.1) 70%);
+  box-shadow:inset -2px -2px 4px rgba(86,187,219,.2),0 0 5px rgba(222,250,255,.22);opacity:0;
+  animation:oceanBubbleRise var(--rise) linear var(--delay) infinite;}
+@keyframes oceanBubbleRise{
+  0%{transform:translate3d(0,26px,0) scale(.72);opacity:0}
+  9%{opacity:.46}
+  48%{transform:translate3d(10px,-48vh,0) scale(.92);opacity:.4}
+  82%{opacity:.3}
+  100%{transform:translate3d(-7px,-108vh,0) scale(1.08);opacity:0}
+}
+.ocean-fish{position:absolute;width:46px;height:38px;object-fit:contain;top:80%;left:-70px;opacity:.28;animation:oceanFishPass 32s linear infinite;}
+@keyframes oceanFishPass{0%,62%{transform:translateX(-60px) translateY(0);}72%{transform:translateX(320px) translateY(-12px);}84%{transform:translateX(780px) translateY(7px);}99%,100%{transform:translateX(1500px) translateY(-8px);}}
+.ocean-weed{position:absolute;bottom:-8px;width:74px;height:74px;opacity:.3;}
+.ocean-weed.left{left:8px}.ocean-weed.right{right:8px;transform:scaleX(-1);}
+.ocean-weed i{position:absolute;bottom:0;width:13px;height:62px;border-radius:100% 0 70% 0;background:linear-gradient(#51bba9,#168991);transform-origin:bottom;animation:oceanSway 5s ease-in-out infinite alternate;}
+.ocean-weed i:nth-child(1){left:8px;height:44px;animation-delay:-2s;}.ocean-weed i:nth-child(2){left:27px;height:80px;}.ocean-weed i:nth-child(3){left:48px;height:56px;animation-delay:-3s;}
+@keyframes oceanSway{from{transform:rotate(-11deg)}to{transform:rotate(12deg)}}
+.mtp-bubble.ocean-wrong{box-shadow:0 0 0 4px rgba(231,101,112,.24),0 0 19px rgba(245,136,148,.18)!important;}
+.fvd-tile.ocean-wrong{background:#fff0f1!important;border-color:#efb3b9!important;box-shadow:0 0 0 4px rgba(231,101,112,.1)!important;}
+.ocean-ghost{position:absolute!important;min-width:0!important;z-index:20;pointer-events:none!important;opacity:.6;box-sizing:border-box;}
+/* [r46] absolute inside .slide-stage and sized to the activity card by oceanFishTransition, so the
+   header above it stays visible; it used to be position:fixed over the entire window. */
+.ocean-crossing{position:absolute;z-index:40;pointer-events:all;overflow:hidden;background:transparent;border-radius:26px;}
+/* [r47] a longer, softer dissolve — the drag game is already mounted underneath, so this fade IS
+   the hand-over rather than a curtain lifting off a blank stage */
+.ocean-crossing.ocean-video-crossing{background:#087aa8;opacity:1;transition:opacity .6s ease;}
+.ocean-crossing.ocean-video-crossing.fade-out{opacity:0;}
+.ocean-transition-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#087aa8;}
+.ocean-water-wipe{position:absolute;inset:0;background:
+  radial-gradient(ellipse at 20% -10%,rgba(255,255,255,.58),transparent 46%),
+  repeating-linear-gradient(112deg,rgba(255,255,255,.1) 0 7%,transparent 7% 17%),
+  linear-gradient(180deg,#77def0 0%,#3ebedc 48%,#168dbb 100%);
+  animation:oceanGameReveal 3.5s cubic-bezier(.45,0,.2,1) both;}
+.ocean-water-wipe:after{content:"";position:absolute;inset:0;background:
+  radial-gradient(circle at 15% 24%,rgba(255,255,255,.74) 0 5px,transparent 6px),
+  radial-gradient(circle at 72% 68%,rgba(255,255,255,.52) 0 7px,transparent 8px),
+  radial-gradient(circle at 88% 28%,rgba(255,255,255,.5) 0 4px,transparent 5px);}
+.ocean-current{position:absolute;width:54vw;height:22vh;border:4px solid rgba(225,251,255,.24);border-color:rgba(225,251,255,.24) transparent transparent;border-radius:50%;transform:rotate(-7deg);}
+.ocean-current.one{left:-8vw;top:25vh}.ocean-current.two{right:-10vw;bottom:7vh;transform:rotate(8deg)}
+.ocean-transition-fish{position:absolute;z-index:3;left:-20vw;top:50%;width:clamp(95px,12vw,180px);height:auto;filter:drop-shadow(0 10px 12px rgba(6,78,112,.25));
+  animation:oceanOrangeSwim 3.5s linear both;}
+.ocean-transition-title{position:absolute;z-index:2;left:50%;top:18%;transform:translate(-50%,-50%) scale(.9);padding:12px 30px;border:3px solid rgba(255,255,255,.9);border-radius:999px;background:rgba(243,253,255,.88);box-shadow:0 8px 20px rgba(8,90,127,.18);color:#06458f;font-size:clamp(25px,3vw,48px);font-weight:900;white-space:nowrap;opacity:0;animation:oceanTitleBeat 3.5s ease both;}
+.ocean-bubble-trail{position:absolute;z-index:2;left:-19vw;top:58%;width:18vw;height:90px;animation:oceanBubbleTrail 3.5s linear both;}
+.ocean-bubble-trail i{position:absolute;border:2px solid rgba(255,255,255,.72);border-radius:50%;background:rgba(235,253,255,.18);width:18px;height:18px;animation:oceanTrailBob .7s ease-in-out infinite alternate;}
+.ocean-bubble-trail i:nth-child(1){left:5%;top:44%;width:11px;height:11px}.ocean-bubble-trail i:nth-child(2){left:25%;top:9%;animation-delay:-.25s}.ocean-bubble-trail i:nth-child(3){left:45%;top:57%;width:13px;height:13px;animation-delay:-.4s}.ocean-bubble-trail i:nth-child(4){left:68%;top:22%;width:9px;height:9px}.ocean-bubble-trail i:nth-child(5){left:86%;top:66%;width:15px;height:15px;animation-delay:-.55s}
+/* [r43] The wipe used to be clip-path:inset(), whose edge is by definition a straight vertical
+   line — the thing that looked wrong as the old screen slid away. It is a polygon now: the
+   trailing edge is a wavy water line that travels right with the fish. Colours are untouched. */
+@keyframes oceanGameReveal{
+  0%,56%{clip-path:polygon(0 0, 117% 0%, 111% 9%, 121% 18%, 113% 27%, 122% 36%, 110% 45%, 118% 54%, 109% 63%, 120% 72%, 112% 81%, 121% 90%, 116% 100%, 0 100%);opacity:1}
+  78%   {clip-path:polygon(0 0, 49% 0%, 57% 9%, 46% 18%, 56% 27%, 47% 36%, 58% 45%, 48% 54%, 57% 63%, 46% 72%, 56% 81%, 47% 90%, 55% 100%, 0 100%);opacity:.94}
+  100%  {clip-path:polygon(0 0, -5% 0%, -11% 9%, -1% 18%, -9% 27%, 0% 36%, -12% 45%, -4% 54%, -13% 63%, -2% 72%, -10% 81%, -1% 90%, -6% 100%, 0 100%);opacity:.72}
+}
+@keyframes oceanOrangeSwim{0%{transform:translate3d(0,-50%,0) rotate(-3deg)}25%{transform:translate3d(34vw,calc(-50% - 14px),0) rotate(2deg)}55%{transform:translate3d(70vw,calc(-50% + 10px),0) rotate(-2deg)}100%{transform:translate3d(135vw,calc(-50% - 5px),0) rotate(2deg)}}
+@keyframes oceanBubbleTrail{0%{transform:translateX(0)}100%{transform:translateX(135vw)}}
+@keyframes oceanTrailBob{from{transform:translateY(7px) scale(.86)}to{transform:translateY(-7px) scale(1.08)}}
+@keyframes oceanTitleBeat{0%,8%,82%,100%{opacity:0}16%,68%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@media(prefers-reduced-motion:reduce){.ocean-fish,.ocean-weed i{animation:none}.ocean-rise-bubbles{display:none}.ocean-transition-fish{animation-duration:3.5s}.ocean-bubble-trail{display:none}}
+
+/* Incorrect-answer feedback is motion-only: preserve the existing wiggle/shake, never flash red. */
+:is(.wrong,.wrong-flash,.ocean-wrong,.nope,.is-wrong){
+  color:var(--navy,#123f86)!important;
+  border-color:#8FC7F5!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+:is(.wrong,.wrong-flash,.ocean-wrong){background-color:#fff!important;}
+.mtp-bubble.ocean-wrong{
+  background:transparent url("Images/bubble_blue.png") center/100% 100% no-repeat!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.fvd-tile.ocean-wrong{background:#fff!important;border-color:#8FC7F5!important;}
+.tis-hot.wrong-flash{background:transparent!important;box-shadow:none!important;}
+.tis-hot.wrong-flash::before,.tis-hot.wrong-flash::after{display:none!important;opacity:0!important;box-shadow:none!important;}
+.tis-object-outline.is-wrong{--tis-ring-c:#8FC7F5!important;animation:none!important;}
+.wg-wrong,.wg-pulse{border-color:#8FC7F5!important;box-shadow:none!important;}
+.wg-pulse{display:none!important;}
+.hint-text.wrong{color:var(--navy,#123f86)!important;}

@@ -1,0 +1,18 @@
+{
+  "skill": "HI02H11_L03_S01 (poem variant) — Grade 2 Hindi — एकवचन-बहुवचन via the poem 'मीरा के उड़ते गुब्बारे'",
+  "vs_the_first_build": "This is a SEPARATE, richer variant built from SME-supplied content (the poem + a 7-step timed flow), kept alongside the original abstract word-pair build per your choice to keep both. It covers BOTH plural patterns the poem contains — आ->ए (गुब्बारा/बच्चा) and ई->इयाँ (टोपी/ताली/सहेली) — where the first build only covered आ->ए.",
+  "flow_mapping": "Your 7 steps folded into the engine's locked 3-phase contract: steps 1-2 (poem + spot-the-change) -> 5 autonomous STORY_SCENE beats narrating the poem verbatim; step 3 (concept clarify) -> 4 MEET_VACHAN slides modelling one word from EACH pattern; step 4 (guided practice) -> 4 slides (2 drag, 2 tap); step 5 (independent play) -> 4 slides; step 6 (mini assessment, 3-4 questions) -> 3 TAP/ODD_ONE_OUT mastery slides; step 7 (repetition) -> folded into the celebration line.",
+  "different_words_for_practice": "Practice/mastery ramp to TWO brand-new word pairs never appearing in the poem — पत्ता/पत्ते (आ->ए) and मछली/मछलियाँ (ई->इयाँ) — so the assessment genuinely tests whether the child learned the RULE, not just the poem's own words.",
+  "gesture_diversity": "verify_bundle.py mechanic-variety check PASSES: families {sort:2, drag:2, pick:7} across guided+practice+mastery test slides.",
+  "known_gaps_ALL_from_missing_GEMINI_KEY": [
+    "No real art — every object/scene renders via emoji fallback.",
+    "No Hindi voice-over — every line (including all 5 poem stanzas, verbatim) is fully authored in card.json, ready for gen_tts.py, but currently silent."
+  ],
+  "verified_live_in_browser": "Full render sweep: 21/21 slides mount, 0 empty, 0 unexpected console errors. Headless capture of all 22 pages (landing + 21 slides) — read every PNG: no overlaps/clipping, both plural patterns render clearly (single emoji vs. 3x-stacked emoji), poem captions display the verbatim stanza text, tutorial-card layout confirmed NOT overflowing (checked via DOM rects, not just eyeballing).",
+  "receipt_summary": "verify_bundle.py: 15 pass, 3 FAIL (VO, art, per-slide spoken-prompt — all the same no-GEMINI_KEY gap), 7 warn (mostly the same VO-role consequence; 2 are benign content-sync warns).",
+  "next_steps_once_a_GEMINI_KEY_is_available": [
+    "gen_objects.py for the 19 image keys (7 word-pairs + 5 poem scene images).",
+    "gen_tts.py --ext ogg for all 29 audio lines, including the 5 poem-stanza narrations verbatim.",
+    "Re-run verify_bundle.py --delivery for the final receipt before handoff."
+  ]
+}
