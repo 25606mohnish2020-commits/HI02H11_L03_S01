@@ -2,8 +2,8 @@
 /* Keep the fixed 16:9 game canvas and its margins unchanged; only colour the viewport gutters
    around the Bubble Matching / Fill-in-the-Blanks screens so a wide display never shows white. */
 html:has(.mtp-stage),body:has(.mtp-stage),
-html:has(.fvd),body:has(.fvd){background:#d5f4fc;}
-.stage:has(.mtp-stage),.stage:has(.fvd){background:radial-gradient(ellipse at 45% 0,#f1feff,transparent 64%),linear-gradient(#d5f4fc,#9bdfef);}
+html:has(.fvd),body:has(.fvd),html:has(.subg),body:has(.subg){background:#d5f4fc;}
+.stage:has(.mtp-stage),.stage:has(.fvd),.stage:has(.subg){background:radial-gradient(ellipse at 45% 0,#f1feff,transparent 64%),linear-gradient(#d5f4fc,#9bdfef);}
 .ocean-decor{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:inherit;}
 .ocean-sea-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.94;}
 .ocean-video-wash{position:absolute;inset:0;background:linear-gradient(180deg,rgba(221,250,255,.10),rgba(186,239,249,.18));}
@@ -88,3 +88,57 @@ html:has(.fvd),body:has(.fvd){background:#d5f4fc;}
 .wg-wrong,.wg-pulse{border-color:#8FC7F5!important;box-shadow:none!important;}
 .wg-pulse{display:none!important;}
 .hint-text.wrong{color:var(--navy,#123f86)!important;}
+
+/* Submarine answer bank: rectangular choices morph into bubbles near the blank.
+   Keep each drag box fixed so the pointer/word never jumps while its face morphs. */
+.subg-opts{
+  display:grid;grid-template-columns:repeat(2,240px);justify-items:center;align-items:center;
+  left:50%;right:auto;bottom:0;transform:translateX(-50%);width:660px;height:112px;
+  background:none;   /* [r80] asked: no water panel behind the answers — just the two rectangles */
+}
+.subg-opts .subg-opt,.subg-opts .subg-opt:hover{
+  position:relative;width:210px;height:106px;min-width:210px;min-height:106px;
+  border:0;border-radius:14px;padding:0;font-size:32px;background:transparent;box-shadow:none;
+  transition:opacity .3s ease,font-size .26s ease;
+}
+.subg-opt-face{
+  position:absolute;left:50%;top:50%;width:210px;height:68px;box-sizing:border-box;
+  transform:translate(-50%,-50%);border:3px solid #8FC7F5;border-radius:14px;
+  background-color:#F5FDFF;box-shadow:0 5px 10px rgba(23,77,132,.12);pointer-events:none;
+  transition:width .28s ease,height .28s ease,border-radius .28s ease,
+    background-color .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+.subg-opt-face::before{
+  content:"";position:absolute;inset:-3px;border-radius:inherit;pointer-events:none;
+  background:transparent url("Images/bubble_blue.png") center/100% 100% no-repeat;
+  opacity:0;transition:opacity .26s ease;
+}
+.subg-opt-label{position:relative;z-index:1;pointer-events:none;}
+/* [r80] asked: the answers float very slightly — 4px up and down over 3.4s, the two out of step. It
+   moves the face and the label with the individual translate property, so it adds to (and never
+   replaces) the face's own centring transform, the tile's pop-in/wiggle/hint animations and the
+   drag's inline transform. Held still while a tile is dragged or has turned into its bubble. */
+.subg-opts .subg-opt.in .subg-opt-face,.subg-opts .subg-opt.in .subg-opt-label{animation:subgOptFloat 3.4s ease-in-out infinite;}
+.subg-opts .subg-opt.in:nth-child(2) .subg-opt-face,.subg-opts .subg-opt.in:nth-child(2) .subg-opt-label{animation-delay:-1.7s;}
+.subg-opts .subg-opt.dragging .subg-opt-face,.subg-opts .subg-opt.dragging .subg-opt-label,
+.subg-opts .subg-opt.is-bubble .subg-opt-face,.subg-opts .subg-opt.is-bubble .subg-opt-label{animation-play-state:paused;}
+@keyframes subgOptFloat{0%,100%{translate:0 0;}50%{translate:0 -4px;}}
+.subg-opts .subg-opt:hover .subg-opt-face{background-color:#FFF;}
+.subg-opts .subg-opt.in.lit .subg-opt-face{border-color:#FFA914;}
+.subg-opts .subg-opt.in.dragging{animation:none;}
+.subg-opts .subg-opt.is-bubble{font-size:26px;}
+.subg-opts .subg-opt.is-bubble[data-word="मछलियाँ"]{font-size:23px;}
+.subg-opts .subg-opt.in.is-bubble .subg-opt-face{
+  width:106px;height:106px;border-radius:53px;border-color:transparent;background-color:transparent;box-shadow:none;
+}
+.subg-opt.is-bubble .subg-opt-face::before{opacity:1;}
+/* A released correct answer keeps the same bubble skin inside its porthole. */
+.subg .subg-win.filled::before{
+  content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:transparent url("Images/bubble_blue.png") center/100% 100% no-repeat;
+}
+.subg .subg-win.filled .subg-word{position:relative;z-index:1;}
+@media(prefers-reduced-motion:reduce){
+  .subg-opts .subg-opt,.subg-opt-face,.subg-opt-face::before{transition:none;}
+  .subg-opts .subg-opt .subg-opt-face,.subg-opts .subg-opt .subg-opt-label{animation:none;}
+}

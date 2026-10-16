@@ -879,6 +879,20 @@ body.loaded .sg-acell{animation-play-state:running;}
    The looping title video and the soft, outer sky/glow decoration remain as background motion. */
 body.is-start.landing-play-ready .sg-card :not(.sg-btn):not(.sg-btn *){animation-play-state:paused!important;}
 body.is-start.landing-play-ready .sg-btn:not(:disabled){animation:sgBtnPulse 1.35s ease-in-out infinite;}
+/* [r59] NO PLAY BUTTON UNTIL THE INTRO HAS FINISHED. The title screen showed a still yellow Play
+   before the intro, swapped it for the grey "waiting" Play while the intro spoke, and only then made
+   it yellow and pulsing. Now there is no Play button at all — neither grey nor yellow — until the
+   intro completes; then the yellow one fades in and pulses exactly as before.
+   `landing-play-ready` is the existing signal for "the intro has played and nothing is speaking"
+   (setPlaying), so this needs no timer of its own: a replay from the speaker chip hides Play again
+   for the length of the replay and brings it back afterwards.
+   Never stranded: when the browser blocks autoplay, play() ends the attempt at once and the same
+   signal turns on, so Play appears rather than leaving the child with nothing to press — and the
+   first tap anywhere other than Play still starts the real intro (the pointerdown fallback below). */
+body.is-start .sg-btn{opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .35s ease,visibility 0s linear .35s;}
+body.is-start.landing-play-ready .sg-btn{opacity:1;visibility:visible;pointer-events:auto;
+  transition:opacity .35s ease,visibility 0s;}
 /* landing "listen" button — a warm welcome plays on the title screen; tap to replay */
 .sg-vo{position:absolute;left:96px;bottom:-6px;z-index:5;width:58px;height:58px;background:none;border:none;padding:0;cursor:pointer;animation:none;}   /* Slightly raised so the speaker chip clears the white frame edge; size and horizontal placement stay unchanged. */
 .sg-vo img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;}
@@ -993,16 +1007,38 @@ body.is-end .stage-inner{visibility:hidden;}
    stage (inset:0) → no letterbox seam, no body-level ::after needed. */
 .phase-gate{position:fixed;inset:0;width:100vw;height:100dvh;z-index:100000;overflow:hidden;display:none;align-items:flex-end;justify-content:center;background:rgba(57,55,55,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);cursor:default;}
 .phase-gate.show{display:flex;}
-.phase-gate #phaseGateImg{height:clamp(190px,29vh,285px);max-width:92vw;width:auto;object-fit:contain;display:block;pointer-events:none;animation:pgPeek 1.05s cubic-bezier(.24,.86,.3,1.18) both;}
-@keyframes pgPeek{0%{transform:translateY(105%);}72%{transform:translateY(-3%);}100%{transform:translateY(0);}}
+/* [r60] SWIFTY AT THE REFERENCE GAME'S SIZE. clamp(190px,29vh,285px) drew him ~217px tall on a
+   1333x750 screen; the reference (HI02H11_L03_S02) uses 52.8% of the screen height, never over
+   624px or wider than 92% of the screen — 396px here. Both games show the same animation (the
+   reference's file is a time-cut of the standard peeking.webp, square like ours), so matching the
+   box matches the bird. Square and bottom-anchored, as there. Our own rise animation is unchanged. */
+.phase-gate #phaseGateImg{height:min(52.8vh,624px,92vw);width:min(52.8vh,624px,92vw);max-width:none;object-fit:contain;display:block;pointer-events:none;z-index:1;animation:pgAppear .25s ease-out both;}
+/* [r82] no rise from below any more — she is already up when the gate opens; a quick fade only */
+@keyframes pgAppear{from{opacity:0;}to{opacity:1;}}
 .stage.gating .header-row{visibility:hidden;}          /* header hides while the gate is up */
 .stage.gating .mascot-wrap{visibility:hidden;}            /* one-Swiftie: the peeking Swiftie is the only one during a gate */
 /* magenta headline with a thick white stroke (Lilita One if present, else Baloo 2 fallback) */
-.pg-title{position:absolute;top:271px;left:50%;transform:translateX(-50%);white-space:nowrap;
-  font-family:'Lilita One',var(--font-hi);font-weight:800;font-size:96px;line-height:1;
+/* [r60] THE HEADLINE AS THE REFERENCE GAME DRAWS IT: 96px magenta with a white outline 10.4% of
+   the letter, 271px from the top on a normal screen — scaled on a small one (--pgf), and lifted if
+   it would reach the bird. It still appears only when the voice reaches the words (text-speaking,
+   unchanged), but now it WRITES ITSELF LEFT TO RIGHT — the reference's pgWipe, a clip-path that
+   uncovers the line from its first letter to its last in 0.9s — instead of fading in. The -24px
+   insets leave room for the outline and the matras so nothing is clipped once it is fully shown. */
+.phase-gate{--pgf:min(96px,12.8vh,13vw);}
+.pg-title{position:absolute;left:50%;transform:translateX(-50%);z-index:3;
+  top:max(8px, min(271px, calc(58.8vh - 1.2 * var(--pgf) - 12px)));
+  width:max-content;max-width:94vw;white-space:nowrap;
+  font-family:'Lilita One',var(--font-hi);font-weight:800;font-size:var(--pgf);line-height:1.14;
   letter-spacing:0;text-align:center;color:#CD0FD5;
-  -webkit-text-stroke:10px #FFFFFF;paint-order:stroke fill;opacity:0;visibility:hidden;transition:opacity .22s ease;}
-.phase-gate.text-speaking .pg-title{opacity:1;visibility:visible;}
+  -webkit-text-stroke:calc(var(--pgf) * 0.104) #FFFFFF;paint-order:stroke fill;visibility:hidden;}
+.phase-gate.text-speaking .pg-title{visibility:visible;animation:pgWipe .9s cubic-bezier(.25,.6,.3,1) both;}
+@keyframes pgWipe{from{clip-path:inset(-24px 100% -24px -24px);}to{clip-path:inset(-24px -24px -24px -24px);}}
+/* "vh" on a tablet counts the browser bars as hidden; svh is the height the child actually sees */
+@supports (height: 1svh){
+  .phase-gate{--pgf:min(96px,12.8svh,13vw);}
+  .pg-title{top:max(8px, min(271px, calc(58.8svh - 1.2 * var(--pgf) - 12px)));}
+  .phase-gate #phaseGateImg{height:min(52.8svh,624px,92vw);width:min(52.8svh,624px,92vw);}
+}
 .pg-title:empty{display:none;}
 /* First gate (landing → tutorial): the landing lives INSIDE the stage (not stage-inner), so blur it
    directly; the wash above gives the frosted look, Swiftie + headline stay sharp on top. */
@@ -1632,8 +1668,8 @@ body.vo-lock button.nav-btn,
 body.vo-lock .sg-btn{
   pointer-events:none !important;
 }
-body.vo-lock .sg-btn .btn-play{display:none;}
-body.vo-lock .sg-btn .btn-wait{display:block;}
+/* [r59] the grey "waiting" Play is gone: during the intro the whole button is absent (see the
+   landing-play-ready rules), so there is no longer a disabled image to swap in here. */
 
 /* ===== [30k] THE STIMULUS PICTURE IS NEVER FRAMED ======================================
    Yasir 2026-07-30: "remove the container surrounding the cat image ... apply this for other pages
@@ -2148,9 +2184,22 @@ body.is-end .sg-sky{
 .mtp-bubble.sel{box-shadow:0 0 0 7px var(--selected),0 0 30px rgba(56,106,246,.55),0 10px 22px rgba(11,61,140,.22);transform:scale(1.05);}
 .mtp-bubble.ok{box-shadow:0 0 0 7px var(--correct),0 0 34px rgba(0,177,50,.55),0 10px 22px rgba(11,61,140,.22);transform:scale(1.06);}
 .mtp-bubble.faded{opacity:.26;filter:grayscale(.5);pointer-events:none;}
+/* [r71] text-only bubbles: the word alone, centred both ways */
+.mtp-bubble.text-only{justify-content:center;align-items:center;}
+.mtp-bubble.text-only .mtp-word{text-align:center;margin:0;}
+/* [r70] a replacement pair floats in: a soft grow from small, then it simply drifts like the rest */
+.mtp-bubble.spawn{animation:mtpSpawn .6s cubic-bezier(.34,1.45,.6,1) both;}
+@keyframes mtpSpawn{0%{opacity:0;transform:scale(.3);}100%{opacity:1;transform:scale(1);}}
 .mtp-bubble.pulse{animation:mtpPulse .85s ease-in-out;}
 .mtp-bubble.pulse-hold{animation:mtpPulse 1.1s ease-in-out infinite;}
-.mtp-bubble.intro-pulse{animation:mtpIntroPulse 1s ease-in-out 2;z-index:18;}
+/* [r72] THE OPENING PAIR GLOWS INSTEAD OF PULSING. The bubbles already drift, so a small size pulse
+   on a moving bubble was easy to miss. The गुब्बारा pair now carries a strong blue halo that breathes
+   in and out three times — 4.5s — while the instruction plays (the scale stays put). */
+.mtp-bubble.intro-pulse{animation:mtpIntroGlow 1.5s ease-in-out 4;z-index:18;}   /* [r73] 4 × 1.5s = 6s, stronger halo */
+@keyframes mtpIntroGlow{
+  0%,100%{box-shadow:0 0 0 6px rgba(64,156,255,.75),0 0 30px 10px rgba(64,156,255,.6);}
+  50%    {box-shadow:0 0 0 10px rgba(64,156,255,1),0 0 70px 28px rgba(56,140,255,.95);}
+}
 .mtp-bubble.wiggle{animation:mtpWiggle .72s cubic-bezier(.36,.07,.19,.97)!important;transform-origin:center center;z-index:25;}
 /* a correct pair: bounce on the spot the instant the tap lands, then fly into the tray card */
 .mtp-bubble.bounce{animation:mtpBounce .42s cubic-bezier(.34,1.6,.5,1);pointer-events:none;}
@@ -2214,32 +2263,59 @@ body.is-end .sg-sky{
 .story-frame .story-img.swap{animation:storyFade .55s ease;}
 @keyframes storyFade{from{opacity:0;transform:scale(1.04);}to{opacity:1;transform:none;}}
 .story-fallback{font-size:150px;line-height:1;display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
-.story-caption{flex-shrink:0;font-family:var(--font-hi);font-weight:800;color:var(--navy);text-align:center;
-  background:#FFF3C7;border:3px solid #FCD86B;border-radius:20px;padding:10px 30px;max-width:1000px;
-  box-shadow:0 4px 14px rgba(11,42,90,.10);display:flex;flex-direction:column;gap:2px;}
+/* [r60] THE POEM BOX IS WHITE, as in the reference game: white with a white rim and a soft navy
+   shadow, 26px corners — the rim separates it from a pale page and the shadow lifts it. The verse
+   reads at 600 (only the 700 and 800 Baloo faces are embedded, so it renders at 700), which gives
+   the lesson's pair words a heavier face to stand out with once the reading ends. */
+.story-caption{flex-shrink:0;font-family:var(--font-hi);font-weight:600;color:var(--navy);text-align:center;
+  background:#FFFFFF;border:3px solid #FFFFFF;border-radius:26px;padding:10px 30px;max-width:1000px;
+  box-shadow:0 5px 0 rgba(11,42,90,.10),0 10px 26px rgba(11,42,90,.12);display:flex;flex-direction:column;gap:2px;}
 .story-caption .ln{font-size:29px;line-height:1.28;opacity:0;transform:translateY(8px);
   transition:opacity .4s ease,transform .4s ease;}
 .story-caption .ln.in{opacity:1;transform:none;}
-.story-caption .poem-word{display:inline-block;white-space:pre;transform-origin:50% 75%;opacity:.96;
-  transform:translateY(0) scale(1);filter:drop-shadow(0 0 0 rgba(56,106,246,0));
-  transition:transform .72s cubic-bezier(.2,.72,.25,1),filter .72s ease,opacity .5s ease;}
-.story-caption .poem-word.is-speaking{opacity:1;transform:translateY(-3px) scale(1.075);
-  filter:drop-shadow(0 2px 8px rgba(56,106,246,.58));}
-.story-caption .poem-word.hl-orange.is-speaking{filter:drop-shadow(0 2px 9px rgba(242,128,30,.68));}
+/* [r60] THE WORD BEING SPOKEN, as the reference game shows it: the whole verse is on screen from
+   the first frame, and the word the voice is on turns orange (#FF8A00) and grows to 1.10, then hands
+   the colour to the next — 0.15s each way, no glow, no lift. It stays lit a little past its own
+   cue (220–620ms) so the line reads as a moving highlight, never two words at once. */
+.story-caption .poem-word{display:inline-block;white-space:pre;transition:color .15s ease,transform .15s ease;}
+/* [r62] one extra space between the poem's words for readability (the reference game's 0.2em, ~1 more space at this size) */
+.story-caption{word-spacing:0.2em;}
+.story-caption .poem-word.is-speaking{color:#FF8A00;transform:scale(1.10);}
 /* deck: "Highlight the bold words in orange." */
 /* [r24] THE highlight glow, defined once for the whole lesson. The halo breathes in and out four
    times and then goes out, leaving the word orange — a single flash was too easy to miss, and a
    permanent halo stopped drawing the eye at all. Only the GLOW moves: the letter never scales,
    because the pulse pulled attention to the movement instead of to the letter that is different. */
+/* [r62b] NO GLOW WHILE READING (asked, globally): the halo is gone. The same 4 beats now gently
+   swell the changed letters to 1.06 and back — a subtle pulse, colour only orange, no text-shadow. */
 @keyframes wordGlow{
-  0%,100%{text-shadow:0 0 0 rgba(247,161,54,0);}
-  50%    {text-shadow:0 0 22px rgba(247,161,54,.95), 0 0 8px rgba(247,161,54,.7);}
+  0%,100%{transform:scale(1);}
+  50%    {transform:scale(1.06);}
 }
 .hl-orange{color:#F2801E;}
 /* Story sentences stay visually calm. Glow is reserved for the changed suffix on comparison screens. */
-.story-caption .hl-orange{color:#F2801E;animation:none!important;text-shadow:none!important;}
+/* [r60] THE PAIR EARNS ITS LOOK at the end, as in the reference: while the verse is read,
+   गुब्बारा/गुब्बारे are words like the rest — same navy, taking the moving orange in their turn. Just
+   after the last word is said they go orange and heavier together, and stay so; a replay takes it
+   off and earns it again. */
+/* [r61] asked: the pair words are orange from the very first frame, not only after the reading. */
+.story-caption .hl-orange{color:#FF8A00;font-weight:800;-webkit-text-stroke:.5px currentColor;paint-order:stroke fill;animation:none!important;text-shadow:none!important;}
+.story-caption .poem-word.pair-done .hl-orange{color:#FF8A00;font-weight:800;
+  -webkit-text-stroke:.5px currentColor;paint-order:stroke fill;}
 .story-caption.many-lines{gap:0;padding-top:8px;padding-bottom:8px;}
 .story-caption.many-lines .ln{font-size:24px;line-height:1.18;}
+/* [r78] EVERY POEM PAGE: one picture per line, each in its own place — the first line's on the left,
+   the second line's on the right — standing side by side at the size and in the places the
+   comparison screen gives them (cards 88% of the picture lane, 34px apart). Each picture and each
+   line is laid out from the first frame and only revealed in its turn, so nothing re-flows while
+   the poem is read. A one-line page keeps its single picture in the middle. */
+.story-scene.side-by-side .story-stage{gap:34px;}
+.story-frame.wait{visibility:hidden;}
+.story-frame.arrive{animation:storySlotIn .55s cubic-bezier(.2,.8,.3,1) both;}
+@keyframes storySlotIn{from{opacity:0;transform:translateY(12px) scale(.96);}to{opacity:1;transform:none;}}
+@keyframes storySlotFade{from{opacity:0;}to{opacity:1;}}
+.story-caption .ln.wait{visibility:hidden;}
+@media (prefers-reduced-motion:reduce){ .story-frame.arrive{animation:storySlotFade .3s ease both;} }
 
 /* ---- COMPARE_VACHAN — "शब्दों की तुलना" (deck pp.5,7,9,11) ----
    Deck removals applied: no heading, no एक…/बहुत सारे… captions, no "आ की मात्रा → ए की मात्रा" row.
@@ -2277,7 +2353,7 @@ body.is-end .sg-sky{
   box-shadow:0 5px 0 rgba(11,61,140,.08),0 8px 18px rgba(11,42,90,.12);
   opacity:0;transform:translateY(10px);transition:opacity .35s ease,transform .35s ease;}
 .cmpv-word.in{opacity:1;transform:none;}
-.cmpv-word .chg{display:inline-block;transition:color .3s ease,text-shadow .3s ease;}
+.cmpv-word .chg{display:inline-block;transform-origin:50% 60%;transition:color .3s ease;}
 /* [r23] The word arrives entirely in navy. When it is time to show what changed, ONLY the changed
    syllable turns orange and glows — it no longer scales in and out. The pulse pulled the eye to
    the movement instead of to the letter that is different, which is the whole point of the screen. */
@@ -2319,8 +2395,24 @@ body.is-end .sg-sky{
 .pvw-opt:hover{transform:translateY(-4px);}
 .pvw-opt.wiggle{animation:mtpWiggle .55s ease-in-out;}
 .pvw-opt.lit{border-color:#F3A81B;animation:pvwPulse 1s ease-in-out infinite;}
-.pvw-opt.gone{opacity:.28;pointer-events:none;box-shadow:none;}      /* deck: "बाकी options fade हो जाएँ" */
+/* [r67] after the right answer the other options disappear COMPLETELY (asked, globally): they fade
+   out over the existing .35s and are then hidden; their space is kept so nothing on screen jumps. */
+.pvw-opt.gone{opacity:0;visibility:hidden;pointer-events:none;box-shadow:none;transition:opacity .35s ease,visibility 0s linear .35s;}
 .pvw-opt.taken{opacity:0;pointer-events:none;}
+/* [r66] QUESTION vs ANSWERS — asked for a clear hierarchy on every सही-शब्द-चुनिए screen.
+   · the एक / अनेक pills are gone, and the screen starts from the top instead of floating mid-card;
+   · the QUESTION (word + pictures + the empty box to fill) sits together in one pale-blue panel;
+   · the given word is a solid navy card with large white type — it is spoken when tapped, but it no
+     longer looks like one of the buttons below it;
+   · a clear 56px gap, then the ANSWERS: white buttons with a pressed-in shadow, the only things on
+     the screen that look tappable. */
+.pvw{justify-content:flex-start;gap:0;padding-top:4px;}
+.pvw-q{background:#E4F2FF;border:3px solid #C9E3FA;border-radius:34px;padding:18px 46px 26px;}
+/* [r68] asked: the given word sits in a WHITE box with dark-blue text (not a navy fill); the options carry a very light sky-blue tint instead, just enough to tell them apart */
+.pvw-src{background:#FFFFFF;border:4px solid #8FC7F5;color:var(--navy);font-size:62px;box-shadow:0 6px 0 rgba(11,42,90,.10);}
+.pvw-box{background:#FFFFFF;}
+.pvw-opts{margin-top:80px;}   /* [r69] options a little lower (56 -> 80px gap below the question panel) */
+.pvw-opt{background:#EAF6FF;box-shadow:0 6px 0 #8FC7F5,0 10px 20px rgba(11,42,90,.14);}
 @keyframes pvwPulse{0%,100%{transform:scale(1);}45%{transform:scale(1.09);}}
 
 
@@ -2375,7 +2467,8 @@ body.is-end .sg-sky{
    visibility rather than display, so the tile that is still in play does not jump sideways. */
 .fvd-tile.used{visibility:hidden;pointer-events:none;}
 @keyframes fvdPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.03);}}
-@keyframes fvdGlow{0%,100%{transform:scale(1);}50%{transform:scale(1.06);box-shadow:0 0 22px #FFAD1F;}}
+/* [r62b] the yellow halo removed; the gentle 1.06 pulse stays */
+@keyframes fvdGlow{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
 
 /* स्तर-पूरा and the closing summary — the demo's between-level beats, kept inside the slide */
 .fvd-panel{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;}
@@ -2423,7 +2516,7 @@ body.is-end .sg-sky{
   100%{background-position:44px -70px,205px -120px,390px -95px,750px -150px,1025px -90px;opacity:.24;}
 }
 
-.mtp-stage,.fvd{
+.mtp-stage,.fvd,.subg{
   isolation:isolate;
   border-radius:32px;
   background:
@@ -2432,7 +2525,7 @@ body.is-end .sg-sky{
   box-shadow:inset 0 0 0 3px rgba(255,255,255,.72),inset 0 -30px 60px rgba(12,111,159,.12),0 10px 28px rgba(14,97,143,.13);
   overflow:hidden;
 }
-.mtp-stage::before,.fvd::before{
+.mtp-stage::before,.fvd::before,.subg::before{
   content:"";position:absolute;z-index:-2;inset:-12%;pointer-events:none;
   background:
     repeating-linear-gradient(112deg,transparent 0 74px,rgba(255,255,255,.15) 84px 94px,transparent 108px 154px),
@@ -2440,7 +2533,7 @@ body.is-end .sg-sky{
     radial-gradient(ellipse at 50% 16%,rgba(255,255,255,.52),transparent 48%);
   filter:blur(5px);animation:oceanCaustics 10s ease-in-out infinite alternate;
 }
-.mtp-stage::after,.fvd::after{
+.mtp-stage::after,.fvd::after,.subg::after{
   content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;
   background-image:
     radial-gradient(circle,rgba(255,255,255,.72) 0 3px,transparent 4px),
@@ -2458,6 +2551,15 @@ body.is-end .sg-sky{
   border:2px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(14,91,133,.12);backdrop-filter:blur(5px);}
 .mtp-tray-ttl{color:#246F9A;text-shadow:0 1px 0 #fff;}
 .mtp-pair-card{background:rgba(255,255,255,.9);border-color:#61BDE7;border-radius:18px 26px 18px 26px;}
+/* [r75] THE PAIR LIST, LESS PLAIN. The words were 19px on a flat white box and read as small and basic.
+   Now: 24px words, a bolder heading, cards with a soft white-to-aqua gradient, a 2px sky border and a
+   lifted shadow, and an orange arrow joining the एक word to its अनेक word. Sized to fit all seven
+   pairs in the 220px tray. */
+.mtp-tray-ttl{font-size:22px;color:#0B3D8C;letter-spacing:.2px;margin-bottom:2px;}
+.mtp-pair-card{background:linear-gradient(180deg,#FFFFFF 0%,#E6F6FF 100%);border:2px solid #8FD0F2;border-radius:16px;
+  padding:7px 8px;gap:6px;box-shadow:0 3px 0 rgba(36,111,154,.18),0 6px 12px rgba(11,42,90,.10);}
+.mtp-pair-card .mpc-w{font-size:24px;font-weight:800;color:#0B3D8C;line-height:1.15;}
+.mtp-pair-card .mpc-arrow{font-size:20px;color:#F2801E;}
 .mtp-stage.fin .mtp-tray{margin:14px;padding:24px;background:rgba(238,253,255,.84);}
 
 /* [r43] The ocean backdrop rules that sat here were removed: assets/ocean-games.css already owns
@@ -2495,8 +2597,94 @@ body.is-end .sg-sky{
 .fvd-panel{position:relative;z-index:1;padding:18px 34px;background:none;border:0;box-shadow:none;backdrop-filter:none;}
 .fvd-summary span{background:rgba(255,255,255,.92);border-color:#65C7DA;border-radius:18px 11px 18px 11px;}
 
+/* ===== [r77] SUBMARINE_FILL — Swiftie's submarine; one continuous sentence window =====
+   Same sea and frame as the bubble game. The submarine is 892px wide in the middle of the field,
+   the two answer words sit below it, and progress climbs a slim rail on the right, clear of
+   the hull. Window rules are written as .subg .subg-win so the engine's .dd-zone (relative, square)
+   can never reshape a porthole. */
+.subg{flex:1;min-height:0;position:relative;margin:0 -142px -46px;}
+/* [r80] asked: the progress rail sits inside a card, in a soft blue. The card is centred on the rail
+   (72px from the right edge) and leaves room for the small submarine at both ends of its climb. */
+.subg-progress-card{position:absolute;z-index:5;right:16px;top:30px;bottom:68px;width:112px;border-radius:24px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(226,246,255,.95) 0%,rgba(176,225,248,.93) 100%);
+  border:3px solid rgba(255,255,255,.92);box-shadow:0 6px 16px rgba(7,66,110,.16),inset 0 2px 0 rgba(255,255,255,.7);}
+.subg-progress{position:absolute;z-index:6;right:66px;top:64px;bottom:104px;width:12px;
+  --subg-progress:0%;pointer-events:none;}
+.subg-progress-track{position:absolute;inset:0;border:1px solid rgba(255,255,255,.75);border-radius:999px;
+  overflow:hidden;background:rgba(9,104,151,.22);box-shadow:inset 0 1px 4px rgba(7,66,110,.16),0 2px 7px rgba(7,66,110,.1);}
+.subg-progress-fill{position:absolute;left:0;right:0;bottom:0;height:var(--subg-progress);border-radius:inherit;
+  background:linear-gradient(to top,#25CDBA,#A7FFF0);transition:height .7s cubic-bezier(.22,.7,.3,1);}
+.subg-progress-sub{position:absolute;left:50%;bottom:var(--subg-progress);width:84px;height:auto;max-width:none;
+  aspect-ratio:1400/662;
+  transform:translate(-50%,50%);filter:drop-shadow(0 4px 5px rgba(7,66,110,.22));
+  transition:bottom .7s cubic-bezier(.22,.7,.3,1);pointer-events:none;user-select:none;}
+.subg-progress-hull{display:block;width:100%;height:100%;}
+.subg-progress-glass{position:absolute;inset:0;width:100%;height:100%;}
+@media(prefers-reduced-motion:reduce){.subg-progress-fill,.subg-progress-sub{transition:none;}}
+.subg-sub{position:absolute;z-index:3;left:202px;top:24px;will-change:transform;}   /* [r80] 820px wide now, so it sits a touch lower, centred over the answers */
+.subg-hull{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;}
+.subg-wave{position:absolute;z-index:1;pointer-events:none;background-repeat:no-repeat;opacity:0;}
+.subg-wave.on{opacity:1;}
+.subg-sentence-glass{position:absolute;inset:0;z-index:2;width:100%;height:100%;pointer-events:none;}
+.subg-sentence{position:absolute;z-index:3;left:30.6%;top:45%;width:59%;height:26%;
+  display:flex;align-items:center;justify-content:center;gap:8px;pointer-events:none;}
+.subg .subg-win{position:relative;flex:0 0 auto;z-index:2;border:0;background:none;box-shadow:none;gap:0;
+  display:flex;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;pointer-events:none;}
+.subg .subg-win[hidden]{display:none;}
+.subg .subg-win.blank{width:86px;height:86px;border-radius:50%;pointer-events:auto;border:4px dashed rgba(255,255,255,.96);background:rgba(255,255,255,.30);
+  box-shadow:inset 0 0 0 3px rgba(43,140,214,.32);}
+.subg .subg-win.blank.ready{animation:subgBlank 1.7s ease-in-out infinite;}
+/* [r77b] an invisible landing ring around the empty bubble: a word dropped anywhere the dragged
+   tile has already turned into a bubble (within 50px of the bubble's edge) goes in — it used to
+   need the fingertip inside the 86px circle itself, so a tile showing "I fit here" could still
+   snap back. Hit-tests as the blank; never painted. */
+.subg .subg-win.blank::after{content:"";position:absolute;inset:-54px;border-radius:50%;}
+.subg .subg-win.blank.hover{border-color:#FFA914;background:rgba(255,236,190,.6);box-shadow:inset 0 0 0 3px rgba(255,169,20,.35);}
+.subg .subg-win.blank.filled{border:4px solid rgba(255,255,255,.96);background:rgba(255,255,255,.55);animation:none;}
+/* [r77b] the cue must outrank the blank's own breathing (.blank.ready), or the idle hint on the
+   empty window never shows */
+.subg .subg-win.cue,.subg .subg-win.blank.ready.cue{animation:subgCue .9s ease-in-out 2;}
+@keyframes subgBlank{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+@keyframes subgCue{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+/* [r77b] no white halo behind the words — NO GLOW WHILE READING (r62b) holds in this game too;
+   navy reads cleanly on the pale glass without it */
+.subg-word{display:block;max-width:100%;font-family:var(--font-hi);font-weight:800;color:#0B3D8C;line-height:1.06;word-spacing:.05em;
+  white-space:nowrap;
+  opacity:0;transform:scale(.45);transition:opacity .28s ease,transform .38s cubic-bezier(.34,1.56,.6,1);}
+.subg-word.in{opacity:1;transform:scale(1);}
+.subg-word.out{opacity:0;transform:scale(.6);transition:opacity .22s ease,transform .22s ease;}
+.subg .subg-win.filled .subg-word{color:#17794A;}         /* only the placed word turns green */
+.subg-pop{position:absolute;inset:-6px;border-radius:50%;border:4px solid rgba(255,255,255,.95);pointer-events:none;animation:subgPop .7s ease-out forwards;}
+@keyframes subgPop{0%{transform:scale(.7);opacity:1;}100%{transform:scale(1.45);opacity:0;}}
+.subg-opts{position:absolute;z-index:5;left:0;right:0;bottom:20px;display:flex;justify-content:center;gap:30px;}
+/* the pop-in is a one-off animation, not a transform transition: a dropped tile must snap straight
+   back (as in every drag game here) instead of gliding back over the window it was dropped on */
+.subg-opts .fvd-tile{width:240px;height:66px;min-width:240px;min-height:66px;font-size:32px;
+  opacity:0;transition:opacity .3s ease,box-shadow .18s ease;}
+.subg-opts .fvd-tile.in{opacity:1;}
+/* [r77b] the pop-in is its own short-lived class: when it rode on .in, every wiggle that ended
+   handed the animation back to subgOptIn and the wrong tile popped in all over again */
+.subg-opts .fvd-tile.in.enter{animation:subgOptIn .34s cubic-bezier(.34,1.45,.6,1);}
+@keyframes subgOptIn{from{transform:translateY(14px) scale(.9);}to{transform:none;}}
+.subg-opts .fvd-tile.in.wiggle{animation:mtpWiggle .55s ease-in-out;}
+.subg-opts .fvd-tile.in.lit{animation:fvdGlow 1s ease 2;border-color:#FFA914;}
+.subg-opts .fvd-tile.gone{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s ease,visibility 0s linear .3s;}
+.subg-trail{position:absolute;z-index:2;border-radius:50%;pointer-events:none;
+  border:1.5px solid rgba(240,253,255,.85);
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.85) 0 14%,rgba(219,249,255,.28) 20% 60%,transparent 72%);
+  animation:subgTrail 1.3s ease-out forwards;}
+@keyframes subgTrail{0%{opacity:.9;transform:translate(0,0) scale(.6);}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(1.15);}}
+/* [r81] the स्तर-पूरा panel is gone from this game, and its styles with it */
+
 @media (prefers-reduced-motion:reduce){
-  .mtp-stage::before,.fvd::before,.mtp-stage::after,.fvd::after{animation:none!important;}
+  .mtp-stage::before,.fvd::before,.mtp-stage::after,.fvd::after,.subg::before,.subg::after{animation:none!important;}
+  /* [r77b] and the submarine's own pulses and pops; its glides are shortened and the bubble trail
+     dropped in the module */
+  .subg .subg-win.blank.ready,.subg .subg-win.cue,.subg .subg-win.blank.ready.cue,.subg-pop,.subg-opts .fvd-tile.in.enter{animation:none!important;}
+  .subg-word{transition:opacity .2s ease!important;transform:none!important;}
+  /* [r78 review] …but a cue still shows, as a still emphasis while its class is on */
+  .subg .subg-win.blank.cue{border-color:#FFA914;background:rgba(255,236,190,.6);}
+  .subg .subg-win.cue .subg-word{color:#B35A00;}
 }
 
 /* [r34] A stale COPY of this whole block used to sit here — a Round-14 rebase leftover that, being
@@ -2773,13 +2961,13 @@ html.no-anim .tis-object-outline{animation:none!important;}
      and shrink the gate with the stage - production pattern). -->
 <div class="phase-gate" id="phaseGate">
     <div class="pg-title" id="phaseGateTitle"></div>
-    <img id="phaseGateImg" src="assets/UI/peeking.webp" alt="">   <!-- [20a landing-fix] reunited with #phaseGate (was orphaned in .stage → full-bleed on landing once the gate went transparent) -->
+    <img id="phaseGateImg" src="assets/UI/peeking_up.webp" alt="">   <!-- [20a landing-fix] reunited with #phaseGate (was orphaned in .stage → full-bleed on landing once the gate went transparent) -->
 </div>
 
 <script src="assets/ocean-vo-config.js"></script>
 <!-- ============ CARD DATA (embedded; in prod the compiler does this) ============ -->
 <script type="application/json" id="cardData">
-{"version":"0.1","skill_code":"HI02H11_L03_S01","lo_code":"HI02H11_L03","grade":"G2","attribute":"H11","skill_type":"CORE","part_label":"poem","title":{"hi":"मीरा का जन्मदिन","en":"Meera's Flying Balloons — singular/plural"},"subtitle_hi":"एक-अनेक","skill_description_hi":"एकवचन-बहुवचन के शब्द-रूप बदलाव को पहचानता है — जैसे लड़का/लड़के। (कविता आधारित)","dt_fallback":null,"theme":"toybox","phase_distribution":{"tutorial":8,"guided":0,"practice":6,"mastery":4},"scaffold_rules":{"nudge_timeout_ms":{"guided":5000,"independent":8000},"max_attempts":3},"signals_expected":["slide_entered","slide_completed","gender_pair_match","vachan_recognise_first_try","lesson_completed","mastery_score"],"_emoji_fallback":{"obj_topi_s":"🧢","obj_saheli_s":"👧","obj_machli_s":"🐟","obj_kela_s":"🍌","obj_ghoda_s":"🐴","scn_gubbara_s":"🎈","scn_gubbara_p":"🎈🎈🎈","scn_ladka_s":"🧒","scn_ladka_p":"🧒🧒🧒","scn_topi_s":"🧢","scn_topi_p":"🧢🧢🧢","scn_saheli_s":"👧","scn_saheli_p":"👧👧👧","obj_ladki_s":"👧","obj_paudha_s":"🌱"},"slides":[{"id":"T1","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_gubbara_s","emoji":"🎈","audio":"vo_stanza1","lines":["आज है मीरा का जन्मदिन, घर में खूब तैयारी।","मीरा ने एक *गुब्बारा* टाँगा, माँ ने बाँधी झालर प्यारी।"]},{"img":"scn_gubbara_p","emoji":"🎈🎈🎈","audio":"vo_stanza2","lines":["पापा और *गुब्बारे* लाए, “आओ, इन्हें सजाएँ!”","तभी हवा का झोंका आया— फुर्र-फुर्र *गुब्बारे* उड़ते जाएँ!"]}]}},{"id":"C1","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_gubbara_1","explain":"vo_cmp_gubbara_2"},"data":{"s":{"img":"scn_gubbara_s","emoji":"🎈","stem":"गुब्बा","change":"रा"},"p":{"img":"scn_gubbara_p","emoji":"🎈🎈🎈","stem":"गुब्बा","change":"रे"}}},{"id":"T2","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_ladka_s","emoji":"🧒","audio":"vo_stanza3a","lines":["एक *लड़का* उछलकर बोला, “मैं पकड़ूँगा सारे!”"]},{"img":"scn_ladka_p","emoji":"🧒🧒🧒","audio":"vo_stanza3b","lines":["फिर *लड़के* भी दौड़ पड़े— आगे-आगे गुब्बारे!"]}]}},{"id":"C2","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_ladka_1","explain":"vo_cmp_ladka_2"},"data":{"s":{"img":"scn_ladka_s","emoji":"🧒","stem":"लड़","change":"का"},"p":{"img":"scn_ladka_p","emoji":"🧒🧒🧒","stem":"लड़","change":"के"}}},{"id":"T3","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_topi_s","emoji":"🧢","audio":"vo_stanza4a","lines":["मीरा की एक *टोपी* उड़ी, फिर उड़ीं सबकी *टोपियाँ*।"]},{"img":"scn_topi_p","emoji":"🧢🧢🧢","audio":"vo_stanza4b","lines":["आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ।"]}]}},{"id":"C3","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_topi_1","explain":"vo_cmp_topi_2"},"data":{"s":{"img":"scn_topi_s","emoji":"🧢","stem":"टो","change":"पी"},"p":{"img":"scn_topi_p","emoji":"🧢🧢🧢","stem":"टो","change":"पियाँ"}}},{"id":"T4","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_saheli_s","emoji":"👧","audio":"vo_stanza5a","lines":["केक कटा, खुश हुई एक *सहेली*, झूम-झूम नाची वह अलबेली।"]},{"img":"scn_saheli_p","emoji":"👧👧👧","audio":"vo_stanza5b","lines":["ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी *सहेलियाँ*!"]}]}},{"id":"C4","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_saheli_1","explain":"vo_cmp_saheli_2"},"data":{"s":{"img":"scn_saheli_s","emoji":"👧","stem":"सहे","change":"ली"},"p":{"img":"scn_saheli_p","emoji":"👧👧👧","stem":"सहे","change":"लियाँ"}}},{"id":"Q1","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q1","correct":"vo_pick_ok_q1"},"data":{"source":{"word_hi":"मछली","img":"obj_machli_s","emoji":"🐟","audio":"vo_w_machli_s","count":1},"target":{"img":"obj_machli_s","emoji":"🐟","count":4,"label":"अनेक"},"options":[{"word_hi":"टोपी","audio":"vo_w_topi_s","correct":false},{"word_hi":"मछलियाँ","audio":"vo_w_machli_p","correct":true},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q2","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q2","correct":"vo_pick_ok_q2"},"data":{"source":{"word_hi":"लड़की","img":"obj_ladki_s","emoji":"👧","audio":"vo_w_ladki_s","count":1},"target":{"img":"obj_ladki_s","emoji":"👧","count":3,"label":"अनेक"},"options":[{"word_hi":"ताली","audio":"vo_w_tali_s","correct":false},{"word_hi":"सहेलियाँ","audio":"vo_w_saheli_p","correct":false},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q3","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q3","correct":"vo_pick_ok_q3"},"data":{"source":{"word_hi":"टोपियाँ","img":"obj_topi_s","emoji":"🧢","audio":"vo_w_topi_p","count":4},"target":{"img":"obj_topi_s","emoji":"🧢","count":1,"label":"एक"},"options":[{"word_hi":"मछली","audio":"vo_w_machli_s","correct":false},{"word_hi":"टोपी","audio":"vo_w_topi_s","correct":true},{"word_hi":"केले","audio":"vo_w_kela_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q4","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q4","correct":"vo_pick_ok_q4"},"data":{"source":{"word_hi":"घोड़ा","img":"obj_ghoda_s","emoji":"🐴","audio":"vo_w_ghoda_s","count":1},"target":{"img":"obj_ghoda_s","emoji":"🐴","count":3,"label":"अनेक"},"options":[{"word_hi":"पौधे","audio":"vo_w_paudha_p","correct":false},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":false},{"word_hi":"घोड़े","audio":"vo_w_ghoda_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q5","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q5","correct":"vo_pick_ok_q5"},"data":{"source":{"word_hi":"केला","img":"obj_kela_s","emoji":"🍌","audio":"vo_w_kela_s","count":1},"target":{"img":"obj_kela_s","emoji":"🍌","count":3,"label":"अनेक"},"options":[{"word_hi":"पौधा","audio":"vo_w_paudha_s","correct":false},{"word_hi":"मछली","audio":"vo_w_machli_s","correct":false},{"word_hi":"केले","audio":"vo_w_kela_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q6","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q6","correct":"vo_pick_ok_q6"},"data":{"source":{"word_hi":"पौधे","img":"obj_paudha_s","emoji":"🌱","audio":"vo_w_paudha_p","count":3},"target":{"img":"obj_paudha_s","emoji":"🌱","count":1,"label":"एक"},"options":[{"word_hi":"पौधा","audio":"vo_w_paudha_s","correct":true},{"word_hi":"घोड़ा","audio":"vo_w_ghoda_s","correct":false},{"word_hi":"घोड़े","audio":"vo_w_ghoda_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"PAIR1","phase":"mastery","eis":"enactive","type":"MATCH_VACHAN_PAIRS","prompt_hi":"एक और अनेक वाले शब्दों की जोड़ियाँ ढूँढ़िए।","audio":{"prompt":"vo_mtp_prompt","tap_hint":"vo_mtp_tap","sahi":"vo_mtp_sahi","retry":"vo_mtp_retry","listen":"vo_mtp_listen","now_tap":"vo_mtp_now_tap","done":"vo_mtp_done"},"data":{"demo":true,"pairs":[{"id":"gubbara","icon":"obj_gubbara_s","emoji":"🎈","s":{"word_hi":"गुब्बारा","audio":"vo_w_gubbara_s"},"p":{"word_hi":"गुब्बारे","audio":"vo_w_gubbara_p"}},{"id":"topi","icon":"obj_topi_s","emoji":"🧢","s":{"word_hi":"टोपी","audio":"vo_w_topi_s"},"p":{"word_hi":"टोपियाँ","audio":"vo_w_topi_p"}},{"id":"kela","icon":"obj_kela_s","emoji":"🍌","s":{"word_hi":"केला","audio":"vo_w_kela_s"},"p":{"word_hi":"केले","audio":"vo_w_kela_p"}}]},"signals":{"on_complete":["gender_pair_match"]}},{"id":"PAIR2","phase":"mastery","eis":"enactive","type":"MATCH_VACHAN_PAIRS","prompt_hi":"एक और अनेक वाले शब्दों की जोड़ियाँ ढूँढ़िए।","audio":{"prompt":"vo_mtp_prompt","tap_hint":"vo_mtp_tap","sahi":"vo_mtp_sahi","retry":"vo_mtp_retry","listen":"vo_mtp_listen","now_tap":"vo_mtp_now_tap","done":"vo_mtp_done"},"data":{"demo":false,"pairs":[{"id":"ghoda","icon":"obj_ghoda_s","emoji":"🐴","s":{"word_hi":"घोड़ा","audio":"vo_w_ghoda_s"},"p":{"word_hi":"घोड़े","audio":"vo_w_ghoda_p"}},{"id":"saheli","icon":"obj_saheli_s","emoji":"👧","s":{"word_hi":"सहेली","audio":"vo_w_saheli_s"},"p":{"word_hi":"सहेलियाँ","audio":"vo_w_saheli_p"}},{"id":"machli","icon":"obj_machli_s","emoji":"🐟","s":{"word_hi":"मछली","audio":"vo_w_machli_s"},"p":{"word_hi":"मछलियाँ","audio":"vo_w_machli_p"}}]},"signals":{"on_complete":["gender_pair_match"]}},{"id":"FILL","phase":"mastery","eis":"symbolic","type":"FILL_VACHAN_DRAG","prompt_hi":"सही शब्द खींचकर खाली जगह में रखिए।","data":{"levels":[{"name":"स्तर 1","questions":[{"id":"g1","a":"मीरा ने एक {blank} टाँगा।","b":"पापा बहुत सारे {blank} लाए।","one":"गुब्बारा","many":"गुब्बारे"},{"id":"m1","a":"तालाब में एक {blank} है।","b":"तालाब में बहुत सारी {blank} हैं।","one":"मछली","many":"मछलियाँ"},{"id":"l1","a":"मैदान में एक {blank} खेल रहा है।","b":"मैदान में बहुत सारे {blank} खेल रहे हैं।","one":"लड़का","many":"लड़के"}],"art":"ui_level1_done.png"},{"name":"स्तर 2","questions":[{"id":"b3","a":"बंदर एक {blank} खा रहा है।","b":"बंदर बहुत सारे {blank} खा रहा है।","one":"केला","many":"केले"},{"id":"t3","a":"मीरा ने एक {blank} पहनी।","b":"सहेलियों ने बहुत सारी {blank} पहनीं।","one":"टोपी","many":"टोपियाँ"},{"id":"p3","a":"गमले में एक {blank} है।","b":"बगीचे में बहुत सारे {blank} हैं।","one":"पौधा","many":"पौधे"}]}]},"signals":{"on_complete":["gender_pair_match"]}},{"id":"CEL","phase":"mastery","eis":"enactive","type":"CELEBRATION","prompt_hi":"शाबाश! अब तुम एकवचन-बहुवचन पहचान सकते हो!","audio":{"prompt":"vo_well_done","sfx":"sfx_celebrate"},"data":{}}],"assets":{"audio":{"vo_pt_tutorial":"assets/Audio/vo_pt_tutorial.ogg","vo_pt_practice":"assets/Audio/vo_pt_practice.ogg","vo_landing":"assets/Audio/vo_landing.ogg","vo_try_again":"assets/Audio/vo_try_again.ogg","vo_well_done":"assets/Audio/vo_well_done.ogg","sfx_celebrate":"assets/Audio/sfx_celebrate.ogg","vo_mtp_prompt":"assets/Audio/vo_mtp_prompt.ogg","vo_mtp_tap":"assets/Audio/vo_mtp_tap.ogg","vo_mtp_sahi":"assets/Audio/vo_mtp_sahi.ogg","vo_mtp_retry":"assets/Audio/vo_mtp_retry.ogg","vo_mtp_listen":"assets/Audio/vo_mtp_listen.ogg","vo_mtp_now_tap":"assets/Audio/vo_mtp_now_tap.ogg","vo_mtp_done":"assets/Audio/vo_mtp_done.ogg","vo_w_gubbara_s":"assets/Audio/vo_w_gubbara_s.ogg","vo_w_gubbara_p":"assets/Audio/vo_w_gubbara_p.ogg","vo_w_topi_s":"assets/Audio/vo_w_topi_s.ogg","vo_w_topi_p":"assets/Audio/vo_w_topi_p.ogg","vo_w_kela_s":"assets/Audio/vo_w_kela_s.ogg","vo_w_kela_p":"assets/Audio/vo_w_kela_p.ogg","vo_w_machli_s":"assets/Audio/vo_w_machli_s.ogg","vo_w_machli_p":"assets/Audio/vo_w_machli_p.ogg","vo_w_ghoda_s":"assets/Audio/vo_w_ghoda_s.ogg","vo_w_ghoda_p":"assets/Audio/vo_w_ghoda_p.ogg","vo_w_saheli_s":"assets/Audio/vo_w_saheli_s.ogg","vo_w_saheli_p":"assets/Audio/vo_w_saheli_p.ogg","vo_stanza1":"assets/Audio/vo_stanza1.ogg","vo_stanza2":"assets/Audio/vo_stanza2.ogg","vo_stanza3a":"assets/Audio/vo_stanza3a.ogg","vo_stanza3b":"assets/Audio/vo_stanza3b.ogg","vo_stanza4a":"assets/Audio/vo_stanza4a.ogg","vo_stanza4b":"assets/Audio/vo_stanza4b.ogg","vo_stanza5a":"assets/Audio/vo_stanza5a.ogg","vo_stanza5b":"assets/Audio/vo_stanza5b.ogg","vo_cmp_gubbara_1":"assets/Audio/vo_cmp_gubbara_1.ogg","vo_cmp_gubbara_2":"assets/Audio/vo_cmp_gubbara_2.ogg","vo_cmp_ladka_1":"assets/Audio/vo_cmp_ladka_1.ogg","vo_cmp_ladka_2":"assets/Audio/vo_cmp_ladka_2.ogg","vo_cmp_topi_1":"assets/Audio/vo_cmp_topi_1.ogg","vo_cmp_topi_2":"assets/Audio/vo_cmp_topi_2.ogg","vo_cmp_saheli_1":"assets/Audio/vo_cmp_saheli_1.ogg","vo_cmp_saheli_2":"assets/Audio/vo_cmp_saheli_2.ogg","vo_pick_prompt":"assets/Audio/vo_pick_prompt.ogg","vo_w_ladki_s":"assets/Audio/vo_w_ladki_s.ogg","vo_w_ladki_p":"assets/Audio/vo_w_ladki_p.ogg","vo_w_paudha_s":"assets/Audio/vo_w_paudha_s.ogg","vo_w_paudha_p":"assets/Audio/vo_w_paudha_p.ogg","vo_w_tali_s":"assets/Audio/vo_w_tali_s.ogg","vo_pick_ok_q1":"assets/Audio/vo_pick_ok_q1.ogg","vo_pick_ok_q2":"assets/Audio/vo_pick_ok_q2.ogg","vo_pick_ok_q3":"assets/Audio/vo_pick_ok_q3.ogg","vo_pick_ok_q4":"assets/Audio/vo_pick_ok_q4.ogg","vo_pick_ok_q5":"assets/Audio/vo_pick_ok_q5.ogg","vo_pick_ok_q6":"assets/Audio/vo_pick_ok_q6.ogg","vo_pick_retry_q1":"assets/Audio/vo_pick_retry_q1.ogg","vo_pick_retry_q2":"assets/Audio/vo_pick_retry_q2.ogg","vo_pick_retry_q3":"assets/Audio/vo_pick_retry_q3.ogg","vo_pick_retry_q4":"assets/Audio/vo_pick_retry_q4.ogg","vo_pick_retry_q5":"assets/Audio/vo_pick_retry_q5.ogg","vo_pick_retry_q6":"assets/Audio/vo_pick_retry_q6.ogg"},"audio_text":{"vo_pt_tutorial":"ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!","vo_pt_practice":"वाह! अब आपकी बारी।","vo_landing":"नमस्ते दोस्त! आज हम मीरा की कविता से एक और अनेक के बदलते शब्द-रूप सीखेंगे।","vo_try_again":"फिर से कोशिश करो।","vo_well_done":"शाबाश! अब तुम जानते हो — गुब्बारा-गुब्बारे, टोपी-टोपियाँ, बच्चा-बच्चे। एक हो तो एकवचन, बहुत सारे हों तो बहुवचन!","vo_mtp_prompt":"एक और अनेक वाले शब्दों की जोड़ियाँ ढूँढ़िए।","vo_mtp_tap":"पहले एक शब्द पर, फिर उसकी जोड़ी पर टैप कीजिए।","vo_mtp_sahi":"यह सही जोड़ी है।","vo_mtp_retry":"फिर से देखिए। इस शब्द की जोड़ी कौन-सी है?","vo_mtp_listen":"इन दोनों शब्दों को सुनिए—","vo_mtp_now_tap":"अब इन पर टैप कीजिए।","vo_mtp_done":"शाबाश! आपने एक और अनेक वाले सभी शब्दों की जोड़ियाँ ढूँढ़ लीं।","vo_w_gubbara_s":"गुब्बारा","vo_w_gubbara_p":"गुब्बारे","vo_w_topi_s":"टोपी","vo_w_topi_p":"टोपियाँ","vo_w_kela_s":"केला","vo_w_kela_p":"केले","vo_w_machli_s":"मछली","vo_w_machli_p":"मछलियाँ","vo_w_ghoda_s":"घोड़ा","vo_w_ghoda_p":"घोड़े","vo_w_saheli_s":"सहेली","vo_w_saheli_p":"सहेलियाँ","vo_stanza1":"आज है मीरा का जन्मदिन, घर में खूब तैयारी। मीरा ने एक गुब्बारा टाँगा, माँ ने बाँधी झालर प्यारी।","vo_stanza2":"पापा और गुब्बारे लाए, आओ, इन्हें सजाएँ! तभी हवा का झोंका आया— फुर्र-फुर्र गुब्बारे उड़ते जाएँ!","vo_stanza3a":"एक लड़का उछलकर बोला, मैं पकड़ूँगा सारे!","vo_stanza3b":"फिर लड़के भी दौड़ पड़े— आगे-आगे गुब्बारे!","vo_stanza4a":"मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ।","vo_stanza4b":"आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ।","vo_stanza5a":"केक कटा, खुश हुई एक सहेली, झूम-झूम नाची वह अलबेली।","vo_stanza5b":"ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी सहेलियाँ!","vo_cmp_gubbara_1":"मीरा ने एक गुब्बारा टाँगा, पापा और गुब्बारे लाए।","vo_cmp_gubbara_2":"तो हमने देखा कि एक है तो, गुब्बारा; और अनेक है तो, गुब्बारे।","vo_cmp_ladka_1":"एक लड़का उछलकर बोला, फिर लड़के भी दौड़ पड़े।","vo_cmp_ladka_2":"तो हमने देखा कि एक है तो, लड़का; और अनेक है तो, लड़के।","vo_cmp_topi_1":"मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ।","vo_cmp_topi_2":"तो हमने देखा कि एक है तो, टोपी; और अनेक है तो, टोपियाँ।","vo_cmp_saheli_1":"केक कटा, खुश हुई एक सहेली, संग-संग नाचीं सारी सहेलियाँ!","vo_cmp_saheli_2":"तो हमने देखा कि एक है तो, सहेली; और अनेक है तो, सहेलियाँ।","vo_pick_prompt":"सही शब्द चुनिए।","vo_w_ladki_s":"लड़की","vo_w_ladki_p":"लड़कियाँ","vo_w_paudha_s":"पौधा","vo_w_paudha_p":"पौधे","vo_w_tali_s":"ताली","vo_pick_ok_q1":"शाबाश! आपने सही शब्द चुना — मछलियाँ।","vo_pick_ok_q2":"शाबाश! आपने सही शब्द चुना — लड़कियाँ।","vo_pick_ok_q3":"शाबाश! आपने सही शब्द चुना — टोपी।","vo_pick_ok_q4":"शाबाश! आपने सही शब्द चुना — घोड़े।","vo_pick_ok_q5":"शाबाश! आपने सही शब्द चुना — केले।","vo_pick_ok_q6":"शाबाश! आपने सही शब्द चुना — पौधा।","vo_pick_retry_q1":"फिर से देखिए—यह एक मछली है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q2":"फिर से देखिए—यह एक लड़की है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q3":"फिर से देखिए—ये अनेक टोपियाँ हैं। एक हो, तो क्या कहेंगे?","vo_pick_retry_q4":"फिर से देखिए—यह एक घोड़ा है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q5":"फिर से देखिए—यह एक केला है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q6":"फिर से देखिए—ये अनेक पौधे हैं। एक हो, तो क्या कहेंगे?"},"image":{"obj_topi_s":"assets/Images/obj_topi_s.png","obj_saheli_s":"assets/Images/obj_saheli_s.png","obj_machli_s":"assets/Images/obj_machli_s.png","obj_kela_s":"assets/Images/obj_kela_s.png","obj_ghoda_s":"assets/Images/obj_ghoda_s.png","scn_gubbara_s":"assets/Images/scn_gubbara_s.png","scn_gubbara_p":"assets/Images/scn_gubbara_p.png","scn_ladka_s":"assets/Images/scn_ladka_s.png","scn_ladka_p":"assets/Images/scn_ladka_p.png","scn_topi_s":"assets/Images/scn_topi_s.png","scn_topi_p":"assets/Images/scn_topi_p.png","scn_saheli_s":"assets/Images/scn_saheli_s.png","scn_saheli_p":"assets/Images/scn_saheli_p.png","obj_ladki_s":"assets/Images/obj_ladki_s.png","obj_paudha_s":"assets/Images/obj_paudha_s.png","obj_gubbara_s":"assets/Images/obj_gubbara_s.png"},"audio_ext":"ogg"}}
+{"version":"0.1","skill_code":"HI02H11_L03_S01","lo_code":"HI02H11_L03","grade":"G2","attribute":"H11","skill_type":"CORE","part_label":"poem","title":{"hi":"मीरा का जन्मदिन","en":"Meera's Flying Balloons — singular/plural"},"subtitle_hi":"एक-अनेक","skill_description_hi":"एकवचन-बहुवचन के शब्द-रूप बदलाव को पहचानता है — जैसे लड़का/लड़के। (कविता आधारित)","dt_fallback":null,"theme":"toybox","phase_distribution":{"tutorial":9,"guided":0,"practice":6,"mastery":3},"scaffold_rules":{"nudge_timeout_ms":{"guided":5000,"independent":8000},"max_attempts":3},"signals_expected":["slide_entered","slide_completed","gender_pair_match","vachan_recognise_first_try","lesson_completed","mastery_score"],"_emoji_fallback":{"obj_topi_s":"🧢","obj_saheli_s":"👧","obj_machli_s":"🐟","obj_kela_s":"🍌","obj_ghoda_s":"🐴","scn_gubbara_s":"🎈","scn_gubbara_p":"🎈🎈🎈","scn_ladka_s":"🧒","scn_ladka_p":"🧒🧒🧒","scn_topi_s":"🧢","scn_topi_p":"🧢🧢🧢","scn_saheli_s":"👧","scn_saheli_p":"👧👧👧","obj_ladki_s":"👧","obj_paudha_s":"🌱"},"slides":[{"id":"T1","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_gubbara_s","emoji":"🎈","audio":"vo_stanza1a","lines":["आज है मीरा का जन्मदिन, मीरा ने एक *गुब्बारा* टाँगा।"],"cues_ms":[340,667,831,1158,1322,2570,2923,3099,3452,4157]},{"img":"scn_gubbara_p","emoji":"🎈🎈🎈","audio":"vo_stanza1b","lines":["पापा और *गुब्बारे* लाए, आओ, इन्हें सजाएँ!"],"cues_ms":[280,644,1008,1736,2500,3090,3535]}]}},{"id":"C1","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_gubbara_1","explain":"vo_cmp_gubbara_2b"},"data":{"s":{"img":"scn_gubbara_s","emoji":"🎈","stem":"गुब्बा","change":"रा"},"p":{"img":"scn_gubbara_p","emoji":"🎈🎈🎈","stem":"गुब्बा","change":"रे"}}},{"id":"T1B","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_hawa","emoji":"🎈💨","audio":"vo_stanza_hawa","lines":["तभी हवा का झोंका आया, फुर्र-फुर्र *गुब्बारे* उड़ते जाएँ!"],"cues_ms":[280,669,1058,1252,1641,2510,3390,3977,4417]}]}},{"id":"T2","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_ladka_s","emoji":"🧒","audio":"vo_stanza3a","lines":["एक *लड़का* उछलकर बोला, “मैं पकड़ूँगा सारे!”"],"cues_ms":[270,610,1120,1970,2310,2480,3160]},{"img":"scn_ladka_p","emoji":"🧒🧒🧒","audio":"vo_stanza3b","lines":["फिर *लड़के* भी दौड़ पड़े— आगे-आगे गुब्बारे!"],"cues_ms":[240,586,1104,1277,1622,1968,2659]}]}},{"id":"C2","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_ladka_1","explain":"vo_cmp_ladka_2b"},"data":{"s":{"img":"scn_ladka_s","emoji":"🧒","stem":"लड़","change":"का"},"p":{"img":"scn_ladka_p","emoji":"🧒🧒🧒","stem":"लड़","change":"के"}}},{"id":"T3","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_topi_s","emoji":"🧢","audio":"vo_stanza4a","lines":["मीरा की एक *टोपी* उड़ी, फिर उड़ीं सबकी *टोपियाँ*।"],"cues_ms":[260,631,816,1186,1557,1927,2298,2668,3224]},{"img":"scn_topi_p","emoji":"🧢🧢🧢","audio":"vo_stanza4b","lines":["आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ।"],"cues_ms":[290,761,1232,1703,1860,2017,2959]}]}},{"id":"C3","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_topi_1","explain":"vo_cmp_topi_2b"},"data":{"s":{"img":"scn_topi_s","emoji":"🧢","stem":"टो","change":"पी"},"p":{"img":"scn_topi_p","emoji":"🧢🧢🧢","stem":"टो","change":"पियाँ"}}},{"id":"T4","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_saheli_s","emoji":"👧","audio":"vo_stanza5a","lines":["केक कटा, खुश हुई एक *सहेली*, झूम-झूम नाची वह अलबेली।"],"cues_ms":[290,699,1108,1516,1925,2334,2947,3765,4174,4582]},{"img":"scn_saheli_p","emoji":"👧👧👧","audio":"vo_stanza5b","lines":["ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी *सहेलियाँ*!"],"cues_ms":[300,739,1178,1617,2057,2715,3593,4033,4472]}]}},{"id":"C4","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_saheli_1","explain":"vo_cmp_saheli_2b"},"data":{"s":{"img":"scn_saheli_s","emoji":"👧","stem":"सहे","change":"ली"},"p":{"img":"scn_saheli_p","emoji":"👧👧👧","stem":"सहे","change":"लियाँ"}}},{"id":"Q1","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q1","correct":"vo_pick_ok_q1"},"data":{"source":{"word_hi":"मछली","img":"obj_machli_s","emoji":"🐟","audio":"vo_w_machli_s","count":1},"target":{"img":"obj_machli_s","emoji":"🐟","count":4,"label":"अनेक"},"options":[{"word_hi":"टोपी","audio":"vo_w_topi_s","correct":false},{"word_hi":"मछलियाँ","audio":"vo_w_machli_p","correct":true},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q2","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q2","correct":"vo_pick_ok_q2"},"data":{"source":{"word_hi":"लड़की","img":"obj_ladki_s","emoji":"👧","audio":"vo_w_ladki_s","count":1},"target":{"img":"obj_ladki_s","emoji":"👧","count":3,"label":"अनेक"},"options":[{"word_hi":"ताली","audio":"vo_w_tali_s","correct":false},{"word_hi":"सहेलियाँ","audio":"vo_w_saheli_p","correct":false},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q3","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q3","correct":"vo_pick_ok_q3"},"data":{"source":{"word_hi":"टोपियाँ","img":"obj_topi_s","emoji":"🧢","audio":"vo_w_topi_p","count":4},"target":{"img":"obj_topi_s","emoji":"🧢","count":1,"label":"एक"},"options":[{"word_hi":"मछली","audio":"vo_w_machli_s","correct":false},{"word_hi":"टोपी","audio":"vo_w_topi_s","correct":true},{"word_hi":"केले","audio":"vo_w_kela_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q4","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q4","correct":"vo_pick_ok_q4"},"data":{"source":{"word_hi":"घोड़ा","img":"obj_ghoda_s","emoji":"🐴","audio":"vo_w_ghoda_s","count":1},"target":{"img":"obj_ghoda_s","emoji":"🐴","count":3,"label":"अनेक"},"options":[{"word_hi":"पौधे","audio":"vo_w_paudha_p","correct":false},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":false},{"word_hi":"घोड़े","audio":"vo_w_ghoda_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q5","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q5","correct":"vo_pick_ok_q5"},"data":{"source":{"word_hi":"केला","img":"obj_kela_s","emoji":"🍌","audio":"vo_w_kela_s","count":1},"target":{"img":"obj_kela_s","emoji":"🍌","count":3,"label":"अनेक"},"options":[{"word_hi":"पौधा","audio":"vo_w_paudha_s","correct":false},{"word_hi":"मछली","audio":"vo_w_machli_s","correct":false},{"word_hi":"केले","audio":"vo_w_kela_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q6","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q6","correct":"vo_pick_ok_q6"},"data":{"source":{"word_hi":"पौधे","img":"obj_paudha_s","emoji":"🌱","audio":"vo_w_paudha_p","count":3},"target":{"img":"obj_paudha_s","emoji":"🌱","count":1,"label":"एक"},"options":[{"word_hi":"पौधा","audio":"vo_w_paudha_s","correct":true},{"word_hi":"घोड़ा","audio":"vo_w_ghoda_s","correct":false},{"word_hi":"घोड़े","audio":"vo_w_ghoda_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"PAIR1","phase":"mastery","eis":"enactive","type":"MATCH_VACHAN_PAIRS","prompt_hi":"एक और अनेक वाले शब्दों की जोड़ियाँ ढूँढ़िए।","audio":{"prompt":"vo_mtp_prompt","tap_hint":"vo_mtp_tap","sahi":"vo_mtp_sahi","retry":"vo_mtp_retry","listen":"vo_mtp_listen","now_tap":"vo_mtp_now_tap","done":"vo_mtp_done"},"data":{"demo":true,"pairs":[{"id":"gubbara","icon":"obj_gubbara_s","emoji":"🎈","s":{"word_hi":"गुब्बारा","audio":"vo_w_gubbara_s"},"p":{"word_hi":"गुब्बारे","audio":"vo_w_gubbara_p"}},{"id":"topi","icon":"obj_topi_s","emoji":"🧢","s":{"word_hi":"टोपी","audio":"vo_w_topi_s"},"p":{"word_hi":"टोपियाँ","audio":"vo_w_topi_p"}},{"id":"kela","icon":"obj_kela_s","emoji":"🍌","s":{"word_hi":"केला","audio":"vo_w_kela_s"},"p":{"word_hi":"केले","audio":"vo_w_kela_p"}},{"id":"saheli","icon":"obj_saheli_s","emoji":"👧","s":{"word_hi":"सहेली","audio":"vo_w_saheli_s"},"p":{"word_hi":"सहेलियाँ","audio":"vo_w_saheli_p"}},{"id":"machli","icon":"obj_machli_s","emoji":"🐟","s":{"word_hi":"मछली","audio":"vo_w_machli_s"},"p":{"word_hi":"मछलियाँ","audio":"vo_w_machli_p"}},{"id":"ghoda","icon":"obj_ghoda_s","emoji":"🐴","s":{"word_hi":"घोड़ा","audio":"vo_w_ghoda_s"},"p":{"word_hi":"घोड़े","audio":"vo_w_ghoda_p"},"text_only":true},{"id":"paudha","icon":"obj_paudha_s","emoji":"🌱","s":{"word_hi":"पौधा","audio":"vo_w_paudha_s"},"p":{"word_hi":"पौधे","audio":"vo_w_paudha_p"},"text_only":true}],"visible_pairs":3,"gate_before":"practice"},"signals":{"on_complete":["gender_pair_match"]}},{"id":"SUB","phase":"mastery","eis":"symbolic","type":"SUBMARINE_FILL","prompt_hi":"सही शब्द खींचकर खाली जगह में रखिए।","data":{"art":{"still":"sub_hold.webp","w":1400,"h":662,"wave":{"file":"sub_wave_sheet.webp","frames":46,"fps":15,"cols":8,"rows":6,"fw":384,"fh":327,"left":1.613,"top":23.295,"width":27.419,"height":49.432},"windows":[{"cx":35.369,"cy":57.229,"d":11.935},{"cx":49.735,"cy":57.756,"d":11.237},{"cx":62.971,"cy":58.478,"d":10.914},{"cx":75.478,"cy":59.275,"d":10.215},{"cx":87.272,"cy":59.603,"d":9.785}],"tail":{"x":96.5,"y":58}},"levels":[{"name":"स्तर 1","art":"ui_level1_done.png","pairs":[{"id":"g1","one":"गुब्बारा","many":"गुब्बारे","a":["मीरा","ने","एक","{blank}","टाँगा।"],"b":["पापा","बहुत","सारे","{blank}","लाए।"]},{"id":"m1","one":"मछली","many":"मछलियाँ","a":["तालाब","में","एक","{blank}","है।"],"b":["तालाब में","बहुत","सारी","{blank}","हैं।"]},{"id":"l1","one":"लड़का","many":"लड़के","a":["मैदान में","एक","{blank}","खेल रहा","है।"],"b":["मैदान में","बहुत सारे","{blank}","खेल रहे","हैं।"]}]},{"name":"स्तर 2","art":"ui_level2_done.png","pairs":[{"id":"b3","one":"केला","many":"केले","a":["बंदर","एक","{blank}","खा रहा","है।"],"b":["बंदर","बहुत सारे","{blank}","खा रहा","है।"]},{"id":"t3","one":"टोपी","many":"टोपियाँ","a":["मीरा","ने","एक","{blank}","पहनी।"],"b":["सहेलियों","ने","बहुत सारी","{blank}","पहनीं।"]},{"id":"p3","one":"पौधा","many":"पौधे","a":["गमले","में","एक","{blank}","है।"],"b":["बगीचे","में","बहुत सारे","{blank}","हैं।"]}]}]},"signals":{"on_complete":["gender_pair_match"]}},{"id":"CEL","phase":"mastery","eis":"enactive","type":"CELEBRATION","prompt_hi":"शाबाश! अब तुम एकवचन-बहुवचन पहचान सकते हो!","audio":{"prompt":"vo_well_done","sfx":"sfx_celebrate"},"data":{}}],"assets":{"audio":{"vo_pt_tutorial":"assets/Audio/vo_pt_tutorial.ogg","vo_pt_practice":"assets/Audio/vo_pt_practice.ogg","vo_landing":"assets/Audio/vo_landing.ogg","vo_try_again":"assets/Audio/vo_try_again.ogg","vo_well_done":"assets/Audio/vo_well_done.ogg","sfx_celebrate":"assets/Audio/sfx_celebrate.ogg","vo_mtp_prompt":"assets/Audio/vo_mtp_prompt.ogg","vo_mtp_tap":"assets/Audio/vo_mtp_tap.ogg","vo_mtp_sahi":"assets/Audio/vo_mtp_sahi.ogg","vo_mtp_retry":"assets/Audio/vo_mtp_retry.ogg","vo_mtp_listen":"assets/Audio/vo_mtp_listen.ogg","vo_mtp_now_tap":"assets/Audio/vo_mtp_now_tap.ogg","vo_mtp_done":"assets/Audio/vo_mtp_done.ogg","vo_w_gubbara_s":"assets/Audio/vo_w_gubbara_s.ogg","vo_w_gubbara_p":"assets/Audio/vo_w_gubbara_p.ogg","vo_w_topi_s":"assets/Audio/vo_w_topi_s.ogg","vo_w_topi_p":"assets/Audio/vo_w_topi_p.ogg","vo_w_kela_s":"assets/Audio/vo_w_kela_s.ogg","vo_w_kela_p":"assets/Audio/vo_w_kela_p.ogg","vo_w_machli_s":"assets/Audio/vo_w_machli_s.ogg","vo_w_machli_p":"assets/Audio/vo_w_machli_p.ogg","vo_w_ghoda_s":"assets/Audio/vo_w_ghoda_s.ogg","vo_w_ghoda_p":"assets/Audio/vo_w_ghoda_p.ogg","vo_w_saheli_s":"assets/Audio/vo_w_saheli_s.ogg","vo_w_saheli_p":"assets/Audio/vo_w_saheli_p.ogg","vo_stanza1a":"assets/Audio/vo_stanza1a.ogg","vo_stanza1b":"assets/Audio/vo_stanza1b.ogg","vo_stanza_hawa":"assets/Audio/vo_stanza_hawa.ogg","vo_stanza3a":"assets/Audio/vo_stanza3a.ogg","vo_stanza3b":"assets/Audio/vo_stanza3b.ogg","vo_stanza4a":"assets/Audio/vo_stanza4a.ogg","vo_stanza4b":"assets/Audio/vo_stanza4b.ogg","vo_stanza5a":"assets/Audio/vo_stanza5a.ogg","vo_stanza5b":"assets/Audio/vo_stanza5b.ogg","vo_cmp_gubbara_1":"assets/Audio/vo_cmp_gubbara_1.ogg","vo_cmp_ladka_1":"assets/Audio/vo_cmp_ladka_1.ogg","vo_cmp_topi_1":"assets/Audio/vo_cmp_topi_1.ogg","vo_cmp_saheli_1":"assets/Audio/vo_cmp_saheli_1.ogg","vo_pick_prompt":"assets/Audio/vo_pick_prompt.ogg","vo_w_ladki_s":"assets/Audio/vo_w_ladki_s.ogg","vo_w_ladki_p":"assets/Audio/vo_w_ladki_p.ogg","vo_w_paudha_s":"assets/Audio/vo_w_paudha_s.ogg","vo_w_paudha_p":"assets/Audio/vo_w_paudha_p.ogg","vo_w_tali_s":"assets/Audio/vo_w_tali_s.ogg","vo_pick_ok_q1":"assets/Audio/vo_pick_ok_q1.ogg","vo_pick_ok_q2":"assets/Audio/vo_pick_ok_q2.ogg","vo_pick_ok_q3":"assets/Audio/vo_pick_ok_q3.ogg","vo_pick_ok_q4":"assets/Audio/vo_pick_ok_q4.ogg","vo_pick_ok_q5":"assets/Audio/vo_pick_ok_q5.ogg","vo_pick_ok_q6":"assets/Audio/vo_pick_ok_q6.ogg","vo_pick_retry_q1":"assets/Audio/vo_pick_retry_q1.ogg","vo_pick_retry_q2":"assets/Audio/vo_pick_retry_q2.ogg","vo_pick_retry_q3":"assets/Audio/vo_pick_retry_q3.ogg","vo_pick_retry_q4":"assets/Audio/vo_pick_retry_q4.ogg","vo_pick_retry_q5":"assets/Audio/vo_pick_retry_q5.ogg","vo_pick_retry_q6":"assets/Audio/vo_pick_retry_q6.ogg","vo_cmp_topi_2b":"assets/Audio/vo_cmp_topi_2b.ogg","vo_cmp_gubbara_2b":"assets/Audio/vo_cmp_gubbara_2b.ogg","vo_cmp_ladka_2b":"assets/Audio/vo_cmp_ladka_2b.ogg","vo_cmp_saheli_2b":"assets/Audio/vo_cmp_saheli_2b.ogg"},"audio_text":{"vo_pt_tutorial":"ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!","vo_pt_practice":"वाह! अब आपकी बारी।","vo_landing":"नमस्ते दोस्त! आज हम मीरा की कविता से एक और अनेक के बदलते शब्द-रूप सीखेंगे।","vo_try_again":"फिर से कोशिश करो।","vo_well_done":"शाबाश! अब तुम जानते हो — गुब्बारा-गुब्बारे, टोपी-टोपियाँ, बच्चा-बच्चे। एक हो तो एकवचन, बहुत सारे हों तो बहुवचन!","vo_mtp_prompt":"एक और अनेक वाले शब्दों की जोड़ियाँ ढूँढ़िए।","vo_mtp_tap":"पहले एक शब्द पर, फिर उसकी जोड़ी पर टैप कीजिए।","vo_mtp_sahi":"यह सही जोड़ी है।","vo_mtp_retry":"फिर से देखिए। इस शब्द की जोड़ी कौन-सी है?","vo_mtp_listen":"इन दोनों शब्दों को सुनिए—","vo_mtp_now_tap":"अब इन पर टैप कीजिए।","vo_mtp_done":"शाबाश! आपने एक और अनेक वाले सभी शब्दों की जोड़ियाँ ढूँढ़ लीं।","vo_w_gubbara_s":"गुब्बारा","vo_w_gubbara_p":"गुब्बारे","vo_w_topi_s":"टोपी","vo_w_topi_p":"टोपियाँ","vo_w_kela_s":"केला","vo_w_kela_p":"केले","vo_w_machli_s":"मछली","vo_w_machli_p":"मछलियाँ","vo_w_ghoda_s":"घोड़ा","vo_w_ghoda_p":"घोड़े","vo_w_saheli_s":"सहेली","vo_w_saheli_p":"सहेलियाँ","vo_stanza1a":"आज है मीरा का जन्मदिन, मीरा ने एक गुब्बारा टाँगा।","vo_stanza1b":"पापा और गुब्बारे लाए, आओ, इन्हें सजाएँ!","vo_stanza_hawa":"तभी हवा का झोंका आया, फुर्र-फुर्र गुब्बारे उड़ते जाएँ!","vo_stanza3a":"एक लड़का उछलकर बोला, मैं पकड़ूँगा सारे!","vo_stanza3b":"फिर लड़के भी दौड़ पड़े— आगे-आगे गुब्बारे!","vo_stanza4a":"मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ।","vo_stanza4b":"आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ।","vo_stanza5a":"केक कटा, खुश हुई एक सहेली, झूम-झूम नाची वह अलबेली।","vo_stanza5b":"ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी सहेलियाँ!","vo_cmp_gubbara_1":"मीरा ने एक गुब्बारा टाँगा, पापा और गुब्बारे लाए।","vo_cmp_ladka_1":"एक लड़का उछलकर बोला, फिर लड़के भी दौड़ पड़े।","vo_cmp_topi_1":"मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ।","vo_cmp_saheli_1":"केक कटा, खुश हुई एक सहेली, संग-संग नाचीं सारी सहेलियाँ!","vo_pick_prompt":"सही शब्द चुनिए।","vo_w_ladki_s":"लड़की","vo_w_ladki_p":"लड़कियाँ","vo_w_paudha_s":"पौधा","vo_w_paudha_p":"पौधे","vo_w_tali_s":"ताली","vo_pick_ok_q1":"शाबाश! आपने सही शब्द चुना — मछलियाँ।","vo_pick_ok_q2":"शाबाश! आपने सही शब्द चुना — लड़कियाँ।","vo_pick_ok_q3":"शाबाश! आपने सही शब्द चुना — टोपी।","vo_pick_ok_q4":"शाबाश! आपने सही शब्द चुना — घोड़े।","vo_pick_ok_q5":"शाबाश! आपने सही शब्द चुना — केले।","vo_pick_ok_q6":"शाबाश! आपने सही शब्द चुना — पौधा।","vo_pick_retry_q1":"फिर से देखिए—यह एक मछली है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q2":"फिर से देखिए—यह एक लड़की है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q3":"फिर से देखिए—ये अनेक टोपियाँ हैं। एक हो, तो क्या कहेंगे?","vo_pick_retry_q4":"फिर से देखिए—यह एक घोड़ा है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q5":"फिर से देखिए—यह एक केला है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q6":"फिर से देखिए—ये अनेक पौधे हैं। एक हो, तो क्या कहेंगे?","vo_cmp_topi_2b":"एक है तो टोपी, अनेक है तो टोपियाँ।","vo_cmp_gubbara_2b":"एक है तो गुब्बारा, अनेक है तो गुब्बारे।","vo_cmp_ladka_2b":"एक है तो लड़का, अनेक है तो लड़के।","vo_cmp_saheli_2b":"एक है तो सहेली, अनेक है तो सहेलियाँ।"},"image":{"obj_topi_s":"assets/Images/obj_topi_s.png","obj_saheli_s":"assets/Images/obj_saheli_s.png","obj_machli_s":"assets/Images/obj_machli_s.png","obj_kela_s":"assets/Images/obj_kela_s.png","obj_ghoda_s":"assets/Images/obj_ghoda_s.png","scn_gubbara_s":"assets/Images/scn_gubbara_s.png","scn_gubbara_p":"assets/Images/scn_gubbara_p.png","scn_hawa":"assets/Images/scn_hawa.webp","scn_ladka_s":"assets/Images/scn_ladka_s.png","scn_ladka_p":"assets/Images/scn_ladka_p.png","scn_topi_s":"assets/Images/scn_topi_s.png","scn_topi_p":"assets/Images/scn_topi_p.png","scn_saheli_s":"assets/Images/scn_saheli_s.png","scn_saheli_p":"assets/Images/scn_saheli_p.png","obj_ladki_s":"assets/Images/obj_ladki_s.png","obj_paudha_s":"assets/Images/obj_paudha_s.png","obj_gubbara_s":"assets/Images/obj_gubbara_s.png"},"audio_ext":"ogg"}}
 </script>
 
 <!-- ============ ENGINE ============ -->
@@ -3186,6 +3374,16 @@ const sfxStarTing = (i)=>{ const c = _ac(); if(!c || isMuted) return;
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
     o.connect(g).connect(c.destination); o.start(t); o.stop(t + 0.6); }); };
 
+/* [r76] PAIR-CARD CHIME — when a matched pair lands in the bubble game's जोड़ियाँ list: two quick rising
+   bell notes (A5 then E6), softer than the pop that precedes it, so the card arriving has its own
+   small "collected" sound. Same mute rule and bell recipe as sfxStarTing. */
+const sfxCardLand = ()=>{ const c = _ac(); if(!c || isMuted) return; const t0 = c.currentTime;
+  [[880,0],[1319,.09]].forEach(([f,dt])=>{ [[f,.11],[f*2,.035]].forEach(([fr,v])=>{
+    const o = c.createOscillator(), g = c.createGain(); o.type = "sine"; o.frequency.setValueAtTime(fr, t0+dt);
+    g.gain.setValueAtTime(0.0001, t0+dt); g.gain.exponentialRampToValueAtTime(v, t0+dt+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+dt+0.42);
+    o.connect(g).connect(c.destination); o.start(t0+dt); o.stop(t0+dt+0.45); }); }); };
+
 /* [r30] BUBBLE POP — the supplied recording (soundreality-pop-sound-423716.mp3) replaces the
    synthesised pop MATCH_THE_PAIR used to fire. The source was 1.78s but the pop itself is only the
    0.17s transient between 0.11s and 0.29s; the rest was silence, and the 113ms of it at the FRONT
@@ -3383,8 +3581,12 @@ function setNavActive(on){
 }
 function syncNavButton(){
   const btn = $("navBtn"); if(!btn) return;
-  const inEligibleSlide = state.navVoEligible && !document.body.classList.contains("is-start") && btn.style.display !== "none";
-  const visible = !!state.navRequested || (inEligibleSlide && isPlaying);
+  /* [r79] asked: on every screen that uses the yellow आगे, the grey (disabled) आगे stands in its place
+     from the moment the screen opens, and turns yellow when the VO is done. A screen opts in with
+     state.navShowDisabled; it used to show the grey button only WHILE a clip played (compare
+     screens only), so it vanished in the gaps between clips and never showed on the poem pages. */
+  const waiting = state.navShowDisabled && !document.body.classList.contains("is-start") && btn.style.display !== "none";
+  const visible = !!state.navRequested || waiting;
   const active = !!state.navRequested && !isPlaying;
   btn.disabled = !active;
   btn.setAttribute("aria-disabled", String(!active));
@@ -3407,7 +3609,7 @@ function nudgeNavBtn(){
 const state = {
   idx: 0,
   navRequested: false,
-  navVoEligible: false,
+  navShowDisabled: false,   // [r79] this screen shows the grey आगे until its own आगे is earned
   slideStart: Date.now(),
   attempts: 0,
   audioReplays: 0,
@@ -3702,7 +3904,7 @@ function resetIdleVo(){ stopIdleVo(); _idleVoFired = false; }
    that re-armed a FULL 7s whenever it found audio playing, which stretched the real delay to as much
    as 14s — measured in-browser, it never fired. A ticker that resets the silence clock is exact.) */
 function armIdleVo(){
-  if(['MATCH_THE_PAIR','MATCH_VACHAN_PAIRS','FILL_VACHAN_DRAG'].includes(CARD.slides[state.idx]?.type)){stopIdleVo();return;}
+  if(['MATCH_THE_PAIR','MATCH_VACHAN_PAIRS','FILL_VACHAN_DRAG','SUBMARINE_FILL'].includes(CARD.slides[state.idx]?.type)){stopIdleVo();return;}
   if(_idleVoFired){ stopIdleVo(); return; }      // [27f] one reminder per slide — already spent
   _idleSince = 0;                                // any (re)arm restarts the silence clock
   const slide = CARD.slides[state.idx];
@@ -4582,6 +4784,7 @@ function makeDraggable(tileEl, onDrop, opts){
     tileEl.style.pointerEvents = "";
     const zone = under?.closest?.(".dd-zone");
     if(zone && !zone.classList.contains("filled")) zone.classList.add("hover");
+    if(opts && opts.onDragMove) opts.onDragMove({clientX:cx, clientY:cy, dx, dy, zone});
     e.preventDefault();
   }
   function _unbind(){
@@ -4598,6 +4801,7 @@ function makeDraggable(tileEl, onDrop, opts){
     dragging = false; _unbind();
     tileEl.classList.remove("dragging"); tileEl.style.transform = "";
     document.querySelectorAll(".dd-zone,.sort-bin").forEach(z => z.classList.remove("hover"));
+    if(opts && opts.onDragEnd) opts.onDragEnd({cancelled:true, zone:null});
   }
   function onUp(e){
     if(!dragging) return;
@@ -4619,9 +4823,15 @@ function makeDraggable(tileEl, onDrop, opts){
       tileEl.style.transform = "";
       if(Math.abs(dx) < 6 && Math.abs(dy) < 6 && opts && opts.onTap) opts.onTap();   // a tap (not a drag) → speak the word
     }
+    if(opts && opts.onDragEnd) opts.onDragEnd({cancelled:false, zone});
   }
   tileEl.addEventListener("mousedown", onDown);
   tileEl.addEventListener("touchstart", onDown, {passive:false});
+  return ()=>{
+    onCancel();
+    tileEl.removeEventListener("mousedown", onDown);
+    tileEl.removeEventListener("touchstart", onDown);
+  };
 }
 /* [24a A1] DRAG VO-GATE (Yasir 2026-07-24, fork-proven in the HI01H08 gender file): while a VO is
    sounding, a press that would start a NEW drag is IGNORED, so picking up a tile can't cut the
@@ -4763,6 +4973,7 @@ const PACE = {
   readMin : 3800,
   readMax : 11000,
   tail    : 1000,          // requested inter-screen beat: one second after VO
+  afterCorrect: 450,       // [r82] submarine game, asked: the next sentence comes straight after a correct answer — just long enough to see the word land green
   readTime(text){
     const n = String(text || "").length;
     return Math.min(this.readMax, Math.max(this.readMin, n * this.perChar));
@@ -4783,61 +4994,62 @@ function hlText(s){
    playback order. The real clip's currentTime drives the word cue; authored VO timing is the
    fallback while a recording is not available. */
 function storyTypeLine(raw){
+  /* [r60] One unit per whitespace-separated word, exactly as the cue tool counts them, so each
+     measured cue lands on its own word. A *marked* pair word keeps its <b class="hl-orange">. */
   const p=document.createElement("div"); p.className="ln";
   const source=String(raw == null ? "" : raw);
-  const plain=source.replace(/\*([^*]+)\*/g,"$1");
-  p.setAttribute("aria-label",plain);
-  const wordSegment=s=>{
-    if(!(window.Intl&&Intl.Segmenter))return s.match(/\s+|[^\s]+/gu)||[];
-    const parts=Array.from(new Intl.Segmenter("hi",{granularity:"word"}).segment(s));
-    const merged=[];let prefix="";
-    parts.forEach(part=>{
-      const piece=part.segment;
-      if(/^\s+$/u.test(piece)){if(prefix){merged.push(prefix);prefix="";}merged.push(piece);return;}
-      if(part.isWordLike){merged.push(prefix+piece);prefix="";return;}
-      if(merged.length&&!/^\s+$/u.test(merged[merged.length-1]))merged[merged.length-1]+=piece;
-      else prefix+=piece;
+  p.setAttribute("aria-label",source.replace(/\*([^*]+)\*/g,"$1"));
+  source.split(/(\s+)/u).forEach(tok=>{
+    if(!tok) return;
+    if(/^\s+$/u.test(tok)){p.appendChild(document.createTextNode(tok));return;}
+    const span=document.createElement("span"); span.className="poem-word";
+    tok.split(/(\*[^*]+\*)/g).filter(Boolean).forEach(part=>{
+      if(part.length>2&&part.startsWith("*")&&part.endsWith("*")){
+        const b=document.createElement("b"); b.className="hl-orange"; b.textContent=part.slice(1,-1);
+        span.appendChild(b); span.classList.add("has-pair");
+      } else span.appendChild(document.createTextNode(part.replace(/\*/g,"")));
     });
-    if(prefix){
-      const last=merged.length-1;
-      if(last>=0&&!/^\s+$/u.test(merged[last]))merged[last]+=prefix;
-      else merged.push(prefix);
-    }
-    return merged;
-  };
-  source.split(/(\*[^*]+\*)/g).filter(Boolean).forEach(part=>{
-    const marked=part.startsWith("*")&&part.endsWith("*");
-    const text=marked?part.slice(1,-1):part;
-    wordSegment(text).forEach(piece=>{
-      if(/^\s+$/u.test(piece)){p.appendChild(document.createTextNode(piece));return;}
-      const span=document.createElement("span");
-      span.className="poem-word"+(marked?" hl-orange":"");
-      span.textContent=piece;
-      const letters=Array.from(piece.replace(/[^\p{L}\p{M}\p{N}]/gu,"")).length;
-      const pause=/[।!?]$/.test(piece)?4.5:/[,—–…:“”]$/.test(piece)?2.2:0;
-      span.dataset.poemWeight=String(Math.max(1,letters)+pause);
-      p.appendChild(span);
-    });
+    const plain=span.textContent;
+    const letters=Array.from(plain.replace(/[^\p{L}\p{M}\p{N}]/gu,"")).length;
+    const pause=/[।!?]$/.test(plain)?4.5:/[,—–…:“”]$/.test(plain)?2.2:0;
+    span.dataset.poemWeight=String(Math.max(1,letters)+pause);
+    p.appendChild(span);
   });
   p.classList.add("in");
   return p;
 }
 
-function storyTypeSync(lines, src, onComplete){
+function storyTypeSync(lines, src, onComplete, cues){
+  /* [r60] Driven by the clip's own clock. With measured cues (beat.cues_ms, one per word, made by
+     the reference game's poem-cue method: silence finds the lines, aksharas share out the words)
+     the word lit is the last one whose cue has passed, held for max(220, min(620, gap to the next
+     cue − 40))ms; 700ms after the last cue the pair words light up. A beat without cues — or whose
+     count no longer matches its words — falls back to the older even walk by word weight. */
   const words=lines.flatMap(line=>Array.from(line.querySelectorAll(".poem-word")));
   const weights=words.map(w=>parseFloat(w.dataset.poemWeight)||1);
   const total=weights.reduce((n,w)=>n+w,0)||1;
+  const timed=Array.isArray(cues)&&cues.length===words.length&&cues.length>0;
+  const pairs=words.filter(w=>w.classList.contains("has-pair"));
+  const markPairs=on=>pairs.forEach(w=>w.classList.toggle("pair-done",on));
+  const holdOf=i=>{const next=cues[i+1];return Math.max(220,Math.min(620,(next===undefined?620:next-cues[i])-40));};
   let token=0,raf=0,lastWord=-1;
+  const light=active=>{
+    if(active===lastWord)return;
+    if(lastWord>=0&&words[lastWord])words[lastWord].classList.remove("is-speaking");
+    if(active>=0&&words[active])words[active].classList.add("is-speaking");
+    lastWord=active;
+  };
   const reset=()=>{
     cancelAnimationFrame(raf);token++;lastWord=-1;
     words.forEach(w=>w.classList.remove("is-speaking"));
+    markPairs(false);
     lines.forEach(l=>l.classList.add("in"));
   };
   const start=()=>{
     reset(); const mine=token, began=Date.now(), fallbackMs=authoredVoHoldMs(src)||1200;
     play(src,()=>{
       if(mine!==token)return;
-      words.forEach(w=>w.classList.remove("is-speaking"));lastWord=-1;
+      light(-1); markPairs(true);
       if(onComplete)onComplete();
     });
     const expected=String(src||"").split("/").pop();
@@ -4845,16 +5057,20 @@ function storyTypeSync(lines, src, onComplete){
       if(mine!==token||!lines[0]||!lines[0].isConnected)return;
       const audio=currentAudio;
       const activeFile=audio?String(audio.currentSrc||audio.src||"").split("/").pop():"";
-      let progress=Math.min(1,(Date.now()-began)/fallbackMs);
-      if(audio&&(!expected||decodeURIComponent(activeFile)===expected)&&isFinite(audio.duration)&&audio.duration>0)
-        progress=audio.currentTime/audio.duration;
-      const target=progress*total;
-      let acc=0,active=-1;
-      for(let i=0;i<weights.length;i++){if(target<acc+weights[i]){active=i;break;}acc+=weights[i];}
-      if(active!==lastWord){
-        if(lastWord>=0&&words[lastWord])words[lastWord].classList.remove("is-speaking");
-        if(active>=0&&words[active])words[active].classList.add("is-speaking");
-        lastWord=active;
+      const onClip=audio&&(!expected||decodeURIComponent(activeFile)===expected)&&isFinite(audio.duration)&&audio.duration>0;
+      if(timed){
+        const ms=onClip?audio.currentTime*1000:(Date.now()-began);
+        let active=-1;
+        for(let i=0;i<cues.length;i++){ if(cues[i]<=ms) active=i; else break; }
+        if(active>=0&&ms>=cues[active]+holdOf(active)) active=-1;
+        light(active);
+        if(ms>=cues[cues.length-1]+700) markPairs(true);
+      } else {
+        const progress=onClip?audio.currentTime/audio.duration:Math.min(1,(Date.now()-began)/fallbackMs);
+        const target=progress*total;
+        let acc=0,active=-1;
+        for(let i=0;i<weights.length;i++){if(target<acc+weights[i]){active=i;break;}acc+=weights[i];}
+        light(active);
       }
       if(isPlaying) raf=requestAnimationFrame(tick);
     };
@@ -4909,19 +5125,34 @@ const SlideModules = {
       oceanDecor(wrap);
       $("navBtn").style.display = "none";
       const bubbles = [];
-      pairs.forEach((p, pi) => {
-        [["s", p.s, 1], ["p", p.p, 3]].forEach(([num, w, count]) => {
-          const b = document.createElement("div");
-          b.className = "mtp-bubble";
-          b.dataset.pairId = p.id; b.dataset.num = num;
+      /* [r70] ONE CONTINUOUS GAME. The two bubble screens are one slide now: every pair is in
+         slide.data.pairs, but only `visible_pairs` of them are on the field at once. Each time a
+         pair is popped, the next one in the queue floats in to replace it, until the queue is empty
+         and the last pair on the field is matched. */
+      const VISIBLE = Math.max(1, Math.min(pairs.length, Number(slide.data.visible_pairs) || pairs.length));
+      const queue = pairs.slice(VISIBLE);
+      const makeBubble = (p, num) => {
+        const w = num === "s" ? p.s : p.p;
+        const b = document.createElement("div");
+        b.className = "mtp-bubble";
+        b.dataset.pairId = p.id; b.dataset.num = num;
+        /* [r71] a pair marked text_only (घोड़ा, पौधा) shows the WORD alone — no picture to lean on —
+           centred in the bubble. These pairs sit at the end of the queue, so the game gets harder
+           as it goes: pictures first, then reading only. */
+        if(p.text_only){
+          b.classList.add("text-only");
+          b.innerHTML = `<span class="mtp-word">${w.word_hi}</span>`;
+        } else {
           const icons = num === "p" ? triangleArt(String(p.icon || "").replace(/_s$/, "_p"), p.emoji, "bubble")
             : imgOrEmoji(p.icon, p.emoji, "mtp-ico", "mtp-ico-emo");
           b.innerHTML = `<span class="mtp-icons">${icons}</span><span class="mtp-word">${w.word_hi}</span>`;
-          b.__word = w; b.__pair = p;
-          b.addEventListener("click", ()=> onTap(b));
-          field.appendChild(b); bubbles.push(b);
-        });
-      });
+        }
+        b.__word = w; b.__pair = p;
+        b.addEventListener("click", ()=> onTap(b));
+        field.appendChild(b); bubbles.push(b);
+        return b;
+      };
+      pairs.slice(0, VISIBLE).forEach(p => { makeBubble(p, "s"); makeBubble(p, "p"); });
 
       /* Colour carries NO pairing information: a pair's two bubbles are deliberately given
          DIFFERENT hues, so the child must read the word rather than match by colour. */
@@ -4946,6 +5177,7 @@ const SlideModules = {
 
       /* ---- scatter: a jittered grid, with a partner-separation constraint so a pair never
              lands side by side (spec §1: "matching words should not appear next to each other") ---- */
+      let driftAdd = null, bubbleD = 0;   // [r70] set by startDrift / layout, used when new pairs float in
       function layout(){
         const W = field.clientWidth, H = field.clientHeight, n = bubbles.length;
         if(!W || !H) return;
@@ -4954,6 +5186,7 @@ const SlideModules = {
         while(rows > 1 && (H / rows) < 130 && cols < n){ cols++; rows = Math.ceil(n / cols); }
         const cw = W / cols, ch = H / rows;
         const d  = Math.max(112, Math.min(178, Math.floor(Math.min(cw, ch) * 0.88)));
+        bubbleD = d;
 
         const cells = [];
         for(let r = 0; r < rows; r++) for(let c = 0; c < cols; c++) cells.push({r, c});
@@ -4984,7 +5217,7 @@ const SlideModules = {
           b.style.setProperty("--ico", Math.round(d * 0.205) + "px");
           const wEl = b.querySelector(".mtp-word");
           const len = (b.__word.word_hi || "").length || 1;
-          let fs = Math.round(Math.min(d * 0.165, (d * 0.78) / (len * 0.50)));
+          let fs = Math.round(Math.min(d * (b.__pair.text_only ? 0.21 : 0.165), (d * 0.78) / (len * 0.50)));
           wEl.style.fontSize = Math.max(13, fs) + "px";
           // hard guard: shrink until the word actually fits the bubble's usable width
           let guard = 0;
@@ -5026,6 +5259,14 @@ const SlideModules = {
           const bx = parseFloat(b.style.left) || 0, by = parseFloat(b.style.top) || 0;
           b.__d = { x: bx, y: by, bx, by, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp };
         });
+        /* [r70] a pair that floats in later joins the same simulation: measured once, given its own
+           slow random heading, and from then on it is just another bubble in the loop below */
+        driftAdd = b => {
+          SZ.set(b, b.offsetWidth);
+          const a = Math.random() * Math.PI * 2, sp = 10 + Math.random() * 8;
+          const bx = parseFloat(b.style.left) || 0, by = parseFloat(b.style.top) || 0;
+          b.__d = { x: bx, y: by, bx, by, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp };
+        };
         let last = performance.now();
         (function step(now){
           if(!onScreen()) return;                       // the slide went away; stop for good
@@ -5061,6 +5302,48 @@ const SlideModules = {
             b.style.translate = (b.__d.x - b.__d.bx).toFixed(2) + "px " + (b.__d.y - b.__d.by).toFixed(2) + "px";
           }
         })(last);
+      }
+
+      /* [r70] A NEW PAIR FLOATS IN. Both halves are placed where there is the most room — as far as
+         possible from every bubble already on the field (their live drift positions) — and the two
+         halves at least two bubbles apart, so a pair never arrives side by side and the spot gives
+         nothing away. They get two DIFFERENT hues (colour never carries the pairing), the same size
+         and word fitting as the opening field, and a short pop-in before they join the drift. */
+      function spawnPair(p){
+        const d = bubbleD || 150, W = field.clientWidth, H = field.clientHeight;
+        if(!W || !H) return;
+        const taken = bubbles.filter(b => alive(b) && b.__d).map(b => ({ x: b.__d.x, y: b.__d.y }));
+        const roomiest = (avoid, mustBeFarFrom) => {
+          let best = null, bestGap = -1;
+          for(let t = 0; t < 140; t++){
+            const x = Math.random() * Math.max(1, W - d), y = Math.random() * Math.max(1, H - d);
+            if(mustBeFarFrom && Math.hypot(x - mustBeFarFrom.x, y - mustBeFarFrom.y) < d * 2) continue;
+            const gap = avoid.reduce((m, o) => Math.min(m, Math.hypot(x - o.x, y - o.y)), Infinity);
+            if(gap > bestGap){ bestGap = gap; best = { x, y }; }
+          }
+          return best || { x: Math.random() * Math.max(1, W - d), y: Math.random() * Math.max(1, H - d) };
+        };
+        const pos1 = roomiest(taken, null);
+        const pos2 = roomiest(taken.concat([pos1]), pos1);
+        const b1 = makeBubble(p, "s"), b2 = makeBubble(p, "p");
+        const h1 = Math.floor(Math.random() * HUES.length);
+        let h2 = Math.floor(Math.random() * (HUES.length - 1)); if(h2 >= h1) h2++;
+        [[b1, pos1, h1], [b2, pos2, h2]].forEach(([b, pos, h]) => {
+          b.style.setProperty("--c1", HUES[h][0]); b.style.setProperty("--c2", HUES[h][1]);
+          b.style.setProperty("--floatDur", (4.2 + Math.random() * 1.8).toFixed(2) + "s");
+          b.style.setProperty("--floatDelay", (-Math.random() * 3).toFixed(2) + "s");
+          b.style.width = b.style.height = d + "px";
+          b.style.left = Math.round(pos.x) + "px"; b.style.top = Math.round(pos.y) + "px";
+          b.style.setProperty("--ico", Math.round(d * 0.205) + "px");
+          const wEl = b.querySelector(".mtp-word"), len = (b.__word.word_hi || "").length || 1;
+          let fs = Math.max(13, Math.round(Math.min(d * (b.__pair.text_only ? 0.21 : 0.165), (d * 0.78) / (len * 0.50))));
+          wEl.style.fontSize = fs + "px";
+          let guard = 0;
+          while(wEl.scrollWidth > d * 0.80 && fs > 12 && guard++ < 24){ fs--; wEl.style.fontSize = fs + "px"; }
+          b.classList.add("spawn");
+          later(()=> b.classList.remove("spawn"), 650);
+          if(driftAdd) driftAdd(b);
+        });
       }
 
       /* ---- helpers ---- */
@@ -5119,7 +5402,7 @@ const SlideModules = {
                       `<span class="mpc-side mpc-many"><span class="mpc-art">${manyArt}</span><span class="mpc-w">${p.p.word_hi}</span></span>` +
                       "";
         tray.appendChild(c);
-        if(!hold) nextFrame(()=> c.classList.add("in"));
+        if(!hold) nextFrame(()=>{ c.classList.add("in"); sfxCardLand(); });   // [r76] the card arrives with its own chime
         return c;
       };
 
@@ -5169,6 +5452,7 @@ const SlideModules = {
           const card = addPairCard(p, false);
           [b1, b2].forEach(b => { b.classList.add("done"); b.style.display = "none"; });
           solved++;
+          if(queue.length) spawnPair(queue.shift());   // [r70] the next pair floats in to replace it
           GameBus.emit("gender_pair_match", { slide_id: slide.id, phase: slide.phase,
             value: true, pair: p.id, attempts: state.attempts });
           visualDone=true;resume();
@@ -5241,23 +5525,14 @@ const SlideModules = {
         if(!onScreen()) return;
         state.locked = true; stopNudge(); clearGuide(); idle.clear();
         $("promptText").textContent = "सभी जोड़ियाँ पूरी हुईं!";
+        /* [r74] NO "सभी जोड़ियाँ" RESULT SCREEN (asked: remove it completely). The game used to swap to a
+        board of every pair card before moving on. It now ends where it is: confetti as the last pair
+        pops, the completion line, then — a beat after the line ends — the swim transition into the drag
+        game. The small pair tray on the side stays as it was during play. */
         tray.classList.add("done");
-        wrap.classList.add("fin", "result-story");       // every pair now assembles as a visual transformation
-        tray.querySelector(".mtp-tray-ttl").textContent = "सभी जोड़ियाँ";
-        const cards = [...tray.querySelectorAll(".mtp-pair-card")];
-        cards.forEach((card, i)=> later(()=>{
-          card.classList.add("story-in");
-          if(i === cards.length - 1) later(()=>confettiCannon(false), 1900);
-        }, 180 + i * 760));
-        /* Speak the requested completion line only after the third card and confetti sound have
-           finished, so the child hears it clearly instead of under overlapping effects. */
-        later(()=>oceanSay("resultComplete"), 5300);
         setSwMood("celebrate");
-        /* Three completed pairs are the learning result, not a passing frame. Hold them long
-           enough for a young reader to scan all three before the inter-game swim begins. */
-        /* The third card finishes its full join/shine beat at about 3.5s. Keep the complete set
-           untouched for another three seconds so a young reader can process every pair. */
-        later(()=>completeSlide(true),7600);
+        later(()=>confettiCannon(false), 300);
+        later(()=>oceanSay("resultComplete", ()=> later(()=>completeSlide(true), 900)), 900);
       }
 
       /* ---- opening beats (spec §2-4) ---- */
@@ -5277,7 +5552,7 @@ const SlideModules = {
            and at normal speed. Only after the instruction ends does the board unlock for play. */
         const introPair=pairs[0], introOne=find(introPair.id,"s"), introMany=find(introPair.id,"p");
         [introOne,introMany].forEach(b=>b&&b.classList.add("intro-pulse"));
-        later(()=>[introOne,introMany].forEach(b=>b&&b.classList.remove("intro-pulse")),2000);
+        later(()=>[introOne,introMany].forEach(b=>b&&b.classList.remove("intro-pulse")),6000);   // [r73] 4 × 1.5s glow
         oceanSay('instructionBubble',()=>{
           if(!onScreen())return;
           [introOne,introMany].forEach(b=>b&&b.classList.remove("intro-pulse"));
@@ -5347,19 +5622,17 @@ const SlideModules = {
 
       const wrap = document.createElement("div"); wrap.className = "pvw";
       wrap.innerHTML =
-        '<div class="pvw-row">' +
+        '<div class="pvw-q"><div class="pvw-row">' +
           '<div class="pvw-side">' +
-            '<div class="pvw-pill">' + vachanOf(d.source) + '</div>' +
             '<div class="pvw-qty src-qty">' + qty(d.source, d.source.count) + '</div>' +
             '<div class="pvw-src">' + d.source.word_hi + '</div>' +
           '</div>' +
           '<div class="pvw-arrow">→</div>' +
           '<div class="pvw-side">' +
-            '<div class="pvw-pill">' + vachanOf(d.target) + '</div>' +
             '<div class="pvw-qty tgt-qty">' + qty(d.target, d.target.count) + '</div>' +
             '<div class="pvw-box"></div>' +
           '</div>' +
-        '</div>' +
+        '</div></div>' +
         '<div class="pvw-opts"></div>';
       host.appendChild(wrap);
 
@@ -5708,65 +5981,515 @@ const SlideModules = {
     }
   },
 
+  /* ================= SUBMARINE_FILL — the last game (r77) =================
+     Replaces the drag-and-drop fill game. Same levels, same sentences, a new mechanic:
+       · once the swim transition has fully cleared, Swiftie's submarine glides in from the right and
+         parks in the middle of the same sea the bubble game uses, and then stays still — she waves
+         only when the child has gone quiet (r77b: no wave on arrival);
+       · one continuous orange-rimmed glass window carries the sentence, with a bubble-shaped blank;
+         the two answer words wait below and are DRAGGED into that blank;
+       · a correct word settles into its window in green, the sentence is left up long enough to read,
+         and the next sentence pops into the SAME windows — every question on one screen;
+       · 7s of inactivity: Swiftie waves from the cockpit (frames cut from the supplied video, so it is
+         her own animation); on a level's first question the instruction is spoken again, and from the
+         second reminder on the empty window pulses as well;
+       · every voice line holds the board, as the level's opening instruction always did — nothing
+         can be picked up while Swiftie is speaking (r77b);
+       · when every sentence is done the submarine leaves to the left, then the level's finish panel
+         and the lesson's closing line, then the end screen.
+     Art: assets/UI/sub_hold.webp (the parked submarine, cut out of video A) and
+     assets/UI/sub_wave_sheet.webp (the cockpit while she waves, aligned to that still). Window and
+     cockpit positions come from slide.data.art, measured off the still; a continuous frame overlays the original portholes. */
+  SUBMARINE_FILL: {
+    mount(host, slide){
+      const d = slide.data || {}, art = d.art || {};
+      const levels = (d.levels || []).map(L => ({ name: L.name || "", art: L.art || null, pairs: L.pairs || [] }));
+      state.ownsAudio = true; state.attempts = 0; state.locked = true; state.subRetrySpoken = false;
+      $("navBtn").style.display = "none"; setNavActive(false);
+      $("navBtn").onclick = ()=> completeSlide(true);
+      $("promptText").textContent = slide.prompt_hi || "";
+      state.replayAudio = ()=>{ if(!state.locked){ idleReset(); speak("instructionFill", idleArm); } };
+
+      /* ---- the question plan ----
+         Each pair gives two sentences (its एक one and its अनेक one). A level's sentences are dealt
+         in a fresh order on every mount, under rules that keep the order from standing in for
+         reading the sentence ([r77b]; the pair's two sentences used to come back to back, so the
+         second could be answered as "the other word from last time"):
+           · the two sentences of one pair are never next to each other;
+           · the एक/अनेक answers, and the side the right word sits on, never fall into a rule a child
+             could pick up: not all the same, not strictly alternating, never three in a row. */
+      const shuffled = a => { const o = a.slice(); for(let i = o.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; } return o; };
+      const patterned = v => v.length > 1 && (v.every(x => x === v[0]) ||
+        (v.length > 2 && v.every((x, i) => i === 0 || x !== v[i - 1])) ||
+        v.some((x, i) => i >= 2 && x === v[i - 1] && x === v[i - 2]));
+      const deal = (make, ok)=>{ let o = make(); for(let t = 0; t < 4000 && !ok(o); t++) o = make(); return o; };
+      const plan = levels.map(L => {
+        const all = [];
+        L.pairs.forEach(p => all.push({ pair: p, win: p.a, ans: "one" }, { pair: p, win: p.b, ans: "many" }));
+        const qs = deal(()=> shuffled(all), o => o.every((qq, i) => i === 0 || qq.pair !== o[i - 1].pair) && !patterned(o.map(qq => qq.ans)));
+        const left = deal(()=> qs.map(()=> Math.random() < .5), o => !patterned(o));
+        qs.forEach((qq, i) => qq.correctLeft = left[i]);
+        return qs;
+      });
+      const total = plan.reduce((n, qs) => n + qs.length, 0);
+      let li = 0, qi = 0, solved = 0, wrongHere = 0, parked = false;
+
+      /* ---- the stage ---- */
+      const wrap = document.createElement("div"); wrap.className = "subg";
+      wrap.innerHTML =
+        '<div class="subg-progress-card" aria-hidden="true"></div>' +
+        '<div class="subg-progress" role="progressbar" aria-label="प्रगति" aria-orientation="vertical" aria-valuemin="0">' +
+          '<span class="subg-progress-track" aria-hidden="true"><i class="subg-progress-fill"></i></span>' +
+          '<span class="subg-progress-sub" aria-hidden="true"><img class="subg-progress-hull" alt="" draggable="false">' +
+            '<img class="subg-progress-glass" src="assets/UI/submarine-sentence-window.svg" alt="" draggable="false"></span></div>' +
+        '<div class="subg-sub"><img class="subg-hull" alt="" draggable="false"><div class="subg-wave"></div>' +
+          '<img class="subg-sentence-glass" src="assets/UI/submarine-sentence-window.svg" alt="" draggable="false">' +
+          '<div class="subg-sentence"></div></div>' +
+        '<div class="subg-opts"></div>';
+      host.appendChild(wrap);
+      oceanDecor(wrap);
+      const alive = ()=> wrap.isConnected;
+      const later = (fn, ms)=> setTimeout(()=>{ if(alive()) fn(); }, ms);
+      /* [r77b] every voice line holds the board while it plays, as the level's opening instruction
+         always did. The empty window is a drop target, and the engine's VO lock takes drop targets out
+         of hit-testing while a clip sounds — so a word dragged in during the idle reminder or a replay
+         used to snap back without a word said. Now nothing can be picked up until Swiftie is done. */
+      const speak = (kind, after)=>{ state.locked = true; oceanSay(kind, ()=>{ if(!alive()) return; state.locked = false; after && after(); }); };
+      const $q = sel => wrap.querySelector(sel);
+      const sub = $q(".subg-sub"), hull = $q(".subg-hull"), waveEl = $q(".subg-wave"), opts = $q(".subg-opts"), sentence = $q(".subg-sentence");
+
+      const SUB_W = 820, SUB_H = Math.round(SUB_W * (art.h || 662) / (art.w || 1400));
+      sub.style.width = SUB_W + "px"; sub.style.height = SUB_H + "px";
+      sub.style.left = Math.max(0, Math.round(((wrap.clientWidth || 1297) - SUB_W) / 2)) + "px";   // centred in the field
+      hull.src = "assets/UI/" + (art.still || "sub_hold.webp");
+      $q(".subg-progress-hull").src = hull.src;
+      $q(".subg-progress-sub").style.aspectRatio = (art.w || 1400) + "/" + (art.h || 662);
+      const W8 = art.wave || {};
+      Object.assign(waveEl.style, {
+        left: (W8.left || 0) + "%", top: (W8.top || 0) + "%", width: (W8.width || 0) + "%", height: (W8.height || 0) + "%",
+        backgroundImage: "url('assets/UI/" + (W8.file || "sub_wave_sheet.webp") + "')",
+        backgroundSize: ((W8.cols || 1) * 100) + "% " + ((W8.rows || 1) * 100) + "%" });
+      const sheet = new Image(); sheet.src = "assets/UI/" + (W8.file || "sub_wave_sheet.webp");   // warm it before the first wave
+
+      /* Sentence chunks flow naturally in one glass window; only the blank is circular. */
+      const chunkCount = Math.max(0, ...plan.flat().map(qq => (qq.win || []).length));
+      const wins = Array.from({length:chunkCount}, () => {
+        const el = document.createElement("div"); el.className = "subg-win";
+        el.__d = 86; sentence.appendChild(el); return el;
+      });
+
+      const paintProgress = ()=>{
+        const progress = $q(".subg-progress");
+        progress.style.setProperty("--subg-progress", (total ? solved / total * 100 : 0) + "%");
+        progress.setAttribute("aria-valuemax", String(total));
+        progress.setAttribute("aria-valuenow", String(solved));
+        progress.setAttribute("aria-valuetext", total + " में से " + solved + " पूरे");
+      };
+
+      /* Fit the sentence as one line with a shared size, never as five separate captions.
+         [r80] asked: bigger, filling the window — up to 40px (was 32), stepping down only as far as
+         the sentence needs to fit; the longest sentences land at 35px. */
+      const fitSentence = ()=>{
+        const words = wins.filter(w => !w.classList.contains("blank")).map(w => w.querySelector(".subg-word")).filter(Boolean);
+        let fs = 40;
+        const apply = ()=> words.forEach(el => { el.style.fontSize = fs + "px"; });
+        apply();
+        const used = ()=> wins.filter(w => !w.hidden).reduce((n, w) => n + w.offsetWidth, 0) + Math.max(0, wins.filter(w => !w.hidden).length - 1) * 8;
+        while(used() > sentence.clientWidth - 8 && fs > 19){ fs--; apply(); }
+      };
+      /* [r80] measure again once the sentence's own face is really there: a face is fetched on first
+         use, so the very first sentence (or a direct jump to this screen) was measured in the fallback
+         font, which is wider, and came out a few px too small */
+      const refitWhenFontReady = ()=>{
+        const e = sentence.querySelector(".subg-word");
+        if(!e || !document.fonts || !document.fonts.load) return;
+        const cs = getComputedStyle(e);
+        document.fonts.load(cs.fontWeight + " 40px " + cs.fontFamily, e.textContent).then(()=>{ if(alive()) fitSentence(); }, ()=>{});
+      };
+      const fitWord = (win, el)=>{
+        const room = win.__d * 0.82;
+        let fs = 31; el.style.fontSize = fs + "px";
+        let guard = 0;
+        while((el.scrollWidth > room || el.scrollHeight > room) && fs > 15 && guard++ < 30){ fs--; el.style.fontSize = fs + "px"; }
+      };
+      if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{
+        if(!alive()) return;
+        fitSentence();
+        wins.filter(w => w.classList.contains("filled")).forEach(w=>{ const e = w.querySelector(".subg-word"); if(e) fitWord(w, e); });
+      });
+
+      /* ---- Swiftie waves (the cockpit frames, stepped at the clip's own rate) ---- */
+      let waveTimer = 0, waving = false;
+      function wave(done){
+        if(!alive() || waving || !parked){ if(done) done(); return; }
+        const n = W8.frames || 1, cols = W8.cols || 1, rows = W8.rows || 1, fps = W8.fps || 15;
+        waving = true; let k = 0;
+        const show = i => { const c = i % cols, r = Math.floor(i / cols);
+          waveEl.style.backgroundPosition = (cols > 1 ? c / (cols - 1) * 100 : 0) + "% " + (rows > 1 ? r / (rows - 1) * 100 : 0) + "%"; };
+        show(0); waveEl.classList.add("on");
+        clearInterval(waveTimer);
+        waveTimer = setInterval(()=>{
+          if(!alive()){ clearInterval(waveTimer); return; }
+          k++;
+          if(k >= n){ clearInterval(waveTimer); waveEl.classList.remove("on"); waving = false; if(done) done(); return; }
+          show(k);
+        }, 1000 / fps);
+      }
+
+      /* ---- bubbles streaming from the propeller while the submarine moves ---- */
+      let trailTimer = 0;
+      const tail = art.tail || { x: 96.5, y: 58 };
+      function trail(on){
+        clearInterval(trailTimer);
+        if(!on) return;
+        trailTimer = setInterval(()=>{
+          if(!alive()){ clearInterval(trailTimer); return; }
+          const wr = wrap.getBoundingClientRect(), sr = sub.getBoundingClientRect();
+          const k = wr.width / wrap.offsetWidth || 1;
+          const x = (sr.left - wr.left) / k + tail.x / 100 * SUB_W, y = (sr.top - wr.top) / k + tail.y / 100 * SUB_H;
+          for(let i = 0; i < 2; i++){
+            const b = document.createElement("span"); b.className = "subg-trail";
+            const sz = 7 + Math.random() * 15;
+            Object.assign(b.style, { width: sz + "px", height: sz + "px", left: (x + (Math.random() - .5) * 18) + "px", top: (y + (Math.random() - .5) * 46) + "px" });
+            b.style.setProperty("--tx", (30 + Math.random() * 90) + "px");
+            b.style.setProperty("--ty", (-20 - Math.random() * 70) + "px");
+            wrap.appendChild(b); setTimeout(()=> b.remove(), 1400);
+          }
+        }, 70);
+      }
+
+      /* ---- arrive from the right, leave to the left ---- */
+      const OFF = 1150;
+      const REDUCED = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+      /* [r77b] one even glide that eases into the parking spot; the old curve covered 70% of the way
+         in its first 600ms (under the transition) and then crept for two seconds */
+      /* [r78 review] with reduced motion there is no pan at all (a faster sweep was MORE motion): the
+         submarine fades in and out where it parks */
+      const IN_MS = REDUCED ? 450 : 3000, OUT_MS = REDUCED ? 450 : 2900;
+      function arrive(done){
+        parked = false; if(!REDUCED) trail(true);
+        const a = sub.animate(REDUCED ? [{ opacity: 0, transform: "translate(0, 0)" }, { opacity: 1, transform: "translate(0, 0)" }] : [
+          { transform: "translate(" + OFF + "px, 6px)" }, { transform: "translate(" + Math.round(OFF * .5) + "px, -6px)", offset: .5 },
+          { transform: "translate(" + Math.round(OFF * .1) + "px, 4px)", offset: .85 }, { transform: "translate(0, 0)" }],
+          { duration: IN_MS, easing: "cubic-bezier(.33,.08,.27,1)", fill: "forwards" });
+        /* finish exactly once — on the animation's own end, or on a timer if the page is not drawing
+           frames (a background tab), so the game can never stall waiting for a frame */
+        let fired = false; const fin = ()=>{ if(fired || !alive()) return; fired = true; trail(false); parked = true; done && done(); };
+        a.onfinish = fin; later(()=>{ if(!fired){ try{ a.finish(); }catch(e){} fin(); } }, IN_MS + 500);   // snap to the end if frames stalled
+      }
+      function leave(done){
+        parked = false; clearInterval(waveTimer); waveEl.classList.remove("on"); waving = false; if(!REDUCED) trail(true);
+        const a = sub.animate(REDUCED ? [{ opacity: 1, transform: "translate(0, 0)" }, { opacity: 0, transform: "translate(0, 0)" }] : [
+          { transform: "translate(0, 0)" }, { transform: "translate(-40px, -5px)", offset: .3 },
+          { transform: "translate(" + (-OFF * .4) + "px, 5px)", offset: .7 }, { transform: "translate(" + (-OFF) + "px, -4px)" }],
+          { duration: OUT_MS, easing: "cubic-bezier(.55,0,.8,.45)", fill: "forwards" });
+        let fired = false; const fin = ()=>{ if(fired || !alive()) return; fired = true; trail(false); done && done(); };
+        a.onfinish = fin; later(()=>{ if(!fired){ try{ a.finish(); }catch(e){} fin(); } }, OUT_MS + 500);
+      }
+
+      /* ---- idle: 7s of quiet → Swiftie waves; the level's first question also repeats the
+         instruction (and only there); from the second reminder on, the empty window pulses too ---- */
+      let idleT = 0, idleN = 0;
+      const blankWin = ()=> wins.find(w => w.classList.contains("blank"));
+      function idleBeat(){
+        if(!alive()) return;
+        if(state.locked || isPlaying || document.hidden || document.querySelector(".dragging")){ idleT = later(idleBeat, 1000); return; }
+        idleN++;
+        wave();
+        /* the next reminder counts its 7s from when the board is free again, not from the start of
+           this one (the board is held while Swiftie speaks) */
+        if(idleN === 1 && qi === 0){ speak("instructionFill", idleArm); return; }
+        if(idleN >= 2){ const b = blankWin(); if(b){ b.classList.remove("cue"); void b.offsetWidth; b.classList.add("cue"); later(()=> b.classList.remove("cue"), 1900); } }
+        idleT = later(idleBeat, 7000);
+      }
+      const idleArm = ()=>{ clearTimeout(idleT); idleT = later(idleBeat, 7000); };
+      const idleReset = ()=>{ idleN = 0; clearTimeout(idleT); };
+      wrap.addEventListener("pointerdown", ()=>{ idleN = 0; idleArm(); }, true);
+      oceanAddCleanup(()=>{ clearTimeout(idleT); clearInterval(waveTimer); clearInterval(trailTimer); });
+
+      /* ---- one question in the shared window ---- */
+      const q = ()=> plan[li][qi];
+      function putWords(qq, after){
+        /* the old words pop out, then the new sentence pops in left to right */
+        const old = wins.map(w => w.querySelector(".subg-word")).filter(Boolean);
+        old.forEach(e => { e.classList.remove("in"); e.classList.add("out"); });
+        later(()=>{
+          wins.forEach((w, i) => {
+            w.className = "subg-win"; w.innerHTML = "";
+            const chunk = (qq.win || [])[i];
+            w.hidden = chunk === undefined;
+            if(chunk === undefined) return;
+            if(chunk === "{blank}"){ w.classList.add("blank", "dd-zone"); return; }
+            const e = document.createElement("span"); e.className = "subg-word"; e.textContent = chunk;
+            w.appendChild(e);
+            later(()=> e.classList.add("in"), 80 + i * 110);
+          });
+          fitSentence(); refitWhenFontReady();
+          later(()=>{ const b = blankWin(); if(b) b.classList.add("ready"); after && after(); }, 80 + wins.length * 110 + 250);
+        }, old.length ? 260 : 0);
+      }
+      let optionDragCleanup = [];
+      const clearOptionDrags = ()=>{ optionDragCleanup.forEach(dispose=>dispose()); optionDragCleanup = []; };
+      oceanAddCleanup(clearOptionDrags);
+      function putOptions(qq){
+        clearOptionDrags();
+        opts.innerHTML = "";
+        const p = qq.pair, right = qq.ans === "one" ? p.one : p.many, wrongW = qq.ans === "one" ? p.many : p.one;
+        const order = qq.correctLeft ? [right, wrongW] : [wrongW, right];
+        order.forEach((w, i) => {
+          const t = document.createElement("div"); t.className = "fvd-tile subg-opt";
+          const face = document.createElement("span"); face.className = "subg-opt-face"; face.setAttribute("aria-hidden", "true");
+          const label = document.createElement("span"); label.className = "subg-opt-label"; label.textContent = w;
+          t.append(face, label); t.dataset.word = w; t.__right = (w === right);
+          opts.appendChild(t);
+          later(()=>{ t.classList.add("in", "enter"); later(()=> t.classList.remove("enter"), 520); }, 140 + i * 140);   // [r77b] the pop-in plays once
+          // Submarine answers are drag-only: a tap must not place or attempt a word.
+          optionDragCleanup.push(makeDraggable(t, (zone, tile)=>{ if(zone && zone.classList.contains("blank")) attempt(tile); }, {
+            onDragMove: ({clientX, clientY, zone})=>{
+              const b = blankWin();
+              if(!b || b.classList.contains("filled")){ t.classList.remove("is-bubble"); return; }
+              // Viewport coordinates work at every stage scale. Start the morph just
+              // before the window, with a wider exit margin to avoid edge flicker.
+              const r = b.getBoundingClientRect(), k = r.width / b.offsetWidth || 1;
+              const margin = (t.classList.contains("is-bubble") ? 50 : 30) * k;
+              const near = Math.hypot(clientX - (r.left + r.width / 2), clientY - (r.top + r.height / 2)) <= Math.max(r.width, r.height) / 2 + margin;
+              t.classList.toggle("is-bubble", near);   // [r78 review] the landing ring decides the drop only; the morph keeps its own in/out band
+            },
+            onDragEnd: ()=> t.classList.remove("is-bubble")
+          }));
+        });
+      }
+      function showQuestion(first){
+        if(!alive()) return;
+        state.locked = true; wrongHere = 0; idleReset(); paintProgress();
+        putOptions(q());
+        putWords(q(), ()=>{
+          if(first){
+            /* a level opens with its instruction; the board waits for it (the text stays up throughout) */
+            setSwMood("talk");
+            speak("instructionFill", ()=>{ setSwMood("point"); idleArm(); });
+          } else { state.locked = false; setSwMood("point"); idleArm(); }
+        });
+      }
+
+      /* ---- answering ---- */
+      function attempt(tile){
+        if(state.locked || !alive() || tile.classList.contains("used")) return;
+        idleReset();
+        state.attempts++;
+        if(tile.__right) settle(tile); else miss(tile);
+      }
+      function settle(tile){
+        state.locked = true;
+        const b = blankWin(); if(!b) return;
+        tile.classList.add("used");
+        opts.querySelectorAll(".subg-opt").forEach(o => { if(o !== tile) o.classList.add("gone"); });
+        b.classList.remove("ready", "hover", "cue"); b.classList.add("filled");
+        const e = document.createElement("span"); e.className = "subg-word"; e.textContent = tile.dataset.word;
+        b.appendChild(e); fitWord(b, e); fitSentence(); later(()=> e.classList.add("in"), 30);
+        const ring = document.createElement("span"); ring.className = "subg-pop"; b.appendChild(ring); later(()=> ring.remove(), 800);
+        sfxCorrect();
+        solved++; paintProgress();
+        /* [r77b] each sentence counts towards the lesson's mastery score, first try or not, as every
+           other answerable screen does — the end screen's score left all twelve out */
+        const firstTry = wrongHere === 0;
+        if(slide.phase === "mastery"){ state.masteryAttempts++; if(firstTry) state.masteryHits++; }
+        GameBus.emit("gender_pair_match", { slide_id: slide.id, phase: slide.phase, value: true,
+          level: li + 1, question: qi + 1, pair: q().pair.id, form: q().ans, first_try: firstTry, attempts: state.attempts });
+        /* [r82] asked: as soon as the answer is right, the next sentence comes — no reading pause
+           (it held for PACE.readTime, ~4s). Only the moment it takes to see the word land green. */
+        later(next, PACE.afterCorrect);
+      }
+      function miss(tile){
+        state.locked = true; wrongHere++;
+        oceanRetrySfx();
+        tile.classList.remove("wiggle"); void tile.offsetWidth; tile.classList.add("wiggle");
+        GameBus.emit("answer_wrong", { slide_id: slide.id, phase: slide.phase, level: li + 1, question: qi + 1, streak: wrongHere });
+        later(()=>{
+          tile.classList.remove("wiggle");
+          /* 2nd miss on this sentence: the sentence's own words pulse — read it again.
+             3rd and after: the right word glows; the child still has to put it in. */
+          if(wrongHere === 2) wins.forEach((w, i) => { if(!w.classList.contains("blank")){ later(()=>{ w.classList.remove("cue"); void w.offsetWidth; w.classList.add("cue"); }, i * 120); later(()=> w.classList.remove("cue"), 1900 + i * 120); } });
+          if(wrongHere >= 3){ const r = [...opts.querySelectorAll(".subg-opt")].find(o => o.__right); if(r) r.classList.add("lit"); }
+          const resume = ()=>{ if(alive()){ state.locked = false; idleArm(); } };
+          if(!state.subRetrySpoken){ state.subRetrySpoken = true; speak("retry", idleArm); } else resume();
+        }, 650);
+      }
+      function next(){
+        if(!alive()) return;
+        qi++;
+        if(qi < plan[li].length){ showQuestion(false); return; }
+        levelDone();
+      }
+
+      /* ---- the end of a level ----
+         [r81] asked: no "स्तर पूरा हुआ" panel (the three stars and the title over the submarine). A
+         level now ends with confetti and Swiftie's praise over the emptied window, and the next level
+         opens with its instruction; the last level ends the same way after the submarine has left. */
+      function cheer(){ confettiCannon(false); setSwMood("celebrate"); }
+      function clearBoard(){
+        wins.forEach(w => { const e = w.querySelector(".subg-word"); if(e){ e.classList.remove("in"); e.classList.add("out"); } w.classList.remove("ready", "cue"); });
+        later(()=> wins.forEach(w => { w.className = "subg-win"; w.innerHTML = ""; }), 260);
+        opts.querySelectorAll(".subg-opt").forEach(o => o.classList.add("gone"));
+      }
+      function levelDone(){
+        state.locked = true; idleReset(); clearBoard();
+        if(li < levels.length - 1){
+          later(()=>{ cheer(); later(()=> oceanSay("correct", ()=> later(()=>{ li++; qi = 0; showQuestion(true); }, 900)), 700); }, 400);
+          return;
+        }
+        finale();
+      }
+      function finale(){
+        /* every sentence done: the submarine sets off to the left, then confetti and the lesson's
+           closing line over the open sea, then the end screen (r81: no level panel here either) */
+        setSwMood("celebrate");
+        later(()=> leave(()=>{
+          cheer();
+          const end = CARD.slides.find(s => s.type === "CELEBRATION");
+          const vo = end ? audioFor(end, "prompt") : null;
+          later(()=> play(vo, ()=> later(()=> completeSlide(true), 900)), 900);
+        }), 500);
+      }
+
+      /* ---- go ---- */
+      paintProgress();
+      sub.style.transform = "translate(" + OFF + "px, 6px)";
+      /* [r77b] the swim transition is still dissolving over this screen when it mounts, and most of
+         the old glide happened underneath it: the submarine now sets off only once the crossing has
+         cleared, so its whole way in from the right is seen. It parks and stays still — no wave on
+         arrival (asked: no movement once it is in the middle; Swiftie waves only after 7s of quiet). */
+      const start = ()=>{
+        if(!alive()) return;
+        let waited = 0;
+        const whenClear = ()=>{
+          if(!alive()) return;
+          if(document.querySelector(".ocean-crossing") && waited < 6000){ waited += 100; later(whenClear, 100); return; }
+          later(()=> arrive(()=> later(()=> showQuestion(true), 700)), waited ? 200 : 0);
+        };
+        whenClear();
+      };
+      /* start once the hull art is decoded (timers rather than animation frames, see fin above) */
+      let started = false; const go = ()=>{ if(started) return; started = true; later(start, 60); };
+      if(hull.complete) go(); else { hull.onload = go; hull.onerror = go; later(go, 1500); }
+    }
+  },
+
   STORY_SCENE: {
-    /* TEACH — one poem page, built to the review deck (pp.4,6,8,10):
-         · no instructional panel — the picture and the poem own the whole card
-         · the stanza's lines arrive ONE BY ONE, the एक/अनेक words burning orange
-         · image 1 rides the first stanza, image 2 swaps in for the second
-       data.beats = [{ img, emoji, lines:[ "…*गुब्बारा*…" ], audio }] */
+    /* TEACH — one poem page, built to the review deck (pp.4,6,8,10) as changed since:
+         · no instructional panel — the pictures and the poem own the whole card
+         · the poem's lines arrive ONE BY ONE, the एक/अनेक words in orange
+         · [r78] asked, for every poem page: each line brings its OWN picture to its own place — the
+           first line's on the LEFT, the second line's on the RIGHT — and the two then stand side by
+           side, at the size and in the places the comparison screen that follows gives them, instead
+           of the second picture replacing the first in the middle. A one-line page (the wind gust)
+           shows its single picture in the middle.
+         · every line and every picture is laid out from the first frame and only revealed in its
+           turn, so neither the poem box nor the pictures change size while the poem is being read.
+       data.beats = [{ img, emoji, lines:[ "…*गुब्बारा*…" ], audio, cues_ms }] */
     mount(host, slide){
       const d = slide.data || {};
       const beats = d.beats && d.beats.length ? d.beats
                   : [{ img: d.image_id, emoji: d.emoji, lines: [d.caption_hi || ""], audio: (slide.audio||{}).narration }];
+      /* One line per picture: the pictures stand side by side and the lines build up. A picture that
+         carries a whole stanza still gets a clean screen of its own, so a caption can never grow into
+         an unintended four-line block (no page of this poem does that any more). */
+      const cumulativeBeats = beats.every(b => (b.lines || []).length <= 1);
+      const sideBySide = cumulativeBeats && beats.length === 2;   // two places, as asked; any other count keeps the single swapping picture
 
-      const wrap = document.createElement("div"); wrap.className = "story-scene";
-      wrap.innerHTML = '<div class="story-stage"><div class="story-frame"></div></div>' +
-                       '<div class="story-caption"></div>';
+      const wrap = document.createElement("div"); wrap.className = "story-scene" + (sideBySide ? " side-by-side" : "");
+      wrap.innerHTML = '<div class="story-stage"></div><div class="story-caption"></div>';
       host.appendChild(wrap);
-      const frame = wrap.querySelector(".story-frame");
+      const stage = wrap.querySelector(".story-stage");
       const cap   = wrap.querySelector(".story-caption");
+      const alive = ()=> wrap.isConnected;   // [r17] a timer outliving this mount must not act
       // deck: "no instructional panel in this slide"
       const card = host.closest(".tut-card"); if(card) card.classList.add("no-prompt");
 
-      const showPicture = (b) => {
+      const dress = (frame, b) => {
         const art = String(b.img || "");
         frame.classList.toggle("saheli-card", art === "scn_saheli_s" || art === "scn_saheli_p");
         frame.classList.toggle("saheli-single", art === "scn_saheli_s");
         frame.classList.toggle("saheli-many", art === "scn_saheli_p");
-        frame.innerHTML = imgOrEmoji(b.img, b.emoji, "story-img swap", "story-fallback");
+        frame.innerHTML = imgOrEmoji(b.img, b.emoji, "story-img", "story-fallback");
       };
-      /* Keep earlier poem lines only when each picture contributes one line. If a picture already
-         carries a complete two-line stanza (the two opening balloon scenes), the next picture gets
-         its own clean screen instead of turning the caption into an unintended four-line block. */
-      const cumulativeBeats = beats.every(b => (b.lines || []).length <= 1);
-      const appendLines = (b) => (b.lines || []).map(t => {
-        const p = storyTypeLine(t);
-        cap.appendChild(p); return p;
-      });
+      const makeFrame = b => { const f = document.createElement("div"); f.className = "story-frame wait"; dress(f, b); stage.appendChild(f); return f; };
+      const frames = sideBySide ? beats.map(makeFrame) : [makeFrame(beats[0])];
+      /* A picture appears once its art has loaded and its card has taken the art's own ratio, so it
+         never re-shapes after it is on screen. */
+      const reveal = f => {
+        const img = f.querySelector("img");
+        const show = ()=>{
+          if(!alive() || !f.classList.contains("wait")) return;
+          if(img && img.naturalWidth) f.style.setProperty("--pic-ratio", img.naturalWidth + " / " + img.naturalHeight);
+          f.classList.remove("wait"); f.classList.add("arrive");
+        };
+        if(!img || (img.complete && img.naturalWidth)){ show(); return; }
+        img.addEventListener("load", show, { once: true });
+        img.addEventListener("error", show, { once: true });
+        setTimeout(show, 900);
+      };
 
-      state.ownsAudio = true; setNavActive(false);
+      /* A building poem lays all its lines out at once, each held invisible until its picture comes. */
+      const linesOf = b => (b.lines || []).map(t => storyTypeLine(t));
+      const lineSets = cumulativeBeats ? beats.map(b => linesOf(b).map(p => {
+        p.classList.remove("in"); p.classList.add("wait"); cap.appendChild(p); return p;
+      })) : null;
+      if(cumulativeBeats) cap.classList.toggle("many-lines", cap.children.length > 2);
+
+      state.ownsAudio = true; state.navShowDisabled = true; setNavActive(false);
       $("navBtn").onclick = ()=> completeSlide(true);
       setSwMood("talk");
 
-      let i = 0, armed = false;
-      const alive = ()=> wrap.isConnected;   // [r17] a timer outliving this mount must not act
+      let i = 0, armed = false, cur = null, gap = 0;
+      const shown = [];   // the lines each beat put on screen, for the replay
       const armNav = ()=>{ if(armed || !alive()) return; armed = true; setNavActive(true); setSwMood("point"); };
+      const srcOf = b => b.audio ? ("assets/Audio/" + b.audio + "." + AUDIO_EXT) : null;
+      /* one beat's VO with its moving highlight; whatever was reading before is stopped first, so two
+         lines can never be lit at once */
+      const sing = (k, done)=>{
+        if(cur) cur.reset();
+        cur = storyTypeSync(shown[k], srcOf(beats[k]), ()=>{ if(alive()) done(); }, beats[k].cues_ms);
+        cur.start();
+      };
+      /* [r78 review] the replay chip re-reads the WHOLE page that is on screen — every revealed line in
+         order, at the same one-beat step — and, if it is tapped in the pause between two lines, the
+         page then carries on to the line that was still to come (it used to re-read only the last
+         line, and a tap in the pause was cut off by the next line) */
+      const replayPage = ()=>{
+        if(!alive() || i === 0) return;
+        clearTimeout(gap);
+        const upto = i;
+        let k = cumulativeBeats ? 0 : upto - 1;
+        const step = ()=> sing(k, ()=>{
+          if(++k < upto) gap = setTimeout(step, PACE.tail);
+          else if(i < beats.length) gap = setTimeout(runBeat, PACE.tail);
+          else armNav();
+        });
+        step();
+      };
+      state.replayAudio = replayPage;
       const runBeat = ()=>{
         if(!alive()) return;
         const b = beats[i];
-        showPicture(b);
-        if(!cumulativeBeats) cap.replaceChildren();
-        const fresh = appendLines(b);
-        cap.classList.toggle("many-lines", cap.children.length > 2);
-        const src = b.audio ? ("assets/Audio/" + b.audio + "." + AUDIO_EXT) : null;
-        const typing=storyTypeSync(fresh,src,()=>{
-          if(!alive()) return;
-          /* A picture-to-picture beat gets exactly one second. On the final line the Next button
-             appears as soon as the VO ends, with no extra dead pause. */
-          if(++i < beats.length) setTimeout(runBeat,1000); else armNav();
+        let fresh;
+        if(sideBySide) reveal(frames[i]);
+        else {
+          const f = frames[0];
+          if(i > 0){ f.classList.remove("arrive"); f.classList.add("wait"); dress(f, b); }
+          reveal(f);
+        }
+        if(cumulativeBeats){ fresh = lineSets[i]; fresh.forEach(p => p.classList.remove("wait")); }
+        else {
+          cap.replaceChildren(); fresh = linesOf(b); fresh.forEach(p => cap.appendChild(p));
+          cap.classList.toggle("many-lines", cap.children.length > 2);
+        }
+        shown[i] = fresh;
+        sing(i, ()=>{
+          /* A picture-to-picture beat gets exactly one beat (PACE.tail, one second). On the final line
+             the Next button appears as soon as the VO ends, with no extra dead pause. */
+          if(++i < beats.length) gap = setTimeout(runBeat, PACE.tail); else armNav();
         });
-        state.replayAudio = ()=> typing.start();
-        typing.start();
       };
       runBeat();
       setTimeout(armNav, 45000);   // watchdog: आगे always eventually opens if VO buffers slowly
@@ -5798,7 +6521,7 @@ const SlideModules = {
 
       const words = [...wrap.querySelectorAll(".cmpv-word")];
 
-      state.ownsAudio = true; state.navVoEligible = true; setNavActive(false);
+      state.ownsAudio = true; state.navShowDisabled = true; setNavActive(false);
       $("navBtn").onclick = ()=> completeSlide(true);
       setSwMood("talk");
 
@@ -9068,7 +9791,7 @@ function clearHost(){
   const _es = $("endScreen");
   if(_es) _es.classList.remove("show", "hint-glow");
   $("slideHost").innerHTML = "";
-  state.navVoEligible = false;
+  state.navShowDisabled = false;
   $("hintBtn").classList.remove("show");
   $("hintBtn").disabled = false;
   setNavActive(false);
@@ -9212,15 +9935,43 @@ const PHASE_GATE_TITLE = { tutorial:"चलिए, शुरू करें!", 
                            practice:"अब आपकी बारी!", independent:"अब आपकी बारी!" };   // [16h] the lead’s official transition lines (VO = full sentences in the card manifest; NOTE aap-register — flagged)
 const PHASE_GATE_VO    = { tutorial:"vo_pt_tutorial", guided:"vo_pt_guided",
                            practice:"vo_pt_practice", independent:"vo_pt_independent" };
-/* Timed from the approved animated WebP itself: Swiftie finishes the silent peek and begins
-   opening her mouth at ~4.2s. Transition VO must begin there, not when the image first loads. */
-const PHASE_GATE_MOUTH_DELAY_MS = 4200;
+/* [r82] asked, for every transition: no peek-and-pause before Swiftie speaks. The full animation
+   (peeking.webp) spent 3.8s silent — hands over the edge, a look up, the climb — before her mouth
+   opened at ~4.2s. The gate now shows assets/UI/peeking_up.webp: the same animation cut losslessly
+   at its first full frame with her already up (3.82s; the remaining frames copied byte for byte),
+   so she is up from the first frame and her line starts 0.38s in — the same offset from her mouth's
+   first movement that the line had before, so the lip-sync is unchanged. */
+const PHASE_GATE_MOUTH_DELAY_MS = 380;
 /* [28h] which ROUND each phase belongs to — the dedup key for gates. practice === independent === the
    one round 3; `mastery` is absent on purpose (it continues round 3), and so is any future phase name,
    which fails safe to "no gate" rather than to a spurious extra one. */
 const PHASE_ROUND = { tutorial:"tutorial", guided:"guided", practice:"round3", independent:"round3" };
 const _gatedPhases = new Set();   // each ROUND gate plays ONCE (Start→tutorial, →guided, →round 3)
 let _gateToken = 0;
+/* [r60] THE LINE NEVER SITS ON THE BIRD — measured, not assumed (the reference game's _fitGateTitle,
+   ported as is). Once the caption shows, its real box is checked against the bird's real box: his
+   crest is never higher than 38% down his picture. If the line comes within 12px of it, it moves
+   up; if there is no room above him, or it is wider than the screen, it scales down to fit. Re-run
+   on resize while the gate is up. */
+function _fitGateTitle(){
+  try{
+    const t = $("phaseGateTitle"), im = $("phaseGateImg"), g = $("phaseGate");
+    if(!t || !im || !t.textContent || !g || !g.classList.contains("show")){ window.removeEventListener("resize", _fitGateTitle); return; }
+    t.style.removeProperty("top"); t.style.scale = "";
+    const ir = im.getBoundingClientRect(); if(!ir.height) return;
+    const crest = ir.top + ir.height * 0.38, GAP = 12, EDGE = 8, W = window.innerWidth;
+    const tr = t.getBoundingClientRect();
+    let sc = Math.min(1, (W - 2 * EDGE) / tr.width);
+    if(tr.top + tr.height * sc > crest - GAP){
+      const room = crest - GAP - EDGE;
+      sc = Math.min(sc, room / tr.height);
+      sc = Math.max(0.35, sc);
+      const top = Math.max(EDGE, crest - GAP - tr.height * sc);
+      t.style.setProperty("top", top + "px", "important");
+    }
+    if(sc < 0.999){ t.style.transformOrigin = "50% 0"; t.style.scale = String(sc); }
+  }catch(e){}
+}
 function phaseBlurTransition(cb, toPhase){
   const tok = ++_gateToken;
   stopNudge(); stopAudio();
@@ -9228,7 +9979,10 @@ function phaseBlurTransition(cb, toPhase){
   let titleSyncTimer = 0;
   const revealGateTitle = ()=>{
     if(titleSyncTimer){ clearInterval(titleSyncTimer); titleSyncTimer=0; }
-    if(tok === _gateToken) gate.classList.add("text-speaking");
+    if(tok === _gateToken){
+      gate.classList.add("text-speaking");
+      _fitGateTitle(); window.addEventListener("resize", _fitGateTitle);
+    }
   };
   if(img){
     /* Do not reveal a cached final frame. Wait for a fresh animated WebP load, then restart
@@ -9243,10 +9997,11 @@ function phaseBlurTransition(cb, toPhase){
       requestAnimationFrame(beginSyncedPlayback);
     };
     img.onerror = ()=>{ if(tok === _gateToken){ img.style.visibility = "visible"; beginSyncedPlayback(); } };
-    img.src = "assets/UI/peeking.webp?r=" + Date.now();
+    img.src = "assets/UI/peeking_up.webp?r=" + Date.now();
   }
   gate.classList.remove("text-speaking");
-  const title = $("phaseGateTitle"); if(title) title.textContent = PHASE_GATE_TITLE[toPhase] || "";
+  const title = $("phaseGateTitle");
+  if(title){ title.textContent = PHASE_GATE_TITLE[toPhase] || ""; title.style.removeProperty("top"); title.style.scale = ""; }
   $("stage").classList.add("blurred", "gating");
   document.body.classList.add("gating");
   gate.classList.add("show","hint-glow");
@@ -9319,8 +10074,18 @@ function completeSlide(success){
   // advance only AFTER the correct-answer confetti has landed (to the gate AND to the next slide alike).
   const fromIdx = state.idx, nextIdx = state.idx + 1;
   const next = CARD.slides[nextIdx];
-  if(['MATCH_THE_PAIR','MATCH_VACHAN_PAIRS'].includes(slide.type) && next?.type === 'FILL_VACHAN_DRAG'){
+  if(['MATCH_THE_PAIR','MATCH_VACHAN_PAIRS'].includes(slide.type) && ['FILL_VACHAN_DRAG','SUBMARINE_FILL'].includes(next?.type)){
     oceanFishTransition(()=>{if(state.idx===fromIdx)mountSlide(nextIdx);});return;
+  }
+  /* [r70] A SLIDE CAN ASK FOR A GATE OF ITS OWN. The round gates below only fire when the ROUND
+     changes, and the bubble game continues round 3, so it never got one. slide.data.gate_before
+     names the gate (e.g. "practice" → "अब आपकी बारी!" with vo_pt_practice); it plays once, right
+     before that slide, keyed by the slide so it can never repeat. */
+  const gateBefore = next && next.data && next.data.gate_before;
+  if(gateBefore && PHASE_GATE_TITLE[gateBefore] && !_gatedPhases.has("slide:" + next.id)){
+    _gatedPhases.add("slide:" + next.id);
+    afterConfetti(()=>{ if(state.idx === fromIdx) phaseBlurTransition(()=> mountSlide(nextIdx), gateBefore); });
+    return;
   }
   /* [28h] ONE GATE PER ROUND, NOT PER PHASE NAME.
      `independent` and `practice` are two names for round 3 (Yasir 2026-07-28), so a card that uses
