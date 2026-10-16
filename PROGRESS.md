@@ -2851,6 +2851,114 @@ Verified:
 
 ---
 
+## Round 83 — the submarine game is one continuous game, praise only at the end, the propeller spins
+
+**Asked:**
+* "सही शब्द खींचकर खाली जगह में रखिए" must not come twice — only at the start — and after that the
+  game runs continuously.
+* No confetti and no शाबाश in between. Confetti and शाबाश come only when all the questions are done
+  and the submarine is ready to go.
+* When the submarine moves, its motor at the back should run.
+
+This supersedes the per-level instruction rule (Round 56) for this game.
+
+* **One continuous game.**
+  * The instruction plays once, when the first sentence is up. The idle reminder repeats it only on
+    that first question.
+  * स्तर 2's first sentence follows स्तर 1's last one like any other next sentence: no instruction,
+    no confetti, no praise. The levels stay as the order of difficulty.
+  * The deal now also keeps "never three in a row" across the join between the levels.
+* **Praise only at the end.** After the last sentence the window empties, the confetti falls and
+  Swiftie says the lesson's closing line (`vo_well_done`, शाबाश! …) while the submarine waits, ready.
+  Then it leaves, and the end screen follows.
+* **The motor runs.**
+  * The propeller's two blades were cut out of the still. `sub_blades.webp` is the blades alone;
+    `sub_hull.webp` is the hull with them removed. Recombined, the two match the original to within
+    1.7/255 on average.
+  * The blades sit under the hull, so the tail ring still covers their roots and the hub stays in
+    front.
+  * While the submarine moves (gliding in, and leaving), the blades spin: seen from the side they
+    fold flat and flip over about the hub, about 4½ turns a second. They stop when it parks.
+  * The progress marker keeps the whole still. Both data copies carry the new art.
+
+Verified by playing all twelve sentences through:
+* the instruction played once, at the start; स्तर 1 ran straight into स्तर 2;
+* the confetti fired once, after the last sentence, then `vo_well_done` played with the submarine
+  parked;
+* the motor ran during the arrival (0.09–3.6s) and the departure, and was off while parked;
+* the end screen was reached, and all 18 slides mount with no errors.
+
+---
+
+## Round 84 — full-screen games, a glow that follows the instruction, bubble answers and a ghost
+
+**Asked:**
+
+*Bubble game*
+* When the VO says "पहले एक शब्द पर", गुब्बारा glows; when it says "फिर उसकी जोड़ी पर टैप कीजिए",
+  गुब्बारे glows — in sync with the voice.
+* The glow should be more strongly blue, and pulse a little.
+* The instruction must not be repeated again and again — only after 7–10s in which the child has
+  done nothing.
+
+*Both games*
+* Remove the whole top bar: no instruction text, no Swiftie, no bar. They are mastery games, so they
+  are full screen and the VO tells the child what to do.
+* Keep the playable layout as it is, just full screen.
+
+*Submarine game*
+* Answers as bubbles, not rectangles, floating gently.
+* A lighter bubble, because the dark one melted into the sentence window when it was dropped there.
+* At the start, a light, blurred ghost preview of an answer going into the blank, repeating until
+  the child has done it.
+
+**Bubble game**
+* *Walk-through glow.* गुब्बारा lights up when the line reaches "पहले एक शब्द पर" (5.15s of the 9.0s
+  clip) and गुब्बारे when it reaches "फिर उसकी जोड़ी पर" (6.8s). Both stay lit to the end of the line
+  and 1.5s more.
+  * The times were measured on the clip with silencedetect. They are read off the clip's own clock
+    and scaled to its length, so a re-record still lands, with a wall-clock fallback.
+  * The glow is a white inner ring, a deep-blue band and a wide blue halo, breathing with a 7% pulse.
+    The pulse uses the `scale` property, so the bubble keeps drifting.
+* *Instruction repeats.* It plays once at the start. After that it comes back only after 10s with no
+  touch at all (oceanIdle now takes a wait time; every other caller keeps 7s). It comes back at most
+  once until the child makes a pair, and when it does, it walks a pair that is on the board.
+
+**Full screen (bubble + submarine)**
+* On these two slides the header row (prompt text, speaker chip, hint button) and the Swiftie
+  mascot are hidden.
+* The slide stage loses its padding and the game card its margins, rounding and rim, so the sea runs
+  edge to edge (1333×750).
+* Inside, nothing is re-arranged:
+  * the bubble field simply has more room (the bubbles keep their 112–178px size);
+  * the submarine's layout — submarine, answers, progress card — is the old 532px arrangement,
+    centred vertically.
+* The poem pages, the सही-शब्द-चुनिए questions and the end screen are unchanged.
+
+**Submarine answers and ghost**
+* *Bubble answers.* The answers are bubbles from the start: 120px, with no rectangle and no morph,
+  floating 4px up and down out of step. The word is fitted from 28px down to 18px.
+* *Lighter colour.* The skin is a new `assets/Images/bubble_light.png` (the same bubble blended
+  halfway to white, 256px) with a white rim. The placed answer in the window uses it too, so it
+  stands out from the blue glass. The third-miss hint is an orange ring round the bubble.
+* *Ghost.* On the first question a blurred (1.3px), 55%-opacity copy of the right answer glides
+  from its bubble into the empty window over 2.4s, pauses, and comes again.
+  * It hides the moment the game is touched and returns after a pause.
+  * It stops for good once the child has put the right word in.
+  * It is not a tile, cannot be touched and places nothing.
+
+Verified:
+* PAIR1: header and Swiftie gone, the game is 1333×750; the walk-through glow came at 5.2s and
+  6.8s and cleared 1.5s after the line.
+* PAIR1 idle: with no touch the instruction came once after 10s, again walking the pair, then only
+  the silent pulse hint; no third instruction.
+* SUB: full screen with the layout centred; bubble answers at 28px.
+* SUB ghost: it looped (2.9s, 6.6s, …); after the first correct drop it never came back, and the
+  placed answer showed the light bubble.
+* All 18 slides mount with no errors. The header is still there on Q1–Q6.
+
+---
+
 ## Open items
 
 **Checklist gaps from Round 58** (18 fails, 7 partials), in rough priority order: end screen uses

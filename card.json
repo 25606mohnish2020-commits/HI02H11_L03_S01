@@ -802,6 +802,15 @@
       "data": {
         "art": {
           "still": "sub_hold.webp",
+          "hull": "sub_hull.webp",
+          "blades": {
+            "file": "sub_blades.webp",
+            "left": 94.143,
+            "top": 41.39,
+            "width": 5.143,
+            "height": 41.692,
+            "originY": 49.638
+          },
           "w": 1400,
           "h": 662,
           "wave": {

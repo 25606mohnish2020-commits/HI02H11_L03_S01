@@ -65,7 +65,9 @@ function oceanDecor(wrap){
 }
 /* Two idle beats: instruction after 7s, then visual assistance after a further 7s.
    Every gesture cancels the hint. Feedback/dragging/hidden tabs do not count as inactivity. */
-function oceanIdle(wrap, instruction, hint){
+/* [r84] wait: how long the child must have done nothing before the reminder (default 7s) */
+function oceanIdle(wrap, instruction, hint, wait){
+  const WAIT = wait || 7000;
   let timer, token=0, cleanupHint=()=>{};
   function clear(){clearTimeout(timer);token++;cleanupHint();cleanupHint=()=>{};}
   function arm(){
@@ -85,7 +87,7 @@ function oceanIdle(wrap, instruction, hint){
          reminder skips the voice and keeps only the delayed visual assist. */
       const instructionKey=typeof instruction==='function' ? instruction() : instruction;
       if(instructionKey)oceanSay(instructionKey,afterInstruction);else afterInstruction();
-    },7000);
+    },WAIT);
   }
   function activity(){arm();}
   wrap.addEventListener('pointerdown',activity,true);

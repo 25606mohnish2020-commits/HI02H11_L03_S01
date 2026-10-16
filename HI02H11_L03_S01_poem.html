@@ -2196,6 +2196,16 @@ body.is-end .sg-sky{
    on a moving bubble was easy to miss. The गुब्बारा pair now carries a strong blue halo that breathes
    in and out three times — 4.5s — while the instruction plays (the scale stays put). */
 .mtp-bubble.intro-pulse{animation:mtpIntroGlow 1.5s ease-in-out 4;z-index:18;}   /* [r73] 4 × 1.5s = 6s, stronger halo */
+/* [r84] asked: the opening pair lights up WITH the instruction — गुब्बारा at "पहले एक शब्द पर",
+   गुब्बारे at "फिर उसकी जोड़ी पर" — in a brighter blue that stands out from the blue bubbles and sea:
+   a white inner ring, a deep-blue band and a wide blue halo, breathing with a gentle 7% pulse. The
+   pulse uses the individual scale property, so the bubble keeps drifting (the drift is translate). */
+.mtp-bubble.intro-glow{z-index:18;animation:mtpWalkGlow 1.1s ease-in-out infinite;}
+@keyframes mtpWalkGlow{
+  0%,100%{scale:1;box-shadow:0 0 0 5px rgba(255,255,255,.95),0 0 0 11px rgba(0,128,255,.95),0 0 38px 16px rgba(0,116,255,.85);}
+  50%    {scale:1.07;box-shadow:0 0 0 6px #FFFFFF,0 0 0 15px rgba(0,106,255,1),0 0 76px 32px rgba(0,100,255,1);}
+}
+@media (prefers-reduced-motion:reduce){ .mtp-bubble.intro-glow{animation:none;box-shadow:0 0 0 5px #fff,0 0 0 12px rgba(0,116,255,.95),0 0 46px 20px rgba(0,110,255,.9);} }
 @keyframes mtpIntroGlow{
   0%,100%{box-shadow:0 0 0 6px rgba(64,156,255,.75),0 0 30px 10px rgba(64,156,255,.6);}
   50%    {box-shadow:0 0 0 10px rgba(64,156,255,1),0 0 70px 28px rgba(56,140,255,.95);}
@@ -2516,6 +2526,15 @@ body.is-end .sg-sky{
   100%{background-position:44px -70px,205px -120px,390px -95px,750px -150px,1025px -90px;opacity:.24;}
 }
 
+/* [r84] asked: the bubble game and the submarine game are mastery GAMES and fill the whole screen —
+   no instruction bar, no Swiftie, no text above them; the voice tells the child what to do. Only the
+   frame changes: the header row and the mascot go, the slide stage loses its padding and the card
+   its margins, rounding and rim, so the sea runs edge to edge. Everything inside keeps its layout. */
+.stage:has(.mtp-stage) .header-row,.stage:has(.subg) .header-row,
+.stage:has(.mtp-stage) .mascot-wrap,.stage:has(.subg) .mascot-wrap{display:none!important;}
+.stage:has(.mtp-stage) .slide-stage,.stage:has(.subg) .slide-stage{padding:0;}
+.stage:has(.mtp-stage) .slide-host,.stage:has(.subg) .slide-host{gap:0;}
+.stage .slide-host > .mtp-stage,.stage .slide-host > .subg{margin:0;border-radius:0;box-shadow:none;}
 .mtp-stage,.fvd,.subg{
   isolation:isolate;
   border-radius:32px;
@@ -2605,10 +2624,10 @@ body.is-end .sg-sky{
 .subg{flex:1;min-height:0;position:relative;margin:0 -142px -46px;}
 /* [r80] asked: the progress rail sits inside a card, in a soft blue. The card is centred on the rail
    (72px from the right edge) and leaves room for the small submarine at both ends of its climb. */
-.subg-progress-card{position:absolute;z-index:5;right:16px;top:30px;bottom:68px;width:112px;border-radius:24px;pointer-events:none;
+.subg-progress-card{position:absolute;z-index:5;right:16px;top:calc(50% - 236px);bottom:calc(50% - 198px);width:112px;border-radius:24px;pointer-events:none;
   background:linear-gradient(180deg,rgba(226,246,255,.95) 0%,rgba(176,225,248,.93) 100%);
   border:3px solid rgba(255,255,255,.92);box-shadow:0 6px 16px rgba(7,66,110,.16),inset 0 2px 0 rgba(255,255,255,.7);}
-.subg-progress{position:absolute;z-index:6;right:66px;top:64px;bottom:104px;width:12px;
+.subg-progress{position:absolute;z-index:6;right:66px;top:calc(50% - 202px);bottom:calc(50% - 162px);width:12px;
   --subg-progress:0%;pointer-events:none;}
 .subg-progress-track{position:absolute;inset:0;border:1px solid rgba(255,255,255,.75);border-radius:999px;
   overflow:hidden;background:rgba(9,104,151,.22);box-shadow:inset 0 1px 4px rgba(7,66,110,.16),0 2px 7px rgba(7,66,110,.1);}
@@ -2621,8 +2640,17 @@ body.is-end .sg-sky{
 .subg-progress-hull{display:block;width:100%;height:100%;}
 .subg-progress-glass{position:absolute;inset:0;width:100%;height:100%;}
 @media(prefers-reduced-motion:reduce){.subg-progress-fill,.subg-progress-sub{transition:none;}}
-.subg-sub{position:absolute;z-index:3;left:202px;top:24px;will-change:transform;}   /* [r80] 820px wide now, so it sits a touch lower, centred over the answers */
+.subg-sub{position:absolute;z-index:3;left:202px;top:calc(50% - 242px);will-change:transform;}   /* [r84] = 24px in the old 532px card; centred in full screen */   /* [r80] 820px wide now, so it sits a touch lower, centred over the answers */
 .subg-hull{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;}
+/* [r83] asked: when the submarine moves, its motor runs. The propeller's two blades are cut out of
+   the still (sub_blades.webp; the hull art sub_hull.webp has them removed) and sit UNDER the hull,
+   so the tail ring keeps covering their roots and the hub stays in front. Seen from the side, a
+   spinning two-blade propeller reads as its blades folding flat and flipping over: scaleY 1 → −1
+   → 1 about the hub, eased so it lingers at the ends like a real turn, about 4½ turns a second. */
+.subg-prop{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;}
+.subg-sub.motor .subg-prop{animation:subgSpin .22s ease-in-out infinite;}
+@keyframes subgSpin{0%,100%{transform:scaleY(1);}50%{transform:scaleY(-1);}}
+@media (prefers-reduced-motion:reduce){ .subg-sub.motor .subg-prop{animation:none;} }
 .subg-wave{position:absolute;z-index:1;pointer-events:none;background-repeat:no-repeat;opacity:0;}
 .subg-wave.on{opacity:1;}
 .subg-sentence-glass{position:absolute;inset:0;z-index:2;width:100%;height:100%;pointer-events:none;}
@@ -2652,6 +2680,11 @@ body.is-end .sg-sky{
   white-space:nowrap;
   opacity:0;transform:scale(.45);transition:opacity .28s ease,transform .38s cubic-bezier(.34,1.56,.6,1);}
 .subg-word.in{opacity:1;transform:scale(1);}
+/* [r84] asked: on the first question a light, slightly blurred ghost of the answer bubble glides from
+   its place into the empty window, again and again until the child has done it once. It only shows
+   the way: it is not a tile, cannot be touched, and places nothing. */
+.subg-ghost{position:absolute;z-index:7;pointer-events:none;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-hi);font-weight:800;color:#0B3D8C;line-height:1.1;filter:blur(1.3px);opacity:0;will-change:transform,opacity;}
 .subg-word.out{opacity:0;transform:scale(.6);transition:opacity .22s ease,transform .22s ease;}
 .subg .subg-win.filled .subg-word{color:#17794A;}         /* only the placed word turns green */
 .subg-pop{position:absolute;inset:-6px;border-radius:50%;border:4px solid rgba(255,255,255,.95);pointer-events:none;animation:subgPop .7s ease-out forwards;}
@@ -2967,7 +3000,7 @@ html.no-anim .tis-object-outline{animation:none!important;}
 <script src="assets/ocean-vo-config.js"></script>
 <!-- ============ CARD DATA (embedded; in prod the compiler does this) ============ -->
 <script type="application/json" id="cardData">
-{"version":"0.1","skill_code":"HI02H11_L03_S01","lo_code":"HI02H11_L03","grade":"G2","attribute":"H11","skill_type":"CORE","part_label":"poem","title":{"hi":"मीरा का जन्मदिन","en":"Meera's Flying Balloons — singular/plural"},"subtitle_hi":"एक-अनेक","skill_description_hi":"एकवचन-बहुवचन के शब्द-रूप बदलाव को पहचानता है — जैसे लड़का/लड़के। (कविता आधारित)","dt_fallback":null,"theme":"toybox","phase_distribution":{"tutorial":9,"guided":0,"practice":6,"mastery":3},"scaffold_rules":{"nudge_timeout_ms":{"guided":5000,"independent":8000},"max_attempts":3},"signals_expected":["slide_entered","slide_completed","gender_pair_match","vachan_recognise_first_try","lesson_completed","mastery_score"],"_emoji_fallback":{"obj_topi_s":"🧢","obj_saheli_s":"👧","obj_machli_s":"🐟","obj_kela_s":"🍌","obj_ghoda_s":"🐴","scn_gubbara_s":"🎈","scn_gubbara_p":"🎈🎈🎈","scn_ladka_s":"🧒","scn_ladka_p":"🧒🧒🧒","scn_topi_s":"🧢","scn_topi_p":"🧢🧢🧢","scn_saheli_s":"👧","scn_saheli_p":"👧👧👧","obj_ladki_s":"👧","obj_paudha_s":"🌱"},"slides":[{"id":"T1","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_gubbara_s","emoji":"🎈","audio":"vo_stanza1a","lines":["आज है मीरा का जन्मदिन, मीरा ने एक *गुब्बारा* टाँगा।"],"cues_ms":[340,667,831,1158,1322,2570,2923,3099,3452,4157]},{"img":"scn_gubbara_p","emoji":"🎈🎈🎈","audio":"vo_stanza1b","lines":["पापा और *गुब्बारे* लाए, आओ, इन्हें सजाएँ!"],"cues_ms":[280,644,1008,1736,2500,3090,3535]}]}},{"id":"C1","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_gubbara_1","explain":"vo_cmp_gubbara_2b"},"data":{"s":{"img":"scn_gubbara_s","emoji":"🎈","stem":"गुब्बा","change":"रा"},"p":{"img":"scn_gubbara_p","emoji":"🎈🎈🎈","stem":"गुब्बा","change":"रे"}}},{"id":"T1B","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_hawa","emoji":"🎈💨","audio":"vo_stanza_hawa","lines":["तभी हवा का झोंका आया, फुर्र-फुर्र *गुब्बारे* उड़ते जाएँ!"],"cues_ms":[280,669,1058,1252,1641,2510,3390,3977,4417]}]}},{"id":"T2","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_ladka_s","emoji":"🧒","audio":"vo_stanza3a","lines":["एक *लड़का* उछलकर बोला, “मैं पकड़ूँगा सारे!”"],"cues_ms":[270,610,1120,1970,2310,2480,3160]},{"img":"scn_ladka_p","emoji":"🧒🧒🧒","audio":"vo_stanza3b","lines":["फिर *लड़के* भी दौड़ पड़े— आगे-आगे गुब्बारे!"],"cues_ms":[240,586,1104,1277,1622,1968,2659]}]}},{"id":"C2","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_ladka_1","explain":"vo_cmp_ladka_2b"},"data":{"s":{"img":"scn_ladka_s","emoji":"🧒","stem":"लड़","change":"का"},"p":{"img":"scn_ladka_p","emoji":"🧒🧒🧒","stem":"लड़","change":"के"}}},{"id":"T3","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_topi_s","emoji":"🧢","audio":"vo_stanza4a","lines":["मीरा की एक *टोपी* उड़ी, फिर उड़ीं सबकी *टोपियाँ*।"],"cues_ms":[260,631,816,1186,1557,1927,2298,2668,3224]},{"img":"scn_topi_p","emoji":"🧢🧢🧢","audio":"vo_stanza4b","lines":["आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ।"],"cues_ms":[290,761,1232,1703,1860,2017,2959]}]}},{"id":"C3","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_topi_1","explain":"vo_cmp_topi_2b"},"data":{"s":{"img":"scn_topi_s","emoji":"🧢","stem":"टो","change":"पी"},"p":{"img":"scn_topi_p","emoji":"🧢🧢🧢","stem":"टो","change":"पियाँ"}}},{"id":"T4","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_saheli_s","emoji":"👧","audio":"vo_stanza5a","lines":["केक कटा, खुश हुई एक *सहेली*, झूम-झूम नाची वह अलबेली।"],"cues_ms":[290,699,1108,1516,1925,2334,2947,3765,4174,4582]},{"img":"scn_saheli_p","emoji":"👧👧👧","audio":"vo_stanza5b","lines":["ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी *सहेलियाँ*!"],"cues_ms":[300,739,1178,1617,2057,2715,3593,4033,4472]}]}},{"id":"C4","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_saheli_1","explain":"vo_cmp_saheli_2b"},"data":{"s":{"img":"scn_saheli_s","emoji":"👧","stem":"सहे","change":"ली"},"p":{"img":"scn_saheli_p","emoji":"👧👧👧","stem":"सहे","change":"लियाँ"}}},{"id":"Q1","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q1","correct":"vo_pick_ok_q1"},"data":{"source":{"word_hi":"मछली","img":"obj_machli_s","emoji":"🐟","audio":"vo_w_machli_s","count":1},"target":{"img":"obj_machli_s","emoji":"🐟","count":4,"label":"अनेक"},"options":[{"word_hi":"टोपी","audio":"vo_w_topi_s","correct":false},{"word_hi":"मछलियाँ","audio":"vo_w_machli_p","correct":true},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q2","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q2","correct":"vo_pick_ok_q2"},"data":{"source":{"word_hi":"लड़की","img":"obj_ladki_s","emoji":"👧","audio":"vo_w_ladki_s","count":1},"target":{"img":"obj_ladki_s","emoji":"👧","count":3,"label":"अनेक"},"options":[{"word_hi":"ताली","audio":"vo_w_tali_s","correct":false},{"word_hi":"सहेलियाँ","audio":"vo_w_saheli_p","correct":false},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q3","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q3","correct":"vo_pick_ok_q3"},"data":{"source":{"word_hi":"टोपियाँ","img":"obj_topi_s","emoji":"🧢","audio":"vo_w_topi_p","count":4},"target":{"img":"obj_topi_s","emoji":"🧢","count":1,"label":"एक"},"options":[{"word_hi":"मछली","audio":"vo_w_machli_s","correct":false},{"word_hi":"टोपी","audio":"vo_w_topi_s","correct":true},{"word_hi":"केले","audio":"vo_w_kela_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q4","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q4","correct":"vo_pick_ok_q4"},"data":{"source":{"word_hi":"घोड़ा","img":"obj_ghoda_s","emoji":"🐴","audio":"vo_w_ghoda_s","count":1},"target":{"img":"obj_ghoda_s","emoji":"🐴","count":3,"label":"अनेक"},"options":[{"word_hi":"पौधे","audio":"vo_w_paudha_p","correct":false},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":false},{"word_hi":"घोड़े","audio":"vo_w_ghoda_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q5","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q5","correct":"vo_pick_ok_q5"},"data":{"source":{"word_hi":"केला","img":"obj_kela_s","emoji":"🍌","audio":"vo_w_kela_s","count":1},"target":{"img":"obj_kela_s","emoji":"🍌","count":3,"label":"अनेक"},"options":[{"word_hi":"पौधा","audio":"vo_w_paudha_s","correct":false},{"word_hi":"मछली","audio":"vo_w_machli_s","correct":false},{"word_hi":"केले","audio":"vo_w_kela_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q6","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q6","correct":"vo_pick_ok_q6"},"data":{"source":{"word_hi":"पौधे","img":"obj_paudha_s","emoji":"🌱","audio":"vo_w_paudha_p","count":3},"target":{"img":"obj_paudha_s","emoji":"🌱","count":1,"label":"एक"},"options":[{"word_hi":"पौधा","audio":"vo_w_paudha_s","correct":true},{"word_hi":"घोड़ा","audio":"vo_w_ghoda_s","correct":false},{"word_hi":"घोड़े","audio":"vo_w_ghoda_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"PAIR1","phase":"mastery","eis":"enactive","type":"MATCH_VACHAN_PAIRS","prompt_hi":"एक और अनेक वाले शब्दों की जोड़ियाँ ढूँढ़िए।","audio":{"prompt":"vo_mtp_prompt","tap_hint":"vo_mtp_tap","sahi":"vo_mtp_sahi","retry":"vo_mtp_retry","listen":"vo_mtp_listen","now_tap":"vo_mtp_now_tap","done":"vo_mtp_done"},"data":{"demo":true,"pairs":[{"id":"gubbara","icon":"obj_gubbara_s","emoji":"🎈","s":{"word_hi":"गुब्बारा","audio":"vo_w_gubbara_s"},"p":{"word_hi":"गुब्बारे","audio":"vo_w_gubbara_p"}},{"id":"topi","icon":"obj_topi_s","emoji":"🧢","s":{"word_hi":"टोपी","audio":"vo_w_topi_s"},"p":{"word_hi":"टोपियाँ","audio":"vo_w_topi_p"}},{"id":"kela","icon":"obj_kela_s","emoji":"🍌","s":{"word_hi":"केला","audio":"vo_w_kela_s"},"p":{"word_hi":"केले","audio":"vo_w_kela_p"}},{"id":"saheli","icon":"obj_saheli_s","emoji":"👧","s":{"word_hi":"सहेली","audio":"vo_w_saheli_s"},"p":{"word_hi":"सहेलियाँ","audio":"vo_w_saheli_p"}},{"id":"machli","icon":"obj_machli_s","emoji":"🐟","s":{"word_hi":"मछली","audio":"vo_w_machli_s"},"p":{"word_hi":"मछलियाँ","audio":"vo_w_machli_p"}},{"id":"ghoda","icon":"obj_ghoda_s","emoji":"🐴","s":{"word_hi":"घोड़ा","audio":"vo_w_ghoda_s"},"p":{"word_hi":"घोड़े","audio":"vo_w_ghoda_p"},"text_only":true},{"id":"paudha","icon":"obj_paudha_s","emoji":"🌱","s":{"word_hi":"पौधा","audio":"vo_w_paudha_s"},"p":{"word_hi":"पौधे","audio":"vo_w_paudha_p"},"text_only":true}],"visible_pairs":3,"gate_before":"practice"},"signals":{"on_complete":["gender_pair_match"]}},{"id":"SUB","phase":"mastery","eis":"symbolic","type":"SUBMARINE_FILL","prompt_hi":"सही शब्द खींचकर खाली जगह में रखिए।","data":{"art":{"still":"sub_hold.webp","w":1400,"h":662,"wave":{"file":"sub_wave_sheet.webp","frames":46,"fps":15,"cols":8,"rows":6,"fw":384,"fh":327,"left":1.613,"top":23.295,"width":27.419,"height":49.432},"windows":[{"cx":35.369,"cy":57.229,"d":11.935},{"cx":49.735,"cy":57.756,"d":11.237},{"cx":62.971,"cy":58.478,"d":10.914},{"cx":75.478,"cy":59.275,"d":10.215},{"cx":87.272,"cy":59.603,"d":9.785}],"tail":{"x":96.5,"y":58}},"levels":[{"name":"स्तर 1","art":"ui_level1_done.png","pairs":[{"id":"g1","one":"गुब्बारा","many":"गुब्बारे","a":["मीरा","ने","एक","{blank}","टाँगा।"],"b":["पापा","बहुत","सारे","{blank}","लाए।"]},{"id":"m1","one":"मछली","many":"मछलियाँ","a":["तालाब","में","एक","{blank}","है।"],"b":["तालाब में","बहुत","सारी","{blank}","हैं।"]},{"id":"l1","one":"लड़का","many":"लड़के","a":["मैदान में","एक","{blank}","खेल रहा","है।"],"b":["मैदान में","बहुत सारे","{blank}","खेल रहे","हैं।"]}]},{"name":"स्तर 2","art":"ui_level2_done.png","pairs":[{"id":"b3","one":"केला","many":"केले","a":["बंदर","एक","{blank}","खा रहा","है।"],"b":["बंदर","बहुत सारे","{blank}","खा रहा","है।"]},{"id":"t3","one":"टोपी","many":"टोपियाँ","a":["मीरा","ने","एक","{blank}","पहनी।"],"b":["सहेलियों","ने","बहुत सारी","{blank}","पहनीं।"]},{"id":"p3","one":"पौधा","many":"पौधे","a":["गमले","में","एक","{blank}","है।"],"b":["बगीचे","में","बहुत सारे","{blank}","हैं।"]}]}]},"signals":{"on_complete":["gender_pair_match"]}},{"id":"CEL","phase":"mastery","eis":"enactive","type":"CELEBRATION","prompt_hi":"शाबाश! अब तुम एकवचन-बहुवचन पहचान सकते हो!","audio":{"prompt":"vo_well_done","sfx":"sfx_celebrate"},"data":{}}],"assets":{"audio":{"vo_pt_tutorial":"assets/Audio/vo_pt_tutorial.ogg","vo_pt_practice":"assets/Audio/vo_pt_practice.ogg","vo_landing":"assets/Audio/vo_landing.ogg","vo_try_again":"assets/Audio/vo_try_again.ogg","vo_well_done":"assets/Audio/vo_well_done.ogg","sfx_celebrate":"assets/Audio/sfx_celebrate.ogg","vo_mtp_prompt":"assets/Audio/vo_mtp_prompt.ogg","vo_mtp_tap":"assets/Audio/vo_mtp_tap.ogg","vo_mtp_sahi":"assets/Audio/vo_mtp_sahi.ogg","vo_mtp_retry":"assets/Audio/vo_mtp_retry.ogg","vo_mtp_listen":"assets/Audio/vo_mtp_listen.ogg","vo_mtp_now_tap":"assets/Audio/vo_mtp_now_tap.ogg","vo_mtp_done":"assets/Audio/vo_mtp_done.ogg","vo_w_gubbara_s":"assets/Audio/vo_w_gubbara_s.ogg","vo_w_gubbara_p":"assets/Audio/vo_w_gubbara_p.ogg","vo_w_topi_s":"assets/Audio/vo_w_topi_s.ogg","vo_w_topi_p":"assets/Audio/vo_w_topi_p.ogg","vo_w_kela_s":"assets/Audio/vo_w_kela_s.ogg","vo_w_kela_p":"assets/Audio/vo_w_kela_p.ogg","vo_w_machli_s":"assets/Audio/vo_w_machli_s.ogg","vo_w_machli_p":"assets/Audio/vo_w_machli_p.ogg","vo_w_ghoda_s":"assets/Audio/vo_w_ghoda_s.ogg","vo_w_ghoda_p":"assets/Audio/vo_w_ghoda_p.ogg","vo_w_saheli_s":"assets/Audio/vo_w_saheli_s.ogg","vo_w_saheli_p":"assets/Audio/vo_w_saheli_p.ogg","vo_stanza1a":"assets/Audio/vo_stanza1a.ogg","vo_stanza1b":"assets/Audio/vo_stanza1b.ogg","vo_stanza_hawa":"assets/Audio/vo_stanza_hawa.ogg","vo_stanza3a":"assets/Audio/vo_stanza3a.ogg","vo_stanza3b":"assets/Audio/vo_stanza3b.ogg","vo_stanza4a":"assets/Audio/vo_stanza4a.ogg","vo_stanza4b":"assets/Audio/vo_stanza4b.ogg","vo_stanza5a":"assets/Audio/vo_stanza5a.ogg","vo_stanza5b":"assets/Audio/vo_stanza5b.ogg","vo_cmp_gubbara_1":"assets/Audio/vo_cmp_gubbara_1.ogg","vo_cmp_ladka_1":"assets/Audio/vo_cmp_ladka_1.ogg","vo_cmp_topi_1":"assets/Audio/vo_cmp_topi_1.ogg","vo_cmp_saheli_1":"assets/Audio/vo_cmp_saheli_1.ogg","vo_pick_prompt":"assets/Audio/vo_pick_prompt.ogg","vo_w_ladki_s":"assets/Audio/vo_w_ladki_s.ogg","vo_w_ladki_p":"assets/Audio/vo_w_ladki_p.ogg","vo_w_paudha_s":"assets/Audio/vo_w_paudha_s.ogg","vo_w_paudha_p":"assets/Audio/vo_w_paudha_p.ogg","vo_w_tali_s":"assets/Audio/vo_w_tali_s.ogg","vo_pick_ok_q1":"assets/Audio/vo_pick_ok_q1.ogg","vo_pick_ok_q2":"assets/Audio/vo_pick_ok_q2.ogg","vo_pick_ok_q3":"assets/Audio/vo_pick_ok_q3.ogg","vo_pick_ok_q4":"assets/Audio/vo_pick_ok_q4.ogg","vo_pick_ok_q5":"assets/Audio/vo_pick_ok_q5.ogg","vo_pick_ok_q6":"assets/Audio/vo_pick_ok_q6.ogg","vo_pick_retry_q1":"assets/Audio/vo_pick_retry_q1.ogg","vo_pick_retry_q2":"assets/Audio/vo_pick_retry_q2.ogg","vo_pick_retry_q3":"assets/Audio/vo_pick_retry_q3.ogg","vo_pick_retry_q4":"assets/Audio/vo_pick_retry_q4.ogg","vo_pick_retry_q5":"assets/Audio/vo_pick_retry_q5.ogg","vo_pick_retry_q6":"assets/Audio/vo_pick_retry_q6.ogg","vo_cmp_topi_2b":"assets/Audio/vo_cmp_topi_2b.ogg","vo_cmp_gubbara_2b":"assets/Audio/vo_cmp_gubbara_2b.ogg","vo_cmp_ladka_2b":"assets/Audio/vo_cmp_ladka_2b.ogg","vo_cmp_saheli_2b":"assets/Audio/vo_cmp_saheli_2b.ogg"},"audio_text":{"vo_pt_tutorial":"ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!","vo_pt_practice":"वाह! अब आपकी बारी।","vo_landing":"नमस्ते दोस्त! आज हम मीरा की कविता से एक और अनेक के बदलते शब्द-रूप सीखेंगे।","vo_try_again":"फिर से कोशिश करो।","vo_well_done":"शाबाश! अब तुम जानते हो — गुब्बारा-गुब्बारे, टोपी-टोपियाँ, बच्चा-बच्चे। एक हो तो एकवचन, बहुत सारे हों तो बहुवचन!","vo_mtp_prompt":"एक और अनेक वाले शब्दों की जोड़ियाँ ढूँढ़िए।","vo_mtp_tap":"पहले एक शब्द पर, फिर उसकी जोड़ी पर टैप कीजिए।","vo_mtp_sahi":"यह सही जोड़ी है।","vo_mtp_retry":"फिर से देखिए। इस शब्द की जोड़ी कौन-सी है?","vo_mtp_listen":"इन दोनों शब्दों को सुनिए—","vo_mtp_now_tap":"अब इन पर टैप कीजिए।","vo_mtp_done":"शाबाश! आपने एक और अनेक वाले सभी शब्दों की जोड़ियाँ ढूँढ़ लीं।","vo_w_gubbara_s":"गुब्बारा","vo_w_gubbara_p":"गुब्बारे","vo_w_topi_s":"टोपी","vo_w_topi_p":"टोपियाँ","vo_w_kela_s":"केला","vo_w_kela_p":"केले","vo_w_machli_s":"मछली","vo_w_machli_p":"मछलियाँ","vo_w_ghoda_s":"घोड़ा","vo_w_ghoda_p":"घोड़े","vo_w_saheli_s":"सहेली","vo_w_saheli_p":"सहेलियाँ","vo_stanza1a":"आज है मीरा का जन्मदिन, मीरा ने एक गुब्बारा टाँगा।","vo_stanza1b":"पापा और गुब्बारे लाए, आओ, इन्हें सजाएँ!","vo_stanza_hawa":"तभी हवा का झोंका आया, फुर्र-फुर्र गुब्बारे उड़ते जाएँ!","vo_stanza3a":"एक लड़का उछलकर बोला, मैं पकड़ूँगा सारे!","vo_stanza3b":"फिर लड़के भी दौड़ पड़े— आगे-आगे गुब्बारे!","vo_stanza4a":"मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ।","vo_stanza4b":"आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ।","vo_stanza5a":"केक कटा, खुश हुई एक सहेली, झूम-झूम नाची वह अलबेली।","vo_stanza5b":"ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी सहेलियाँ!","vo_cmp_gubbara_1":"मीरा ने एक गुब्बारा टाँगा, पापा और गुब्बारे लाए।","vo_cmp_ladka_1":"एक लड़का उछलकर बोला, फिर लड़के भी दौड़ पड़े।","vo_cmp_topi_1":"मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ।","vo_cmp_saheli_1":"केक कटा, खुश हुई एक सहेली, संग-संग नाचीं सारी सहेलियाँ!","vo_pick_prompt":"सही शब्द चुनिए।","vo_w_ladki_s":"लड़की","vo_w_ladki_p":"लड़कियाँ","vo_w_paudha_s":"पौधा","vo_w_paudha_p":"पौधे","vo_w_tali_s":"ताली","vo_pick_ok_q1":"शाबाश! आपने सही शब्द चुना — मछलियाँ।","vo_pick_ok_q2":"शाबाश! आपने सही शब्द चुना — लड़कियाँ।","vo_pick_ok_q3":"शाबाश! आपने सही शब्द चुना — टोपी।","vo_pick_ok_q4":"शाबाश! आपने सही शब्द चुना — घोड़े।","vo_pick_ok_q5":"शाबाश! आपने सही शब्द चुना — केले।","vo_pick_ok_q6":"शाबाश! आपने सही शब्द चुना — पौधा।","vo_pick_retry_q1":"फिर से देखिए—यह एक मछली है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q2":"फिर से देखिए—यह एक लड़की है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q3":"फिर से देखिए—ये अनेक टोपियाँ हैं। एक हो, तो क्या कहेंगे?","vo_pick_retry_q4":"फिर से देखिए—यह एक घोड़ा है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q5":"फिर से देखिए—यह एक केला है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q6":"फिर से देखिए—ये अनेक पौधे हैं। एक हो, तो क्या कहेंगे?","vo_cmp_topi_2b":"एक है तो टोपी, अनेक है तो टोपियाँ।","vo_cmp_gubbara_2b":"एक है तो गुब्बारा, अनेक है तो गुब्बारे।","vo_cmp_ladka_2b":"एक है तो लड़का, अनेक है तो लड़के।","vo_cmp_saheli_2b":"एक है तो सहेली, अनेक है तो सहेलियाँ।"},"image":{"obj_topi_s":"assets/Images/obj_topi_s.png","obj_saheli_s":"assets/Images/obj_saheli_s.png","obj_machli_s":"assets/Images/obj_machli_s.png","obj_kela_s":"assets/Images/obj_kela_s.png","obj_ghoda_s":"assets/Images/obj_ghoda_s.png","scn_gubbara_s":"assets/Images/scn_gubbara_s.png","scn_gubbara_p":"assets/Images/scn_gubbara_p.png","scn_hawa":"assets/Images/scn_hawa.webp","scn_ladka_s":"assets/Images/scn_ladka_s.png","scn_ladka_p":"assets/Images/scn_ladka_p.png","scn_topi_s":"assets/Images/scn_topi_s.png","scn_topi_p":"assets/Images/scn_topi_p.png","scn_saheli_s":"assets/Images/scn_saheli_s.png","scn_saheli_p":"assets/Images/scn_saheli_p.png","obj_ladki_s":"assets/Images/obj_ladki_s.png","obj_paudha_s":"assets/Images/obj_paudha_s.png","obj_gubbara_s":"assets/Images/obj_gubbara_s.png"},"audio_ext":"ogg"}}
+{"version":"0.1","skill_code":"HI02H11_L03_S01","lo_code":"HI02H11_L03","grade":"G2","attribute":"H11","skill_type":"CORE","part_label":"poem","title":{"hi":"मीरा का जन्मदिन","en":"Meera's Flying Balloons — singular/plural"},"subtitle_hi":"एक-अनेक","skill_description_hi":"एकवचन-बहुवचन के शब्द-रूप बदलाव को पहचानता है — जैसे लड़का/लड़के। (कविता आधारित)","dt_fallback":null,"theme":"toybox","phase_distribution":{"tutorial":9,"guided":0,"practice":6,"mastery":3},"scaffold_rules":{"nudge_timeout_ms":{"guided":5000,"independent":8000},"max_attempts":3},"signals_expected":["slide_entered","slide_completed","gender_pair_match","vachan_recognise_first_try","lesson_completed","mastery_score"],"_emoji_fallback":{"obj_topi_s":"🧢","obj_saheli_s":"👧","obj_machli_s":"🐟","obj_kela_s":"🍌","obj_ghoda_s":"🐴","scn_gubbara_s":"🎈","scn_gubbara_p":"🎈🎈🎈","scn_ladka_s":"🧒","scn_ladka_p":"🧒🧒🧒","scn_topi_s":"🧢","scn_topi_p":"🧢🧢🧢","scn_saheli_s":"👧","scn_saheli_p":"👧👧👧","obj_ladki_s":"👧","obj_paudha_s":"🌱"},"slides":[{"id":"T1","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_gubbara_s","emoji":"🎈","audio":"vo_stanza1a","lines":["आज है मीरा का जन्मदिन, मीरा ने एक *गुब्बारा* टाँगा।"],"cues_ms":[340,667,831,1158,1322,2570,2923,3099,3452,4157]},{"img":"scn_gubbara_p","emoji":"🎈🎈🎈","audio":"vo_stanza1b","lines":["पापा और *गुब्बारे* लाए, आओ, इन्हें सजाएँ!"],"cues_ms":[280,644,1008,1736,2500,3090,3535]}]}},{"id":"C1","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_gubbara_1","explain":"vo_cmp_gubbara_2b"},"data":{"s":{"img":"scn_gubbara_s","emoji":"🎈","stem":"गुब्बा","change":"रा"},"p":{"img":"scn_gubbara_p","emoji":"🎈🎈🎈","stem":"गुब्बा","change":"रे"}}},{"id":"T1B","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_hawa","emoji":"🎈💨","audio":"vo_stanza_hawa","lines":["तभी हवा का झोंका आया, फुर्र-फुर्र *गुब्बारे* उड़ते जाएँ!"],"cues_ms":[280,669,1058,1252,1641,2510,3390,3977,4417]}]}},{"id":"T2","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_ladka_s","emoji":"🧒","audio":"vo_stanza3a","lines":["एक *लड़का* उछलकर बोला, “मैं पकड़ूँगा सारे!”"],"cues_ms":[270,610,1120,1970,2310,2480,3160]},{"img":"scn_ladka_p","emoji":"🧒🧒🧒","audio":"vo_stanza3b","lines":["फिर *लड़के* भी दौड़ पड़े— आगे-आगे गुब्बारे!"],"cues_ms":[240,586,1104,1277,1622,1968,2659]}]}},{"id":"C2","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_ladka_1","explain":"vo_cmp_ladka_2b"},"data":{"s":{"img":"scn_ladka_s","emoji":"🧒","stem":"लड़","change":"का"},"p":{"img":"scn_ladka_p","emoji":"🧒🧒🧒","stem":"लड़","change":"के"}}},{"id":"T3","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_topi_s","emoji":"🧢","audio":"vo_stanza4a","lines":["मीरा की एक *टोपी* उड़ी, फिर उड़ीं सबकी *टोपियाँ*।"],"cues_ms":[260,631,816,1186,1557,1927,2298,2668,3224]},{"img":"scn_topi_p","emoji":"🧢🧢🧢","audio":"vo_stanza4b","lines":["आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ।"],"cues_ms":[290,761,1232,1703,1860,2017,2959]}]}},{"id":"C3","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_topi_1","explain":"vo_cmp_topi_2b"},"data":{"s":{"img":"scn_topi_s","emoji":"🧢","stem":"टो","change":"पी"},"p":{"img":"scn_topi_p","emoji":"🧢🧢🧢","stem":"टो","change":"पियाँ"}}},{"id":"T4","phase":"tutorial","eis":"iconic","type":"STORY_SCENE","prompt_hi":"कविता सुनो — मीरा के उड़ते गुब्बारे","audio":{},"data":{"beats":[{"img":"scn_saheli_s","emoji":"👧","audio":"vo_stanza5a","lines":["केक कटा, खुश हुई एक *सहेली*, झूम-झूम नाची वह अलबेली।"],"cues_ms":[290,699,1108,1516,1925,2334,2947,3765,4174,4582]},{"img":"scn_saheli_p","emoji":"👧👧👧","audio":"vo_stanza5b","lines":["ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी *सहेलियाँ*!"],"cues_ms":[300,739,1178,1617,2057,2715,3593,4033,4472]}]}},{"id":"C4","phase":"tutorial","eis":"iconic","type":"COMPARE_VACHAN","prompt_hi":"","audio":{"recap":"vo_cmp_saheli_1","explain":"vo_cmp_saheli_2b"},"data":{"s":{"img":"scn_saheli_s","emoji":"👧","stem":"सहे","change":"ली"},"p":{"img":"scn_saheli_p","emoji":"👧👧👧","stem":"सहे","change":"लियाँ"}}},{"id":"Q1","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q1","correct":"vo_pick_ok_q1"},"data":{"source":{"word_hi":"मछली","img":"obj_machli_s","emoji":"🐟","audio":"vo_w_machli_s","count":1},"target":{"img":"obj_machli_s","emoji":"🐟","count":4,"label":"अनेक"},"options":[{"word_hi":"टोपी","audio":"vo_w_topi_s","correct":false},{"word_hi":"मछलियाँ","audio":"vo_w_machli_p","correct":true},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q2","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q2","correct":"vo_pick_ok_q2"},"data":{"source":{"word_hi":"लड़की","img":"obj_ladki_s","emoji":"👧","audio":"vo_w_ladki_s","count":1},"target":{"img":"obj_ladki_s","emoji":"👧","count":3,"label":"अनेक"},"options":[{"word_hi":"ताली","audio":"vo_w_tali_s","correct":false},{"word_hi":"सहेलियाँ","audio":"vo_w_saheli_p","correct":false},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q3","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q3","correct":"vo_pick_ok_q3"},"data":{"source":{"word_hi":"टोपियाँ","img":"obj_topi_s","emoji":"🧢","audio":"vo_w_topi_p","count":4},"target":{"img":"obj_topi_s","emoji":"🧢","count":1,"label":"एक"},"options":[{"word_hi":"मछली","audio":"vo_w_machli_s","correct":false},{"word_hi":"टोपी","audio":"vo_w_topi_s","correct":true},{"word_hi":"केले","audio":"vo_w_kela_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q4","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q4","correct":"vo_pick_ok_q4"},"data":{"source":{"word_hi":"घोड़ा","img":"obj_ghoda_s","emoji":"🐴","audio":"vo_w_ghoda_s","count":1},"target":{"img":"obj_ghoda_s","emoji":"🐴","count":3,"label":"अनेक"},"options":[{"word_hi":"पौधे","audio":"vo_w_paudha_p","correct":false},{"word_hi":"लड़कियाँ","audio":"vo_w_ladki_p","correct":false},{"word_hi":"घोड़े","audio":"vo_w_ghoda_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q5","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q5","correct":"vo_pick_ok_q5"},"data":{"source":{"word_hi":"केला","img":"obj_kela_s","emoji":"🍌","audio":"vo_w_kela_s","count":1},"target":{"img":"obj_kela_s","emoji":"🍌","count":3,"label":"अनेक"},"options":[{"word_hi":"पौधा","audio":"vo_w_paudha_s","correct":false},{"word_hi":"मछली","audio":"vo_w_machli_s","correct":false},{"word_hi":"केले","audio":"vo_w_kela_p","correct":true}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"Q6","phase":"practice","eis":"iconic","type":"PICK_VACHAN_WORD","prompt_hi":"सही शब्द चुनिए।","audio":{"prompt":"vo_pick_prompt","retry":"vo_pick_retry_q6","correct":"vo_pick_ok_q6"},"data":{"source":{"word_hi":"पौधे","img":"obj_paudha_s","emoji":"🌱","audio":"vo_w_paudha_p","count":3},"target":{"img":"obj_paudha_s","emoji":"🌱","count":1,"label":"एक"},"options":[{"word_hi":"पौधा","audio":"vo_w_paudha_s","correct":true},{"word_hi":"घोड़ा","audio":"vo_w_ghoda_s","correct":false},{"word_hi":"घोड़े","audio":"vo_w_ghoda_p","correct":false}]},"signals":{"on_complete":["vachan_recognise_first_try"]}},{"id":"PAIR1","phase":"mastery","eis":"enactive","type":"MATCH_VACHAN_PAIRS","prompt_hi":"एक और अनेक वाले शब्दों की जोड़ियाँ ढूँढ़िए।","audio":{"prompt":"vo_mtp_prompt","tap_hint":"vo_mtp_tap","sahi":"vo_mtp_sahi","retry":"vo_mtp_retry","listen":"vo_mtp_listen","now_tap":"vo_mtp_now_tap","done":"vo_mtp_done"},"data":{"demo":true,"pairs":[{"id":"gubbara","icon":"obj_gubbara_s","emoji":"🎈","s":{"word_hi":"गुब्बारा","audio":"vo_w_gubbara_s"},"p":{"word_hi":"गुब्बारे","audio":"vo_w_gubbara_p"}},{"id":"topi","icon":"obj_topi_s","emoji":"🧢","s":{"word_hi":"टोपी","audio":"vo_w_topi_s"},"p":{"word_hi":"टोपियाँ","audio":"vo_w_topi_p"}},{"id":"kela","icon":"obj_kela_s","emoji":"🍌","s":{"word_hi":"केला","audio":"vo_w_kela_s"},"p":{"word_hi":"केले","audio":"vo_w_kela_p"}},{"id":"saheli","icon":"obj_saheli_s","emoji":"👧","s":{"word_hi":"सहेली","audio":"vo_w_saheli_s"},"p":{"word_hi":"सहेलियाँ","audio":"vo_w_saheli_p"}},{"id":"machli","icon":"obj_machli_s","emoji":"🐟","s":{"word_hi":"मछली","audio":"vo_w_machli_s"},"p":{"word_hi":"मछलियाँ","audio":"vo_w_machli_p"}},{"id":"ghoda","icon":"obj_ghoda_s","emoji":"🐴","s":{"word_hi":"घोड़ा","audio":"vo_w_ghoda_s"},"p":{"word_hi":"घोड़े","audio":"vo_w_ghoda_p"},"text_only":true},{"id":"paudha","icon":"obj_paudha_s","emoji":"🌱","s":{"word_hi":"पौधा","audio":"vo_w_paudha_s"},"p":{"word_hi":"पौधे","audio":"vo_w_paudha_p"},"text_only":true}],"visible_pairs":3,"gate_before":"practice"},"signals":{"on_complete":["gender_pair_match"]}},{"id":"SUB","phase":"mastery","eis":"symbolic","type":"SUBMARINE_FILL","prompt_hi":"सही शब्द खींचकर खाली जगह में रखिए।","data":{"art":{"still":"sub_hold.webp","hull":"sub_hull.webp","blades":{"file":"sub_blades.webp","left":94.143,"top":41.39,"width":5.143,"height":41.692,"originY":49.638},"w":1400,"h":662,"wave":{"file":"sub_wave_sheet.webp","frames":46,"fps":15,"cols":8,"rows":6,"fw":384,"fh":327,"left":1.613,"top":23.295,"width":27.419,"height":49.432},"windows":[{"cx":35.369,"cy":57.229,"d":11.935},{"cx":49.735,"cy":57.756,"d":11.237},{"cx":62.971,"cy":58.478,"d":10.914},{"cx":75.478,"cy":59.275,"d":10.215},{"cx":87.272,"cy":59.603,"d":9.785}],"tail":{"x":96.5,"y":58}},"levels":[{"name":"स्तर 1","art":"ui_level1_done.png","pairs":[{"id":"g1","one":"गुब्बारा","many":"गुब्बारे","a":["मीरा","ने","एक","{blank}","टाँगा।"],"b":["पापा","बहुत","सारे","{blank}","लाए।"]},{"id":"m1","one":"मछली","many":"मछलियाँ","a":["तालाब","में","एक","{blank}","है।"],"b":["तालाब में","बहुत","सारी","{blank}","हैं।"]},{"id":"l1","one":"लड़का","many":"लड़के","a":["मैदान में","एक","{blank}","खेल रहा","है।"],"b":["मैदान में","बहुत सारे","{blank}","खेल रहे","हैं।"]}]},{"name":"स्तर 2","art":"ui_level2_done.png","pairs":[{"id":"b3","one":"केला","many":"केले","a":["बंदर","एक","{blank}","खा रहा","है।"],"b":["बंदर","बहुत सारे","{blank}","खा रहा","है।"]},{"id":"t3","one":"टोपी","many":"टोपियाँ","a":["मीरा","ने","एक","{blank}","पहनी।"],"b":["सहेलियों","ने","बहुत सारी","{blank}","पहनीं।"]},{"id":"p3","one":"पौधा","many":"पौधे","a":["गमले","में","एक","{blank}","है।"],"b":["बगीचे","में","बहुत सारे","{blank}","हैं।"]}]}]},"signals":{"on_complete":["gender_pair_match"]}},{"id":"CEL","phase":"mastery","eis":"enactive","type":"CELEBRATION","prompt_hi":"शाबाश! अब तुम एकवचन-बहुवचन पहचान सकते हो!","audio":{"prompt":"vo_well_done","sfx":"sfx_celebrate"},"data":{}}],"assets":{"audio":{"vo_pt_tutorial":"assets/Audio/vo_pt_tutorial.ogg","vo_pt_practice":"assets/Audio/vo_pt_practice.ogg","vo_landing":"assets/Audio/vo_landing.ogg","vo_try_again":"assets/Audio/vo_try_again.ogg","vo_well_done":"assets/Audio/vo_well_done.ogg","sfx_celebrate":"assets/Audio/sfx_celebrate.ogg","vo_mtp_prompt":"assets/Audio/vo_mtp_prompt.ogg","vo_mtp_tap":"assets/Audio/vo_mtp_tap.ogg","vo_mtp_sahi":"assets/Audio/vo_mtp_sahi.ogg","vo_mtp_retry":"assets/Audio/vo_mtp_retry.ogg","vo_mtp_listen":"assets/Audio/vo_mtp_listen.ogg","vo_mtp_now_tap":"assets/Audio/vo_mtp_now_tap.ogg","vo_mtp_done":"assets/Audio/vo_mtp_done.ogg","vo_w_gubbara_s":"assets/Audio/vo_w_gubbara_s.ogg","vo_w_gubbara_p":"assets/Audio/vo_w_gubbara_p.ogg","vo_w_topi_s":"assets/Audio/vo_w_topi_s.ogg","vo_w_topi_p":"assets/Audio/vo_w_topi_p.ogg","vo_w_kela_s":"assets/Audio/vo_w_kela_s.ogg","vo_w_kela_p":"assets/Audio/vo_w_kela_p.ogg","vo_w_machli_s":"assets/Audio/vo_w_machli_s.ogg","vo_w_machli_p":"assets/Audio/vo_w_machli_p.ogg","vo_w_ghoda_s":"assets/Audio/vo_w_ghoda_s.ogg","vo_w_ghoda_p":"assets/Audio/vo_w_ghoda_p.ogg","vo_w_saheli_s":"assets/Audio/vo_w_saheli_s.ogg","vo_w_saheli_p":"assets/Audio/vo_w_saheli_p.ogg","vo_stanza1a":"assets/Audio/vo_stanza1a.ogg","vo_stanza1b":"assets/Audio/vo_stanza1b.ogg","vo_stanza_hawa":"assets/Audio/vo_stanza_hawa.ogg","vo_stanza3a":"assets/Audio/vo_stanza3a.ogg","vo_stanza3b":"assets/Audio/vo_stanza3b.ogg","vo_stanza4a":"assets/Audio/vo_stanza4a.ogg","vo_stanza4b":"assets/Audio/vo_stanza4b.ogg","vo_stanza5a":"assets/Audio/vo_stanza5a.ogg","vo_stanza5b":"assets/Audio/vo_stanza5b.ogg","vo_cmp_gubbara_1":"assets/Audio/vo_cmp_gubbara_1.ogg","vo_cmp_ladka_1":"assets/Audio/vo_cmp_ladka_1.ogg","vo_cmp_topi_1":"assets/Audio/vo_cmp_topi_1.ogg","vo_cmp_saheli_1":"assets/Audio/vo_cmp_saheli_1.ogg","vo_pick_prompt":"assets/Audio/vo_pick_prompt.ogg","vo_w_ladki_s":"assets/Audio/vo_w_ladki_s.ogg","vo_w_ladki_p":"assets/Audio/vo_w_ladki_p.ogg","vo_w_paudha_s":"assets/Audio/vo_w_paudha_s.ogg","vo_w_paudha_p":"assets/Audio/vo_w_paudha_p.ogg","vo_w_tali_s":"assets/Audio/vo_w_tali_s.ogg","vo_pick_ok_q1":"assets/Audio/vo_pick_ok_q1.ogg","vo_pick_ok_q2":"assets/Audio/vo_pick_ok_q2.ogg","vo_pick_ok_q3":"assets/Audio/vo_pick_ok_q3.ogg","vo_pick_ok_q4":"assets/Audio/vo_pick_ok_q4.ogg","vo_pick_ok_q5":"assets/Audio/vo_pick_ok_q5.ogg","vo_pick_ok_q6":"assets/Audio/vo_pick_ok_q6.ogg","vo_pick_retry_q1":"assets/Audio/vo_pick_retry_q1.ogg","vo_pick_retry_q2":"assets/Audio/vo_pick_retry_q2.ogg","vo_pick_retry_q3":"assets/Audio/vo_pick_retry_q3.ogg","vo_pick_retry_q4":"assets/Audio/vo_pick_retry_q4.ogg","vo_pick_retry_q5":"assets/Audio/vo_pick_retry_q5.ogg","vo_pick_retry_q6":"assets/Audio/vo_pick_retry_q6.ogg","vo_cmp_topi_2b":"assets/Audio/vo_cmp_topi_2b.ogg","vo_cmp_gubbara_2b":"assets/Audio/vo_cmp_gubbara_2b.ogg","vo_cmp_ladka_2b":"assets/Audio/vo_cmp_ladka_2b.ogg","vo_cmp_saheli_2b":"assets/Audio/vo_cmp_saheli_2b.ogg"},"audio_text":{"vo_pt_tutorial":"ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!","vo_pt_practice":"वाह! अब आपकी बारी।","vo_landing":"नमस्ते दोस्त! आज हम मीरा की कविता से एक और अनेक के बदलते शब्द-रूप सीखेंगे।","vo_try_again":"फिर से कोशिश करो।","vo_well_done":"शाबाश! अब तुम जानते हो — गुब्बारा-गुब्बारे, टोपी-टोपियाँ, बच्चा-बच्चे। एक हो तो एकवचन, बहुत सारे हों तो बहुवचन!","vo_mtp_prompt":"एक और अनेक वाले शब्दों की जोड़ियाँ ढूँढ़िए।","vo_mtp_tap":"पहले एक शब्द पर, फिर उसकी जोड़ी पर टैप कीजिए।","vo_mtp_sahi":"यह सही जोड़ी है।","vo_mtp_retry":"फिर से देखिए। इस शब्द की जोड़ी कौन-सी है?","vo_mtp_listen":"इन दोनों शब्दों को सुनिए—","vo_mtp_now_tap":"अब इन पर टैप कीजिए।","vo_mtp_done":"शाबाश! आपने एक और अनेक वाले सभी शब्दों की जोड़ियाँ ढूँढ़ लीं।","vo_w_gubbara_s":"गुब्बारा","vo_w_gubbara_p":"गुब्बारे","vo_w_topi_s":"टोपी","vo_w_topi_p":"टोपियाँ","vo_w_kela_s":"केला","vo_w_kela_p":"केले","vo_w_machli_s":"मछली","vo_w_machli_p":"मछलियाँ","vo_w_ghoda_s":"घोड़ा","vo_w_ghoda_p":"घोड़े","vo_w_saheli_s":"सहेली","vo_w_saheli_p":"सहेलियाँ","vo_stanza1a":"आज है मीरा का जन्मदिन, मीरा ने एक गुब्बारा टाँगा।","vo_stanza1b":"पापा और गुब्बारे लाए, आओ, इन्हें सजाएँ!","vo_stanza_hawa":"तभी हवा का झोंका आया, फुर्र-फुर्र गुब्बारे उड़ते जाएँ!","vo_stanza3a":"एक लड़का उछलकर बोला, मैं पकड़ूँगा सारे!","vo_stanza3b":"फिर लड़के भी दौड़ पड़े— आगे-आगे गुब्बारे!","vo_stanza4a":"मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ।","vo_stanza4b":"आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ।","vo_stanza5a":"केक कटा, खुश हुई एक सहेली, झूम-झूम नाची वह अलबेली।","vo_stanza5b":"ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी सहेलियाँ!","vo_cmp_gubbara_1":"मीरा ने एक गुब्बारा टाँगा, पापा और गुब्बारे लाए।","vo_cmp_ladka_1":"एक लड़का उछलकर बोला, फिर लड़के भी दौड़ पड़े।","vo_cmp_topi_1":"मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ।","vo_cmp_saheli_1":"केक कटा, खुश हुई एक सहेली, संग-संग नाचीं सारी सहेलियाँ!","vo_pick_prompt":"सही शब्द चुनिए।","vo_w_ladki_s":"लड़की","vo_w_ladki_p":"लड़कियाँ","vo_w_paudha_s":"पौधा","vo_w_paudha_p":"पौधे","vo_w_tali_s":"ताली","vo_pick_ok_q1":"शाबाश! आपने सही शब्द चुना — मछलियाँ।","vo_pick_ok_q2":"शाबाश! आपने सही शब्द चुना — लड़कियाँ।","vo_pick_ok_q3":"शाबाश! आपने सही शब्द चुना — टोपी।","vo_pick_ok_q4":"शाबाश! आपने सही शब्द चुना — घोड़े।","vo_pick_ok_q5":"शाबाश! आपने सही शब्द चुना — केले।","vo_pick_ok_q6":"शाबाश! आपने सही शब्द चुना — पौधा।","vo_pick_retry_q1":"फिर से देखिए—यह एक मछली है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q2":"फिर से देखिए—यह एक लड़की है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q3":"फिर से देखिए—ये अनेक टोपियाँ हैं। एक हो, तो क्या कहेंगे?","vo_pick_retry_q4":"फिर से देखिए—यह एक घोड़ा है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q5":"फिर से देखिए—यह एक केला है। अनेक हों, तो क्या कहेंगे?","vo_pick_retry_q6":"फिर से देखिए—ये अनेक पौधे हैं। एक हो, तो क्या कहेंगे?","vo_cmp_topi_2b":"एक है तो टोपी, अनेक है तो टोपियाँ।","vo_cmp_gubbara_2b":"एक है तो गुब्बारा, अनेक है तो गुब्बारे।","vo_cmp_ladka_2b":"एक है तो लड़का, अनेक है तो लड़के।","vo_cmp_saheli_2b":"एक है तो सहेली, अनेक है तो सहेलियाँ।"},"image":{"obj_topi_s":"assets/Images/obj_topi_s.png","obj_saheli_s":"assets/Images/obj_saheli_s.png","obj_machli_s":"assets/Images/obj_machli_s.png","obj_kela_s":"assets/Images/obj_kela_s.png","obj_ghoda_s":"assets/Images/obj_ghoda_s.png","scn_gubbara_s":"assets/Images/scn_gubbara_s.png","scn_gubbara_p":"assets/Images/scn_gubbara_p.png","scn_hawa":"assets/Images/scn_hawa.webp","scn_ladka_s":"assets/Images/scn_ladka_s.png","scn_ladka_p":"assets/Images/scn_ladka_p.png","scn_topi_s":"assets/Images/scn_topi_s.png","scn_topi_p":"assets/Images/scn_topi_p.png","scn_saheli_s":"assets/Images/scn_saheli_s.png","scn_saheli_p":"assets/Images/scn_saheli_p.png","obj_ladki_s":"assets/Images/obj_ladki_s.png","obj_paudha_s":"assets/Images/obj_paudha_s.png","obj_gubbara_s":"assets/Images/obj_gubbara_s.png"},"audio_ext":"ogg"}}
 </script>
 
 <!-- ============ ENGINE ============ -->
@@ -5417,12 +5450,47 @@ const SlideModules = {
       const later = (fn, ms)=> setTimeout(()=>{ if(onScreen()) fn(); }, ms);
 
       let sel = null, wrongStreak = 0, solved = 0, guide = null, demoGuide = false;
-      const idle = oceanIdle(wrap,isDemo ? 'instructionBubble' : null,()=>{
+      /* [r84] THE INSTRUCTION WALKS THE CHILD THROUGH ONE PAIR. "…ढूँढ़िए। पहले एक शब्द पर, फिर उसकी
+         जोड़ी पर टैप कीजिए।": the एक bubble lights up when the voice reaches "पहले एक शब्द पर" and its
+         अनेक partner when it reaches "फिर उसकी जोड़ी पर"; both stay lit to the end of the line and 1.5s
+         more. Read off the clip's own clock (5.15s and 6.8s of the 9.0s recording, scaled to the clip's
+         length so a re-record still lands), with a wall-clock fallback if it is muted or fails. */
+      const WALK_ONE_AT = 5.15, WALK_PAIR_AT = 6.8, WALK_CLIP_S = 9.0;
+      let walkTimer = 0, walking = [];
+      function endWalk(){ clearInterval(walkTimer); walkTimer = 0; walking.forEach(b => b && b.classList.remove("intro-glow")); walking = []; }
+      function walkPair(one, many){
+        endWalk(); if(!one || !many) return;
+        walking = [one, many];
+        const began = Date.now(); let heard = false, endAt = 0;
+        walkTimer = setInterval(()=>{
+          if(!onScreen()){ endWalk(); return; }
+          const a = currentAudio, onClip = !!(a && /ocean_instruction_bubble/.test(a.currentSrc || a.src || "") && isFinite(a.duration) && a.duration > 0 && !a.ended);
+          let t;
+          if(onClip){ heard = true; t = a.currentTime / a.duration * WALK_CLIP_S; }
+          else t = heard ? Infinity : (Date.now() - began) / 1000;
+          if(t >= WALK_ONE_AT && alive(one)) one.classList.add("intro-glow");
+          if(t >= WALK_PAIR_AT && alive(many)) many.classList.add("intro-glow");
+          if(!endAt && ((heard && !onClip) || (!heard && Date.now() - began > WALK_CLIP_S * 1000 + 500))) endAt = Date.now() + 1500;
+          if(endAt && Date.now() >= endAt) endWalk();
+        }, 50);
+      }
+      oceanAddCleanup(endWalk);
+      /* [r84] asked: the instruction is NOT repeated again and again. It comes back only when the child
+         has done nothing for 10s, and only once until the child makes a pair (then it may come back after
+         another 10s of nothing). When it does come back it walks a pair that is on the board. */
+      let idleSpoke = false;
+      const livePair = ()=>{ for(const pr of pairs){ const a = find(pr.id, "s"), b = find(pr.id, "p"); if(a && b) return [a, b]; } return null; };
+      const idle = oceanIdle(wrap,isDemo ? ()=>{
+        if(idleSpoke) return null;
+        idleSpoke = true;
+        const pr = livePair(); if(pr) walkPair(pr[0], pr[1]);
+        return 'instructionBubble';
+      } : null,()=>{
         const target=sel ? find(sel.dataset.pairId,sel.dataset.num==='s'?'p':'s') : bubbles.find(alive);
         if(!target)return;
         target.classList.add('pulse-hold');
         return ()=>target.classList.remove('pulse-hold');
-      });
+      }, 10000);
 
       const clearGuide = () => {
         bubbles.forEach(b => b.classList.remove("faded", "pulse-hold"));
@@ -5437,7 +5505,7 @@ const SlideModules = {
          then they fly across into the tray and become the pair card. The VO rides alongside the
          animation instead of gating it — a child who solved it should not wait to be told so. */
       function settle(b1, b2, withSahi, after){
-        state.locked = true; stopNudge(); idle.clear();
+        state.locked = true; stopNudge(); idle.clear(); endWalk(); idleSpoke = false;   // [r84] a pair made: the reminder may come once more
         const p = b1.__pair;
         bubbleBurstAt(b1); bubbleBurstAt(b2);
         [b1, b2].forEach(b => { b.classList.remove("sel", "pulse-hold"); b.classList.add("ok", "burst"); });
@@ -5551,11 +5619,9 @@ const SlideModules = {
            pulses (about two seconds) while that VO is speaking; everything else stays fully sharp
            and at normal speed. Only after the instruction ends does the board unlock for play. */
         const introPair=pairs[0], introOne=find(introPair.id,"s"), introMany=find(introPair.id,"p");
-        [introOne,introMany].forEach(b=>b&&b.classList.add("intro-pulse"));
-        later(()=>[introOne,introMany].forEach(b=>b&&b.classList.remove("intro-pulse")),6000);   // [r73] 4 × 1.5s glow
+        walkPair(introOne, introMany);   // [r84] lit in step with the line, not all at once
         oceanSay('instructionBubble',()=>{
           if(!onScreen())return;
-          [introOne,introMany].forEach(b=>b&&b.classList.remove("intro-pulse"));
           state.locked=false;armIdle();
         });
         return;
@@ -5990,12 +6056,16 @@ const SlideModules = {
          the two answer words wait below and are DRAGGED into that blank;
        · a correct word settles into its window in green, the sentence is left up long enough to read,
          and the next sentence pops into the SAME windows — every question on one screen;
+       · [r83] ONE continuous game: the instruction is spoken once, at the very start, and the second
+         level follows the first with no break, no confetti and no praise in between;
        · 7s of inactivity: Swiftie waves from the cockpit (frames cut from the supplied video, so it is
-         her own animation); on a level's first question the instruction is spoken again, and from the
+         her own animation); on the very first question the instruction is spoken again, and from the
          second reminder on the empty window pulses as well;
        · every voice line holds the board, as the level's opening instruction always did — nothing
          can be picked up while Swiftie is speaking (r77b);
-       · when every sentence is done the submarine leaves to the left, then the level's finish panel
+       · when every sentence is done: confetti and Swiftie's closing praise while the submarine waits,
+         ready; then its motor starts (the propeller spins) and it leaves to the left — [r83];
+         (until r81: the submarine left first, then the level's finish panel
          and the lesson's closing line, then the end screen.
      Art: assets/UI/sub_hold.webp (the parked submarine, cut out of video A) and
      assets/UI/sub_wave_sheet.webp (the cockpit while she waves, aligned to that still). Window and
@@ -6023,14 +6093,19 @@ const SlideModules = {
         (v.length > 2 && v.every((x, i) => i === 0 || x !== v[i - 1])) ||
         v.some((x, i) => i >= 2 && x === v[i - 1] && x === v[i - 2]));
       const deal = (make, ok)=>{ let o = make(); for(let t = 0; t < 4000 && !ok(o); t++) o = make(); return o; };
-      const plan = levels.map(L => {
+      const dealLevel = L => {
         const all = [];
         L.pairs.forEach(p => all.push({ pair: p, win: p.a, ans: "one" }, { pair: p, win: p.b, ans: "many" }));
         const qs = deal(()=> shuffled(all), o => o.every((qq, i) => i === 0 || qq.pair !== o[i - 1].pair) && !patterned(o.map(qq => qq.ans)));
         const left = deal(()=> qs.map(()=> Math.random() < .5), o => !patterned(o));
         qs.forEach((qq, i) => qq.correctLeft = left[i]);
         return qs;
-      });
+      };
+      /* [r83] the levels now run on without a break, so the rule "never three in a row" must also
+         hold across the join between them */
+      const noTriple = v => !v.some((x, i) => i >= 2 && x === v[i - 1] && x === v[i - 2]);
+      const plan = deal(()=> levels.map(dealLevel), p => { const all = p.flat();
+        return noTriple(all.map(qq => qq.ans)) && noTriple(all.map(qq => qq.correctLeft)); });
       const total = plan.reduce((n, qs) => n + qs.length, 0);
       let li = 0, qi = 0, solved = 0, wrongHere = 0, parked = false;
 
@@ -6042,7 +6117,7 @@ const SlideModules = {
           '<span class="subg-progress-track" aria-hidden="true"><i class="subg-progress-fill"></i></span>' +
           '<span class="subg-progress-sub" aria-hidden="true"><img class="subg-progress-hull" alt="" draggable="false">' +
             '<img class="subg-progress-glass" src="assets/UI/submarine-sentence-window.svg" alt="" draggable="false"></span></div>' +
-        '<div class="subg-sub"><img class="subg-hull" alt="" draggable="false"><div class="subg-wave"></div>' +
+        '<div class="subg-sub"><img class="subg-prop" alt="" draggable="false"><img class="subg-hull" alt="" draggable="false"><div class="subg-wave"></div>' +
           '<img class="subg-sentence-glass" src="assets/UI/submarine-sentence-window.svg" alt="" draggable="false">' +
           '<div class="subg-sentence"></div></div>' +
         '<div class="subg-opts"></div>';
@@ -6061,8 +6136,17 @@ const SlideModules = {
       const SUB_W = 820, SUB_H = Math.round(SUB_W * (art.h || 662) / (art.w || 1400));
       sub.style.width = SUB_W + "px"; sub.style.height = SUB_H + "px";
       sub.style.left = Math.max(0, Math.round(((wrap.clientWidth || 1297) - SUB_W) / 2)) + "px";   // centred in the field
-      hull.src = "assets/UI/" + (art.still || "sub_hold.webp");
-      $q(".subg-progress-hull").src = hull.src;
+      /* [r83] the hull is drawn without its propeller blades; the blades are their own image under it,
+         so they can spin. The progress marker keeps the whole still. */
+      hull.src = "assets/UI/" + (art.hull || art.still || "sub_hold.webp");
+      $q(".subg-progress-hull").src = "assets/UI/" + (art.still || "sub_hold.webp");
+      const prop = $q(".subg-prop"), BL = art.blades || null;
+      if(BL && art.hull){
+        prop.src = "assets/UI/" + BL.file;
+        Object.assign(prop.style, { left: BL.left + "%", top: BL.top + "%", width: BL.width + "%", height: BL.height + "%",
+          transformOrigin: "50% " + BL.originY + "%" });
+      } else prop.remove();
+      const motor = on => sub.classList.toggle("motor", !!on);
       $q(".subg-progress-sub").style.aspectRatio = (art.w || 1400) + "/" + (art.h || 662);
       const W8 = art.wave || {};
       Object.assign(waveEl.style, {
@@ -6167,18 +6251,18 @@ const SlideModules = {
          submarine fades in and out where it parks */
       const IN_MS = REDUCED ? 450 : 3000, OUT_MS = REDUCED ? 450 : 2900;
       function arrive(done){
-        parked = false; if(!REDUCED) trail(true);
+        parked = false; if(!REDUCED){ trail(true); motor(true); }
         const a = sub.animate(REDUCED ? [{ opacity: 0, transform: "translate(0, 0)" }, { opacity: 1, transform: "translate(0, 0)" }] : [
           { transform: "translate(" + OFF + "px, 6px)" }, { transform: "translate(" + Math.round(OFF * .5) + "px, -6px)", offset: .5 },
           { transform: "translate(" + Math.round(OFF * .1) + "px, 4px)", offset: .85 }, { transform: "translate(0, 0)" }],
           { duration: IN_MS, easing: "cubic-bezier(.33,.08,.27,1)", fill: "forwards" });
         /* finish exactly once — on the animation's own end, or on a timer if the page is not drawing
            frames (a background tab), so the game can never stall waiting for a frame */
-        let fired = false; const fin = ()=>{ if(fired || !alive()) return; fired = true; trail(false); parked = true; done && done(); };
+        let fired = false; const fin = ()=>{ if(fired || !alive()) return; fired = true; trail(false); motor(false); parked = true; done && done(); };
         a.onfinish = fin; later(()=>{ if(!fired){ try{ a.finish(); }catch(e){} fin(); } }, IN_MS + 500);   // snap to the end if frames stalled
       }
       function leave(done){
-        parked = false; clearInterval(waveTimer); waveEl.classList.remove("on"); waving = false; if(!REDUCED) trail(true);
+        parked = false; clearInterval(waveTimer); waveEl.classList.remove("on"); waving = false; if(!REDUCED){ trail(true); motor(true); }
         const a = sub.animate(REDUCED ? [{ opacity: 1, transform: "translate(0, 0)" }, { opacity: 0, transform: "translate(0, 0)" }] : [
           { transform: "translate(0, 0)" }, { transform: "translate(-40px, -5px)", offset: .3 },
           { transform: "translate(" + (-OFF * .4) + "px, 5px)", offset: .7 }, { transform: "translate(" + (-OFF) + "px, -4px)" }],
@@ -6198,14 +6282,14 @@ const SlideModules = {
         wave();
         /* the next reminder counts its 7s from when the board is free again, not from the start of
            this one (the board is held while Swiftie speaks) */
-        if(idleN === 1 && qi === 0){ speak("instructionFill", idleArm); return; }
+        if(idleN === 1 && li === 0 && qi === 0){ speak("instructionFill", idleArm); return; }   // [r83] the very first question only
         if(idleN >= 2){ const b = blankWin(); if(b){ b.classList.remove("cue"); void b.offsetWidth; b.classList.add("cue"); later(()=> b.classList.remove("cue"), 1900); } }
         idleT = later(idleBeat, 7000);
       }
       const idleArm = ()=>{ clearTimeout(idleT); idleT = later(idleBeat, 7000); };
       const idleReset = ()=>{ idleN = 0; clearTimeout(idleT); };
-      wrap.addEventListener("pointerdown", ()=>{ idleN = 0; idleArm(); }, true);
-      oceanAddCleanup(()=>{ clearTimeout(idleT); clearInterval(waveTimer); clearInterval(trailTimer); });
+      wrap.addEventListener("pointerdown", ()=>{ idleN = 0; idleArm(); if(ghostOn){ ghostStop(); ghostT = later(ghostLoop, 2600); } }, true);
+      oceanAddCleanup(()=>{ clearTimeout(idleT); clearInterval(waveTimer); clearInterval(trailTimer); ghostOn = false; ghostStop(); });
 
       /* ---- one question in the shared window ---- */
       const q = ()=> plan[li][qi];
@@ -6228,6 +6312,51 @@ const SlideModules = {
           later(()=>{ const b = blankWin(); if(b) b.classList.add("ready"); after && after(); }, 80 + wins.length * 110 + 250);
         }, old.length ? 260 : 0);
       }
+      /* [r84] the word inside an answer bubble: as large as fits its glass (28px down to 18px), measured
+         again once the face has loaded so a first visit is not measured in the fallback font */
+      const fitBubble = label =>{
+        const fit = ()=>{ let fs = 28; label.style.fontSize = fs + "px"; while(label.scrollWidth > 90 && fs > 18){ fs--; label.style.fontSize = fs + "px"; } };
+        fit();
+        if(document.fonts && document.fonts.load){ const cs = getComputedStyle(label); document.fonts.load(cs.fontWeight + " 28px " + cs.fontFamily, label.textContent).then(()=>{ if(alive() && label.isConnected) fit(); }, ()=>{}); }
+      };
+      /* [r84] the first question's ghost (see .subg-ghost): a blurred copy of the answer bubble glides
+         from its place into the empty window, pauses, and comes again — until the child has once put a
+         word in the window correctly. A touch on the game hides it at once; it returns after a pause if
+         the child has not done it yet. It never moves a real tile and never places anything. */
+      let ghostOn = false, ghostEl = null, ghostAnim = null, ghostT = 0;
+      function ghostStop(){
+        clearTimeout(ghostT); ghostT = 0;
+        if(ghostAnim){ try{ ghostAnim.cancel(); }catch(e){} ghostAnim = null; }
+        if(ghostEl){ ghostEl.remove(); ghostEl = null; }
+      }
+      function ghostLoop(){
+        ghostStop();
+        if(!alive() || !ghostOn) return;
+        if(state.locked || isPlaying || document.querySelector(".dragging")){ ghostT = later(ghostLoop, 700); return; }
+        const tile = [...opts.querySelectorAll(".subg-opt")].find(o => o.__right && !o.classList.contains("gone") && !o.classList.contains("used"));
+        const b = blankWin();
+        if(!tile || !b || b.classList.contains("filled")){ ghostT = later(ghostLoop, 700); return; }
+        const wr = wrap.getBoundingClientRect(), k = wr.width / wrap.offsetWidth || 1;
+        const tr = tile.getBoundingClientRect(), br = b.getBoundingClientRect();
+        const g = document.createElement("div"); g.className = "subg-ghost bubble"; g.setAttribute("aria-hidden", "true");
+        g.innerHTML = '<span class="subg-opt-face"></span><span class="subg-opt-label"></span>';
+        const lab = tile.querySelector(".subg-opt-label");
+        g.lastChild.textContent = tile.dataset.word; g.lastChild.style.fontSize = lab ? lab.style.fontSize : "26px";
+        Object.assign(g.style, { left: (tr.left - wr.left) / k + "px", top: (tr.top - wr.top) / k + "px", width: tr.width / k + "px", height: tr.height / k + "px" });
+        wrap.appendChild(g); ghostEl = g;
+        const dx = (br.left + br.width / 2 - tr.left - tr.width / 2) / k, dy = (br.top + br.height / 2 - tr.top - tr.height / 2) / k;
+        const end = "translate(" + dx + "px," + dy + "px) scale(.78)";
+        ghostAnim = g.animate(REDUCED
+          ? [{ transform: end, opacity: 0 }, { transform: end, opacity: .55, offset: .3 }, { transform: end, opacity: .55, offset: .7 }, { transform: end, opacity: 0 }]
+          : [{ transform: "translate(0,0)", opacity: 0 }, { transform: "translate(0,0)", opacity: .55, offset: .14 },
+             { transform: end, opacity: .55, offset: .72 }, { transform: end, opacity: 0 }],
+          { duration: 2400, easing: "ease-in-out" });
+        const anim = ghostAnim;
+        anim.onfinish = ()=>{ if(ghostAnim !== anim) return; if(ghostEl === g){ g.remove(); ghostEl = null; } ghostAnim = null; if(ghostOn) ghostT = later(ghostLoop, 900); };
+        /* finish on a timer too, as arrive() does: a page that is not drawing frames never fires onfinish */
+        ghostT = later(()=>{ if(ghostAnim === anim){ try{ anim.finish(); }catch(e){} } }, 2400 + 300);
+      }
+      const ghostStart = ()=>{ if(ghostOn || solved > 0) return; ghostOn = true; ghostT = later(ghostLoop, 400); };
       let optionDragCleanup = [];
       const clearOptionDrags = ()=>{ optionDragCleanup.forEach(dispose=>dispose()); optionDragCleanup = []; };
       oceanAddCleanup(clearOptionDrags);
@@ -6237,26 +6366,15 @@ const SlideModules = {
         const p = qq.pair, right = qq.ans === "one" ? p.one : p.many, wrongW = qq.ans === "one" ? p.many : p.one;
         const order = qq.correctLeft ? [right, wrongW] : [wrongW, right];
         order.forEach((w, i) => {
-          const t = document.createElement("div"); t.className = "fvd-tile subg-opt";
+          const t = document.createElement("div"); t.className = "fvd-tile subg-opt bubble";   // [r84] a bubble from the start
           const face = document.createElement("span"); face.className = "subg-opt-face"; face.setAttribute("aria-hidden", "true");
           const label = document.createElement("span"); label.className = "subg-opt-label"; label.textContent = w;
           t.append(face, label); t.dataset.word = w; t.__right = (w === right);
-          opts.appendChild(t);
+          opts.appendChild(t); fitBubble(label);
           later(()=>{ t.classList.add("in", "enter"); later(()=> t.classList.remove("enter"), 520); }, 140 + i * 140);   // [r77b] the pop-in plays once
           // Submarine answers are drag-only: a tap must not place or attempt a word.
-          optionDragCleanup.push(makeDraggable(t, (zone, tile)=>{ if(zone && zone.classList.contains("blank")) attempt(tile); }, {
-            onDragMove: ({clientX, clientY, zone})=>{
-              const b = blankWin();
-              if(!b || b.classList.contains("filled")){ t.classList.remove("is-bubble"); return; }
-              // Viewport coordinates work at every stage scale. Start the morph just
-              // before the window, with a wider exit margin to avoid edge flicker.
-              const r = b.getBoundingClientRect(), k = r.width / b.offsetWidth || 1;
-              const margin = (t.classList.contains("is-bubble") ? 50 : 30) * k;
-              const near = Math.hypot(clientX - (r.left + r.width / 2), clientY - (r.top + r.height / 2)) <= Math.max(r.width, r.height) / 2 + margin;
-              t.classList.toggle("is-bubble", near);   // [r78 review] the landing ring decides the drop only; the morph keeps its own in/out band
-            },
-            onDragEnd: ()=> t.classList.remove("is-bubble")
-          }));
+          /* [r84] the answer is already a bubble, so there is no rectangle-to-bubble morph any more */
+          optionDragCleanup.push(makeDraggable(t, (zone, tile)=>{ if(zone && zone.classList.contains("blank")) attempt(tile); }, {}));
         });
       }
       function showQuestion(first){
@@ -6267,7 +6385,7 @@ const SlideModules = {
           if(first){
             /* a level opens with its instruction; the board waits for it (the text stays up throughout) */
             setSwMood("talk");
-            speak("instructionFill", ()=>{ setSwMood("point"); idleArm(); });
+            speak("instructionFill", ()=>{ setSwMood("point"); idleArm(); ghostStart(); });   // [r84] then the ghost shows the way
           } else { state.locked = false; setSwMood("point"); idleArm(); }
         });
       }
@@ -6280,7 +6398,7 @@ const SlideModules = {
         if(tile.__right) settle(tile); else miss(tile);
       }
       function settle(tile){
-        state.locked = true;
+        state.locked = true; ghostOn = false; ghostStop();   // [r84] done once: no more ghost
         const b = blankWin(); if(!b) return;
         tile.classList.add("used");
         opts.querySelectorAll(".subg-opt").forEach(o => { if(o !== tile) o.classList.add("gone"); });
@@ -6319,6 +6437,9 @@ const SlideModules = {
         if(!alive()) return;
         qi++;
         if(qi < plan[li].length){ showQuestion(false); return; }
+        /* [r83] asked: no break between the levels — no instruction again, no confetti, no praise;
+           the next level's first sentence simply follows */
+        if(li < levels.length - 1){ li++; qi = 0; showQuestion(false); return; }
         levelDone();
       }
 
@@ -6334,22 +6455,18 @@ const SlideModules = {
       }
       function levelDone(){
         state.locked = true; idleReset(); clearBoard();
-        if(li < levels.length - 1){
-          later(()=>{ cheer(); later(()=> oceanSay("correct", ()=> later(()=>{ li++; qi = 0; showQuestion(true); }, 900)), 700); }, 400);
-          return;
-        }
         finale();
       }
       function finale(){
-        /* every sentence done: the submarine sets off to the left, then confetti and the lesson's
-           closing line over the open sea, then the end screen (r81: no level panel here either) */
-        setSwMood("celebrate");
-        later(()=> leave(()=>{
+        /* [r83] every sentence done: the window empties, the confetti falls and Swiftie says the lesson's
+           closing line (शाबाश! …) while the submarine waits, ready; then its motor starts and it leaves
+           to the left, and the end screen follows. Confetti and praise come here and only here. */
+        later(()=>{
           cheer();
           const end = CARD.slides.find(s => s.type === "CELEBRATION");
           const vo = end ? audioFor(end, "prompt") : null;
-          later(()=> play(vo, ()=> later(()=> completeSlide(true), 900)), 900);
-        }), 500);
+          later(()=> play(vo, ()=> later(()=> leave(()=> later(()=> completeSlide(true), 600)), 400)), 600);
+        }, 400);
       }
 
       /* ---- go ---- */

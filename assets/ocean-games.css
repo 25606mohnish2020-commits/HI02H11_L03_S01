@@ -93,7 +93,7 @@ html:has(.fvd),body:has(.fvd),html:has(.subg),body:has(.subg){background:#d5f4fc
    Keep each drag box fixed so the pointer/word never jumps while its face morphs. */
 .subg-opts{
   display:grid;grid-template-columns:repeat(2,240px);justify-items:center;align-items:center;
-  left:50%;right:auto;bottom:0;transform:translateX(-50%);width:660px;height:112px;
+  left:50%;right:auto;bottom:calc(50% - 266px);transform:translateX(-50%);width:660px;height:128px;   /* [r84] = bottom 0 of the old 532px card; centred in full screen */
   background:none;   /* [r80] asked: no water panel behind the answers — just the two rectangles */
 }
 .subg-opts .subg-opt,.subg-opts .subg-opt:hover{
@@ -132,10 +132,21 @@ html:has(.fvd),body:has(.fvd),html:has(.subg),body:has(.subg){background:#d5f4fc
   width:106px;height:106px;border-radius:53px;border-color:transparent;background-color:transparent;box-shadow:none;
 }
 .subg-opt.is-bubble .subg-opt-face::before{opacity:1;}
-/* A released correct answer keeps the same bubble skin inside its porthole. */
+/* [r84] asked: no rectangles — the answers ARE bubbles from the start, floating gently, and in a much
+   lighter bubble (bubble_light.png: the same bubble blended halfway to white, with a white rim) so a
+   word dragged into the sentence window stands out from the blue glass instead of melting into it.
+   (The rectangle-to-bubble morph rules above are no longer used.) The ghost reuses the same skin. */
+.subg-opts .subg-opt.bubble,.subg-opts .subg-opt.bubble:hover{width:120px;height:120px;min-width:120px;min-height:120px;border-radius:50%;}
+.subg-opt.bubble .subg-opt-face,.subg-ghost.bubble .subg-opt-face{width:112px;height:112px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.95);background-color:rgba(255,255,255,.28);
+  box-shadow:0 6px 14px rgba(23,77,132,.18),0 0 0 2px rgba(120,190,240,.35);}
+.subg-opt.bubble .subg-opt-face::before,.subg-ghost.bubble .subg-opt-face::before{opacity:1;inset:-2px;background-image:url("Images/bubble_light.png");}
+.subg-opts .subg-opt.bubble:hover .subg-opt-face{background-color:rgba(255,255,255,.45);}
+.subg-opts .subg-opt.bubble.in.lit .subg-opt-face{border-color:#FFA914;box-shadow:0 0 0 4px rgba(255,169,20,.9),0 6px 14px rgba(23,77,132,.18);}
+/* A released correct answer keeps the same (light) bubble skin inside its porthole. */
 .subg .subg-win.filled::before{
   content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
-  background:transparent url("Images/bubble_blue.png") center/100% 100% no-repeat;
+  background:transparent url("Images/bubble_light.png") center/100% 100% no-repeat;
 }
 .subg .subg-win.filled .subg-word{position:relative;z-index:1;}
 @media(prefers-reduced-motion:reduce){
