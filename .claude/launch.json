@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lesson",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:/Users/SIDDHA~1/AppData/Local/Temp/claude/C--Users-Siddharth-Sharma-Desktop-HI02H11-L03-S01-20260921T041136Z-1-001-HI02H11-L03-S01/f0e03e58-e3b9-4b11-96c7-a0a3a2293593/scratchpad/serve.js",
+        ".",
+        "8137"
+      ],
+      "port": 8137
+    }
+  ]
+}

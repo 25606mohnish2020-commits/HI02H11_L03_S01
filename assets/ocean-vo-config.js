@@ -2,23 +2,28 @@
    Replace each src with the recorded audio path later. All new game VO lives here.
    No VO manifest is generated at this stage. */
 window.OCEAN_VO = {
-  instructionBubble: {text:'एक और अनेक वाले शब्दों की जोड़ियाँ ढूँढ़िए। पहले एक शब्द पर, फिर उसकी जोड़ी पर टैप कीजिए।',src:'assets/Audio/ocean_instruction_bubble.mp3'},
-  bubbleGuidedPair: {text:'गुब्बारे और उसकी जोड़ी पर टैप कीजिए।',src:'assets/Audio/ocean_bubble_guided_pair.mp3'},
-  instructionFill: {text:'सही शब्द खींचकर खाली जगह में रखिए।',src:'assets/Audio/ocean_instruction_fill.mp3'},
+  instructionBubble: {text:'एक और अनेक वाले शब्दों की जोड़ियाँ ढूँढ़िए। पहले एक शब्द पर, फिर उसकी जोड़ी पर टैप कीजिए।',src:'assets/Audio/ocean_instruction_bubble.ogg'},
+  bubbleGuidedPair: {text:'गुब्बारे और उसकी जोड़ी पर टैप कीजिए।',src:'assets/Audio/ocean_bubble_guided_pair.ogg'},
+  instructionFill: {text:'सही शब्द खींचकर खाली जगह में रखिए।',src:'assets/Audio/ocean_instruction_fill.ogg'},
   /* [r39] the सही-शब्द-चुनिए screens now use the same idle/instruction behaviour as the two ocean
      games. This clip is not recorded yet; until it is, the beat holds silently and everything else
      on those screens (praise, retry) is already voiced from the generic lines below. */
-  instructionPick: {text:'सही शब्द चुनिए।',src:'assets/Audio/ocean_instruction_pick.mp3'},
+  instructionPick: {text:'सही शब्द चुनिए।',src:'assets/Audio/ocean_instruction_pick.ogg'},
   retry: [
-    {text:'दोबारा कोशिश करो।',src:'assets/Audio/ocean_retry_1.mp3'},
-    {text:'कोई बात नहीं, फिर से कोशिश करो।',src:'assets/Audio/ocean_retry_2.mp3'}
+    {text:'दोबारा कोशिश करो।',src:'assets/Audio/ocean_retry_1.ogg'},
+    {text:'कोई बात नहीं, फिर से कोशिश करो।',src:'assets/Audio/ocean_retry_2.ogg'}
   ],
   correct: [
-    {text:'शाबाश!',src:'assets/Audio/ocean_correct_1.mp3'},
-    {text:'तुमने कर दिखाया!',src:'assets/Audio/ocean_correct_2.mp3'},
-    {text:'बहुत बढ़िया!',src:'assets/Audio/ocean_correct_3.mp3'}
+    {text:'शाबाश!',src:'assets/Audio/ocean_correct_1.ogg'},
+    {text:'तुमने कर दिखाया!',src:'assets/Audio/ocean_correct_2.ogg'},
+    {text:'बहुत बढ़िया!',src:'assets/Audio/ocean_correct_3.ogg'}
   ],
-  resultComplete: {text:'तुमने कर दिखाया!',src:'assets/Audio/ocean_correct_2.mp3'}
+  resultComplete: {text:'तुमने कर दिखाया!',src:'assets/Audio/ocean_correct_2.ogg'},
+  /* [r93] the end screen's whole line. [r94] asked: a livelier शाबाश — the flat one (ocean_correct_1,
+     ~137Hz, barely moving) is replaced by the excited शाबाश from vo_pick_ok_q1 (same voice, rising
+     281→421Hz), brought up to the loudness of 'तुमने कर दिखाया!' (ocean_correct_2), which follows
+     after a 0.2s pause. Speech 0.07–3.02s. */
+  endPraise: {text:'शाबाश! तुमने कर दिखाया!',src:'assets/Audio/ocean_end_praise_v2.ogg'}
 };
 
 let oceanLastCorrect = -1;
@@ -28,8 +33,12 @@ function oceanAddCleanup(fn){
   const previous=oceanCleanup;
   oceanCleanup=()=>{if(previous)previous();fn();};
 }
-function oceanStopAmbient(){
+function oceanStopAmbient(soft){
   if(!oceanAmbientVideo)return;
+  /* [r85] soft = the swim transition: the window-wide sea must stay in view in the bands beside the
+     stage while the swim plays over the game, so only its sound is hushed; the video itself goes when
+     the game's cleanup removes the backdrop */
+  if(soft && oceanAmbientVideo.closest && oceanAmbientVideo.closest('.ocean-backdrop')){ oceanAmbientVideo.__hush=true; oceanAmbientVideo.muted=true; return; }
   try{oceanAmbientVideo.pause();oceanAmbientVideo.removeAttribute('src');oceanAmbientVideo.load();}catch(e){}
   oceanAmbientVideo=null;
 }
@@ -48,8 +57,18 @@ function oceanSay(kind, done){
 function oceanDecor(wrap){
   const decor=document.createElement('div'); decor.className='ocean-decor'; decor.setAttribute('aria-hidden','true');
   const bubbles=Array.from({length:14},(_,i)=>`<i style="--x:${[6,14,22,31,39,48,56,64,72,79,86,93,27,68][i]}%;--size:${[10,17,8,22,13,9,19,11,24,8,15,12,7,16][i]}px;--rise:${[10.8,13.2,9.6,15.4,11.7,14.2,12.4,16.1,13.8,10.2,15.7,11.1,9.2,14.8][i]}s;--delay:-${[2.1,8.4,4.7,12.6,1.2,9.5,6.2,14.1,3.8,7.3,11.4,5.1,.6,10.3][i]}s"></i>`).join('');
-  decor.innerHTML='<video class="ocean-sea-video" src="assets/Video/background_sea.mp4" autoplay loop playsinline preload="auto"></video><span class="ocean-video-wash"></span><span class="ocean-rise-bubbles">'+bubbles+'</span>';
-  wrap.appendChild(decor);
+  decor.innerHTML='<video class="ocean-sea-video" src="assets/Video/background_sea.webm" autoplay loop playsinline preload="auto"></video><span class="ocean-video-wash"></span><span class="ocean-rise-bubbles">'+bubbles+'</span>';
+  /* [r85] the two full-screen games (bubble, submarine) paint their sea across the WHOLE window: the
+     decor goes into a fixed layer behind the stage instead of inside the game card, and the stage and
+     card are see-through for these games, so a window wider (or taller) than 16:9 shows sea, not pale
+     bands. Only the backdrop grows — the playable stage, its size and its layout, are untouched. */
+  const full=!!(wrap.matches && wrap.matches('.mtp-stage, .subg'));
+  let host=wrap;
+  if(full){
+    host=document.createElement('div'); host.className='ocean-backdrop'; host.setAttribute('aria-hidden','true');
+    document.body.prepend(host); document.body.classList.add('ocean-full');
+  }
+  host.appendChild(decor);
   const video=decor.querySelector('.ocean-sea-video');
   oceanAmbientVideo=video; video.volume=.18; video.muted=!!isMuted;
   const wake=()=>{if(!video.isConnected)return;video.muted=!!isMuted;video.play().catch(()=>{});};
@@ -57,11 +76,13 @@ function oceanDecor(wrap){
   wrap.addEventListener('pointerdown',wake,{once:true});
   const duck=setInterval(()=>{
     if(!video.isConnected)return;
+    if(video.__hush){video.muted=true;return;}
     video.muted=!!isMuted;
     const target=isPlaying ? .035 : .18;
     video.volume+=(target-video.volume)*.32;
   },120);
-  oceanAddCleanup(()=>{clearInterval(duck);wrap.removeEventListener('pointerdown',wake);if(oceanAmbientVideo===video)oceanStopAmbient();else try{video.pause();}catch(e){}});
+  oceanAddCleanup(()=>{clearInterval(duck);wrap.removeEventListener('pointerdown',wake);if(oceanAmbientVideo===video)oceanStopAmbient();else try{video.pause();}catch(e){}
+    if(full){ host.remove(); if(!document.querySelector('.ocean-backdrop')) document.body.classList.remove('ocean-full'); }});
 }
 /* Two idle beats: instruction after 7s, then visual assistance after a further 7s.
    Every gesture cancels the hint. Feedback/dragging/hidden tabs do not count as inactivity. */
@@ -111,7 +132,7 @@ function oceanGhost(tile,zone,wrap,iterations){
 }
 function oceanFishTransition(showNext){
   const overlay=document.createElement('div');overlay.className='ocean-crossing ocean-video-crossing';overlay.setAttribute('aria-hidden','true');
-  overlay.innerHTML='<video class="ocean-transition-video" src="assets/Video/swiftie_swimming_v2.mp4" autoplay playsinline preload="auto"></video>';
+  overlay.innerHTML='<video class="ocean-transition-video" src="assets/Video/swiftie_swimming_v2.webm" autoplay playsinline preload="auto"></video>';
   /* [r46] Size the overlay to the card the child is looking at rather than the whole window. The
      transition used to be position:fixed over everything, which blacked out Swiftie and the
      instruction bar at the top. It now sits inside .slide-stage, matched to the outgoing activity
@@ -126,12 +147,14 @@ function oceanFishTransition(showNext){
   overlay.style.width  = (cr.width  / sc) + "px";
   overlay.style.height = (cr.height / sc) + "px";
   stageEl.appendChild(overlay);
-  oceanStopAmbient();
+  oceanStopAmbient(true);
   stopAudio();
   const video=overlay.querySelector('video');
   video.playbackRate=1.25;                 // 4.9 s source → a child-friendly transition under 4 s
   video.volume=.72;video.muted=!!isMuted;
   video.play().catch(()=>{video.muted=true;video.play().catch(()=>{});});
+  /* [r132] asked: a sound of bubbles while Swiftie swims across (3.8s, fades with the crossing; synthesised, no SFX of this kind in the kit) */
+  if(typeof playKitSfx==="function") playKitSfx("swim-bubbles","sfx_swim_bubbles.ogg",.6);
   /* [r47] ORDER MATTERS HERE, and it used to be wrong: the overlay began fading at 3420ms while
      the next slide was only mounted at 3660ms, so for a quarter of a second the fading video
      revealed the OLD screen underneath — the bubble game's finished tray flashing up before the
@@ -152,5 +175,6 @@ function oceanFishTransition(showNext){
   };
   setTimeout(beginFade,3300);
   video.addEventListener('ended',beginFade,{once:true});
+  video.addEventListener('error',beginFade,{once:true});   // [opt] a clip that cannot play goes straight to the next screen
   setTimeout(close,5400);                   // hard stop if the clip stalls and never ends
 }

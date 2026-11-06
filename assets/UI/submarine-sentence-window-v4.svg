@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 662" fill="none">
+ <!-- [r100] the sentence window for the straight (non-tapering) hull, sub_hull_equal_v3: an orange riveted
+      frame around sky-blue glass, placed on the hull's straight body — below the periscope base, right of
+      the cockpit rim, above the front fin. Same 1400x662 box as the hull it sits on. -->
+ <defs>
+  <linearGradient id="frame" x2="0" y2="1"><stop stop-color="#FFC53A"/><stop offset=".45" stop-color="#FF9F1A"/><stop offset="1" stop-color="#F27407"/></linearGradient>
+  <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#9FE4FE"/><stop offset=".55" stop-color="#84CCF6"/><stop offset="1" stop-color="#6CBDF0"/></linearGradient>
+  <radialGradient id="rivet" cx=".32" cy=".26" r=".8"><stop stop-color="#FFD978"/><stop offset=".5" stop-color="#FFA92E"/><stop offset="1" stop-color="#C45A0E"/></radialGradient>
+ </defs>
+ <rect x="418" y="226" width="844" height="280" rx="72" fill="url(#frame)" stroke="#7A3517" stroke-width="5"/>
+ <path d="M492 233H1188" stroke="#FFE08A" stroke-width="4" stroke-linecap="round" opacity=".9"/>
+ <rect x="440" y="248" width="800" height="236" rx="54" fill="url(#sky)" stroke="#2F6FB5" stroke-width="3"/>
+ <path d="M456 300Q458 262 500 260" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+ <path d="M1224 432Q1222 470 1180 472" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" opacity=".55"/>
+ <g fill="url(#rivet)" stroke="#A9490F" stroke-width="2.5">
+  <circle cx="500" cy="237" r="6"/><circle cx="614" cy="237" r="6"/><circle cx="728" cy="237" r="6"/><circle cx="842" cy="237" r="6"/><circle cx="956" cy="237" r="6"/><circle cx="1070" cy="237" r="6"/><circle cx="1184" cy="237" r="6"/>
+  <circle cx="500" cy="495" r="6"/><circle cx="614" cy="495" r="6"/><circle cx="728" cy="495" r="6"/><circle cx="842" cy="495" r="6"/><circle cx="956" cy="495" r="6"/><circle cx="1070" cy="495" r="6"/><circle cx="1184" cy="495" r="6"/>
+  <circle cx="429" cy="334" r="6"/><circle cx="429" cy="398" r="6"/><circle cx="1251" cy="334" r="6"/><circle cx="1251" cy="398" r="6"/>
+ </g>
+</svg>

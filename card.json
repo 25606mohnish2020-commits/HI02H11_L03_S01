@@ -67,19 +67,18 @@
             "emoji": "🎈",
             "audio": "vo_stanza1a",
             "lines": [
-              "आज है मीरा का जन्मदिन, मीरा ने एक *गुब्बारा* टाँगा।"
+              "आज है मीरा का जन्मदिन, उसने एक *गुब्बारा* लगाया,"
             ],
             "cues_ms": [
-              340,
-              667,
-              831,
-              1158,
-              1322,
-              2570,
-              2923,
-              3099,
-              3452,
-              4157
+              250,
+              630,
+              820,
+              1280,
+              1520,
+              2610,
+              2950,
+              3420,
+              3870
             ]
           },
           {
@@ -87,16 +86,16 @@
             "emoji": "🎈🎈🎈",
             "audio": "vo_stanza1b",
             "lines": [
-              "पापा और *गुब्बारे* लाए, आओ, इन्हें सजाएँ!"
+              "पापा और *गुब्बारे* लाए, मिलकर घर सजाया।"
             ],
             "cues_ms": [
-              280,
-              644,
-              1008,
-              1736,
-              2500,
-              3090,
-              3535
+              230,
+              790,
+              1040,
+              1500,
+              2310,
+              2860,
+              3110
             ]
           }
         ]
@@ -128,37 +127,6 @@
       }
     },
     {
-      "id": "T1B",
-      "phase": "tutorial",
-      "eis": "iconic",
-      "type": "STORY_SCENE",
-      "prompt_hi": "कविता सुनो — मीरा के उड़ते गुब्बारे",
-      "audio": {},
-      "data": {
-        "beats": [
-          {
-            "img": "scn_hawa",
-            "emoji": "🎈💨",
-            "audio": "vo_stanza_hawa",
-            "lines": [
-              "तभी हवा का झोंका आया, फुर्र-फुर्र *गुब्बारे* उड़ते जाएँ!"
-            ],
-            "cues_ms": [
-              280,
-              669,
-              1058,
-              1252,
-              1641,
-              2510,
-              3390,
-              3977,
-              4417
-            ]
-          }
-        ]
-      }
-    },
-    {
       "id": "T2",
       "phase": "tutorial",
       "eis": "iconic",
@@ -172,16 +140,17 @@
             "emoji": "🧒",
             "audio": "vo_stanza3a",
             "lines": [
-              "एक *लड़का* उछलकर बोला, “मैं पकड़ूँगा सारे!”"
+              "तभी हवा का झोंका आया, *लड़का* दौड़कर आया,"
             ],
             "cues_ms": [
-              270,
-              610,
-              1120,
-              1970,
-              2310,
-              2480,
-              3160
+              250,
+              690,
+              1160,
+              1400,
+              1870,
+              2710,
+              3350,
+              3840
             ]
           },
           {
@@ -189,16 +158,16 @@
             "emoji": "🧒🧒🧒",
             "audio": "vo_stanza3b",
             "lines": [
-              "फिर *लड़के* भी दौड़ पड़े— आगे-आगे गुब्बारे!"
+              "पीछे-पीछे *लड़के* दौड़े, सबने फिर हाथ बढ़ाया।"
             ],
             "cues_ms": [
-              240,
-              586,
-              1104,
-              1277,
-              1622,
-              1968,
-              2659
+              280,
+              1100,
+              1620,
+              2260,
+              2880,
+              3250,
+              3500
             ]
           }
         ]
@@ -243,18 +212,17 @@
             "emoji": "🧢",
             "audio": "vo_stanza4a",
             "lines": [
-              "मीरा की एक *टोपी* उड़ी, फिर उड़ीं सबकी *टोपियाँ*।"
+              "मीरा की एक *टोपी* उड़कर हवा में लहराई,"
             ],
             "cues_ms": [
-              260,
-              631,
-              816,
-              1186,
-              1557,
-              1927,
-              2298,
-              2668,
-              3224
+              240,
+              790,
+              1060,
+              1440,
+              1900,
+              2620,
+              2950,
+              3170
             ]
           },
           {
@@ -262,16 +230,17 @@
             "emoji": "🧢🧢🧢",
             "audio": "vo_stanza4b",
             "lines": [
-              "आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ।"
+              "फिर सबकी *टोपियाँ* उड़ीं और सबने दौड़ लगाई।"
             ],
             "cues_ms": [
-              290,
-              761,
-              1232,
-              1703,
-              1860,
-              2017,
-              2959
+              270,
+              580,
+              1130,
+              1650,
+              2300,
+              2620,
+              3170,
+              3360
             ]
           }
         ]
@@ -316,19 +285,16 @@
             "emoji": "👧",
             "audio": "vo_stanza5a",
             "lines": [
-              "केक कटा, खुश हुई एक *सहेली*, झूम-झूम नाची वह अलबेली।"
+              "केक कटा, खुश हुई एक *सहेली* प्यारी,"
             ],
             "cues_ms": [
-              290,
-              699,
-              1108,
-              1516,
-              1925,
-              2334,
-              2947,
-              3765,
-              4174,
-              4582
+              250,
+              640,
+              1420,
+              1800,
+              2000,
+              2210,
+              2720
             ]
           },
           {
@@ -336,18 +302,16 @@
             "emoji": "👧👧👧",
             "audio": "vo_stanza5b",
             "lines": [
-              "ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी *सहेलियाँ*!"
+              "संग नाचीं *सहेलियाँ*, बाजाएँ तालियाँ ढेर सारी।"
             ],
             "cues_ms": [
-              300,
-              739,
-              1178,
-              1617,
-              2057,
-              2715,
-              3593,
-              4033,
-              4472
+              200,
+              555,
+              1055,
+              1995,
+              2595,
+              3175,
+              3615
             ]
           }
         ]
@@ -380,7 +344,7 @@
     },
     {
       "id": "Q1",
-      "phase": "practice",
+      "phase": "guided",
       "eis": "iconic",
       "type": "PICK_VACHAN_WORD",
       "prompt_hi": "सही शब्द चुनिए।",
@@ -429,7 +393,7 @@
     },
     {
       "id": "Q2",
-      "phase": "practice",
+      "phase": "guided",
       "eis": "iconic",
       "type": "PICK_VACHAN_WORD",
       "prompt_hi": "सही शब्द चुनिए।",
@@ -478,7 +442,7 @@
     },
     {
       "id": "Q3",
-      "phase": "practice",
+      "phase": "guided",
       "eis": "iconic",
       "type": "PICK_VACHAN_WORD",
       "prompt_hi": "सही शब्द चुनिए।",
@@ -527,7 +491,7 @@
     },
     {
       "id": "Q4",
-      "phase": "practice",
+      "phase": "guided",
       "eis": "iconic",
       "type": "PICK_VACHAN_WORD",
       "prompt_hi": "सही शब्द चुनिए।",
@@ -576,7 +540,7 @@
     },
     {
       "id": "Q5",
-      "phase": "practice",
+      "phase": "guided",
       "eis": "iconic",
       "type": "PICK_VACHAN_WORD",
       "prompt_hi": "सही शब्द चुनिए।",
@@ -625,7 +589,7 @@
     },
     {
       "id": "Q6",
-      "phase": "practice",
+      "phase": "guided",
       "eis": "iconic",
       "type": "PICK_VACHAN_WORD",
       "prompt_hi": "सही शब्द चुनिए।",
@@ -801,8 +765,8 @@
       "prompt_hi": "सही शब्द खींचकर खाली जगह में रखिए।",
       "data": {
         "art": {
-          "still": "sub_hold.webp",
-          "hull": "sub_hull.webp",
+          "still": "sub_hold_v2.webp",
+          "hull": "sub_hull_v2.webp",
           "blades": {
             "file": "sub_blades.webp",
             "left": 94.143,
@@ -814,7 +778,7 @@
           "w": 1400,
           "h": 662,
           "wave": {
-            "file": "sub_wave_sheet.webp",
+            "file": "sub_wave_sheet_v2.webp",
             "frames": 46,
             "fps": 15,
             "cols": 8,
@@ -861,10 +825,12 @@
         "levels": [
           {
             "name": "स्तर 1",
-            "art": "ui_level1_done.png",
+            "art": "ui_level1_done.webp",
             "pairs": [
               {
                 "id": "g1",
+                "vo": {"one":"assets/Audio/sub_lines_g1_one.ogg","many":"assets/Audio/sub_lines_g1_many.ogg"},
+                "vo_cues_ms": {"one":[220,580,780,1260,2110],"many":[220,700,1090,1310,2100]},
                 "one": "गुब्बारा",
                 "many": "गुब्बारे",
                 "a": [
@@ -884,6 +850,8 @@
               },
               {
                 "id": "m1",
+                "vo": {"one":"assets/Audio/sub_lines_m1_one.ogg","many":"assets/Audio/sub_lines_m1_many.ogg"},
+                "vo_cues_ms": {"one":[220,790,1320,1800,2400],"many":[220,750,1310,1700,2250,2950]},
                 "one": "मछली",
                 "many": "मछलियाँ",
                 "a": [
@@ -903,6 +871,8 @@
               },
               {
                 "id": "l1",
+                "vo": {"one":"assets/Audio/sub_lines_l1_one.ogg","many":"assets/Audio/sub_lines_l1_many.ogg"},
+                "vo_cues_ms": {"one":[220,770,1140,1350,1800,2070,2370],"many":[220,830,1110,1430,1840,2220,2530,2810]},
                 "one": "लड़का",
                 "many": "लड़के",
                 "a": [
@@ -924,10 +894,12 @@
           },
           {
             "name": "स्तर 2",
-            "art": "ui_level2_done.png",
+            "art": "ui_level2_done.webp",
             "pairs": [
               {
                 "id": "b3",
+                "vo": {"one":"assets/Audio/sub_lines_b3_one.ogg","many":"assets/Audio/sub_lines_b3_many.ogg"},
+                "vo_cues_ms": {"one":[220,1130,1460,1790,2040,2260],"many":[220,1120,1400,1940,2240,2440,2660]},
                 "one": "केला",
                 "many": "केले",
                 "a": [
@@ -947,6 +919,8 @@
               },
               {
                 "id": "t3",
+                "vo": {"one":"assets/Audio/sub_lines_t3_one.ogg","many":"assets/Audio/sub_lines_t3_many.ogg"},
+                "vo_cues_ms": {"one":[220,550,1270,1540,1970],"many":[220,930,1490,1910,2350,2800]},
                 "one": "टोपी",
                 "many": "टोपियाँ",
                 "a": [
@@ -966,6 +940,8 @@
               },
               {
                 "id": "p3",
+                "vo": {"one":"assets/Audio/sub_lines_p3_one.ogg","many":"assets/Audio/sub_lines_p3_many.ogg"},
+                "vo_cues_ms": {"one":[220,690,1200,1520,1940],"many":[220,890,1310,1590,2150,2520]},
                 "one": "पौधा",
                 "many": "पौधे",
                 "a": [
@@ -1035,7 +1011,6 @@
       "vo_w_saheli_p": "assets/Audio/vo_w_saheli_p.ogg",
       "vo_stanza1a": "assets/Audio/vo_stanza1a.ogg",
       "vo_stanza1b": "assets/Audio/vo_stanza1b.ogg",
-      "vo_stanza_hawa": "assets/Audio/vo_stanza_hawa.ogg",
       "vo_stanza3a": "assets/Audio/vo_stanza3a.ogg",
       "vo_stanza3b": "assets/Audio/vo_stanza3b.ogg",
       "vo_stanza4a": "assets/Audio/vo_stanza4a.ogg",
@@ -1067,7 +1042,8 @@
       "vo_cmp_topi_2b": "assets/Audio/vo_cmp_topi_2b.ogg",
       "vo_cmp_gubbara_2b": "assets/Audio/vo_cmp_gubbara_2b.ogg",
       "vo_cmp_ladka_2b": "assets/Audio/vo_cmp_ladka_2b.ogg",
-      "vo_cmp_saheli_2b": "assets/Audio/vo_cmp_saheli_2b.ogg"
+      "vo_cmp_saheli_2b": "assets/Audio/vo_cmp_saheli_2b.ogg",
+      "vo_pt_guided": "assets/Audio/review_guided_gate.ogg"
     },
     "audio_text": {
       "vo_pt_tutorial": "ध्यान से देखिए और मेरे साथ जानिए। चलिए, शुरू करें!",
@@ -1094,19 +1070,18 @@
       "vo_w_ghoda_p": "घोड़े",
       "vo_w_saheli_s": "सहेली",
       "vo_w_saheli_p": "सहेलियाँ",
-      "vo_stanza1a": "आज है मीरा का जन्मदिन, मीरा ने एक गुब्बारा टाँगा।",
-      "vo_stanza1b": "पापा और गुब्बारे लाए, आओ, इन्हें सजाएँ!",
-      "vo_stanza_hawa": "तभी हवा का झोंका आया, फुर्र-फुर्र गुब्बारे उड़ते जाएँ!",
-      "vo_stanza3a": "एक लड़का उछलकर बोला, मैं पकड़ूँगा सारे!",
-      "vo_stanza3b": "फिर लड़के भी दौड़ पड़े— आगे-आगे गुब्बारे!",
-      "vo_stanza4a": "मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ।",
-      "vo_stanza4b": "आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ।",
-      "vo_stanza5a": "केक कटा, खुश हुई एक सहेली, झूम-झूम नाची वह अलबेली।",
-      "vo_stanza5b": "ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी सहेलियाँ!",
-      "vo_cmp_gubbara_1": "मीरा ने एक गुब्बारा टाँगा, पापा और गुब्बारे लाए।",
-      "vo_cmp_ladka_1": "एक लड़का उछलकर बोला, फिर लड़के भी दौड़ पड़े।",
-      "vo_cmp_topi_1": "मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ।",
-      "vo_cmp_saheli_1": "केक कटा, खुश हुई एक सहेली, संग-संग नाचीं सारी सहेलियाँ!",
+      "vo_stanza1a": "आज है मीरा का जन्मदिन, उसने एक गुब्बारा लगाया,",
+      "vo_stanza1b": "पापा और गुब्बारे लाए, मिलकर घर सजाया।",
+      "vo_stanza3a": "तभी हवा का झोंका आया, लड़का दौड़कर आया,",
+      "vo_stanza3b": "पीछे-पीछे लड़के दौड़े, सबने फिर हाथ बढ़ाया।",
+      "vo_stanza4a": "मीरा की एक टोपी उड़कर हवा में लहराई,",
+      "vo_stanza4b": "फिर सबकी टोपियाँ उड़ीं और सबने दौड़ लगाई।",
+      "vo_stanza5a": "केक कटा, खुश हुई एक सहेली प्यारी,",
+      "vo_stanza5b": "संग नाचीं सहेलियाँ, बाजाएँ तालियाँ ढेर सारी।",
+      "vo_cmp_gubbara_1": "उसने एक गुब्बारा लगाया, पापा और गुब्बारे लाए।",
+      "vo_cmp_ladka_1": "लड़का दौड़कर आया, पीछे-पीछे लड़के दौड़े।",
+      "vo_cmp_topi_1": "मीरा की एक टोपी उड़कर हवा में लहराई, फिर सबकी टोपियाँ उड़ीं।",
+      "vo_cmp_saheli_1": "केक कटा, खुश हुई एक सहेली प्यारी, संग नाचीं सहेलियाँ।",
       "vo_pick_prompt": "सही शब्द चुनिए।",
       "vo_w_ladki_s": "लड़की",
       "vo_w_ladki_p": "लड़कियाँ",
@@ -1128,26 +1103,26 @@
       "vo_cmp_topi_2b": "एक है तो टोपी, अनेक है तो टोपियाँ।",
       "vo_cmp_gubbara_2b": "एक है तो गुब्बारा, अनेक है तो गुब्बारे।",
       "vo_cmp_ladka_2b": "एक है तो लड़का, अनेक है तो लड़के।",
-      "vo_cmp_saheli_2b": "एक है तो सहेली, अनेक है तो सहेलियाँ।"
+      "vo_cmp_saheli_2b": "एक है तो सहेली, अनेक है तो सहेलियाँ।",
+      "vo_pt_guided": "चलिए, साथ में करें।"
     },
     "image": {
-      "obj_topi_s": "assets/Images/obj_topi_s.png",
-      "obj_saheli_s": "assets/Images/obj_saheli_s.png",
-      "obj_machli_s": "assets/Images/obj_machli_s.png",
-      "obj_kela_s": "assets/Images/obj_kela_s.png",
-      "obj_ghoda_s": "assets/Images/obj_ghoda_s.png",
-      "scn_gubbara_s": "assets/Images/scn_gubbara_s.png",
-      "scn_gubbara_p": "assets/Images/scn_gubbara_p.png",
-      "scn_hawa": "assets/Images/scn_hawa.webp",
-      "scn_ladka_s": "assets/Images/scn_ladka_s.png",
-      "scn_ladka_p": "assets/Images/scn_ladka_p.png",
-      "scn_topi_s": "assets/Images/scn_topi_s.png",
-      "scn_topi_p": "assets/Images/scn_topi_p.png",
-      "scn_saheli_s": "assets/Images/scn_saheli_s.png",
-      "scn_saheli_p": "assets/Images/scn_saheli_p.png",
-      "obj_ladki_s": "assets/Images/obj_ladki_s.png",
-      "obj_paudha_s": "assets/Images/obj_paudha_s.png",
-      "obj_gubbara_s": "assets/Images/obj_gubbara_s.png"
+      "obj_topi_s": "assets/Images/obj_topi_s.webp",
+      "obj_saheli_s": "assets/Images/obj_saheli_s.webp",
+      "obj_machli_s": "assets/Images/obj_machli_s.webp",
+      "obj_kela_s": "assets/Images/obj_kela_s.webp",
+      "obj_ghoda_s": "assets/Images/obj_ghoda_s.webp",
+      "scn_gubbara_s": "assets/Images/scn_gubbara_s.webp",
+      "scn_gubbara_p": "assets/Images/scn_gubbara_p.webp",
+      "scn_ladka_s": "assets/Images/scn_ladka_s.webp",
+      "scn_ladka_p": "assets/Images/scn_ladka_p.webp",
+      "scn_topi_s": "assets/Images/scn_topi_s.webp",
+      "scn_topi_p": "assets/Images/scn_topi_p.webp",
+      "scn_saheli_s": "assets/Images/scn_saheli_s.webp",
+      "scn_saheli_p": "assets/Images/scn_saheli_p.webp",
+      "obj_ladki_s": "assets/Images/obj_ladki_s.webp",
+      "obj_paudha_s": "assets/Images/obj_paudha_s.webp",
+      "obj_gubbara_s": "assets/Images/obj_gubbara_s.webp"
     },
     "audio_ext": "ogg"
   }

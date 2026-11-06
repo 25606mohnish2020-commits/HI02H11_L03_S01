@@ -1,0 +1,6 @@
+{
+ "method": "Built-in image_gen edit",
+ "source": "assets/UI/sub_hull_v2.webp",
+ "output": "assets/UI/sub_hull_equal_v3.png",
+ "prompt": "Edit target: supplied game submarine sprite. Precise object edit. Preserve identical cartoon golden yellow/orange style, cockpit and white bird driver on left, periscope and fins, positions and framing as close as possible. Change ONLY rear body proportions: instead of tapering narrower toward right, maintain the same tall body thickness from behind cockpit through rear body (upper body edge nearly horizontal at y200, bottom near y610 on original 1400x662 framing), then rounded right end. Replace the five small circular windows with a SINGLE blank golden-yellow body surface: do NOT draw windows, text, labels or sentence panels because an SVG window overlays this sprite in game. Keep cockpit unchanged. Keep right propeller shaft at original center height, NO propeller blades (separate animated sprite). Transparent background, no ocean or scenery, no padding, whole submarine visible; same wide aspect ratio as original. Preserve cockpit geometry for existing animated bird overlay."
+}

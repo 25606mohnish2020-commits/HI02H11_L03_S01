@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 662" fill="none">
+  <defs>
+    <linearGradient id="orange" x1="800" y1="243.4" x2="805" y2="518" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFC135"/><stop offset=".27" stop-color="#FF9B1B"/>
+      <stop offset=".75" stop-color="#FF8814"/><stop offset="1" stop-color="#F46B08"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="825" y1="270.5" x2="855" y2="493.1" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE6A6"/><stop offset=".3" stop-color="#FBD784"/>
+      <stop offset=".67" stop-color="#EAB35D"/><stop offset="1" stop-color="#FFD992"/>
+    </linearGradient>
+    <radialGradient id="lilac" cx="0" cy="0" r="1" gradientTransform="translate(1125 459.2) rotate(90) scale(129.9 320)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF2C9" stop-opacity=".65"/><stop offset="1" stop-color="#FFE6AE" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="rivet" cx=".32" cy=".24" r=".8">
+      <stop stop-color="#FFD56B"/><stop offset=".45" stop-color="#FFAB31"/><stop offset="1" stop-color="#C65B10"/>
+    </radialGradient>
+    <clipPath id="glassClip"><path d="M510 269.4C718 272.7 984 287.4 1204 307.8C1265 313.4 1288 333.8 1288 386.9C1288 452.4 1268 480.7 1212 481.8L501 490.8C443 492 413 450.1 413 381.2C413 312.3 444 268.2 510 269.4Z"/></clipPath>
+  </defs>
+  <!-- One continuous frame follows the original portholes' gentle perspective.
+       [r92] 13% taller (about y=392, then up 4): room for two lines and their answer circles. -->
+  <path d="M509 243.4C717 246.8 983 262.6 1207 284C1278 290.8 1311 317.9 1311 386.9C1311 468.2 1282 505.5 1214 507.8L500 516.8C426 518 389 463.7 389 381.2C389 296.5 429 242.2 509 243.4Z" fill="url(#orange)" stroke="#733319" stroke-width="5"/>
+  <path d="M510 251.3C718 254.7 983 270.5 1206 291.9C1271 298.7 1303 323.6 1303 385.7" stroke="#FFD76D" stroke-width="4" stroke-linecap="round" opacity=".85"/>
+  <path d="M510 269.4C718 272.7 984 287.4 1204 307.8C1265 313.4 1288 333.8 1288 386.9C1288 452.4 1268 480.7 1212 481.8L501 490.8C443 492 413 450.1 413 381.2C413 312.3 444 268.2 510 269.4Z" fill="url(#glass)" stroke="#71351D" stroke-width="5"/>
+  <g clip-path="url(#glassClip)">
+    <path d="M400 261.4H1300V510H400Z" fill="url(#lilac)"/>
+    <path d="M425 364.3C432 314.6 466 286.3 504 284C517 282.9 522 290.8 513 302.1C482 314.6 459 334.9 448 362C440 377.8 426 379 425 364.3Z" fill="#F5FFFF"/>
+    <ellipse cx="431" cy="399.3" rx="6" ry="12" fill="#F2FFFF" opacity=".95"/>
+    <path d="M547 280.6C754 286.3 975 296.5 1181 316.8" stroke="#D4FAFF" stroke-width="5" stroke-linecap="round" opacity=".45"/>
+    <path d="M1264 408.3C1265 428.7 1257 450.1 1244 460.3" stroke="#FFF5FF" stroke-width="11" stroke-linecap="round" opacity=".85"/>
+    <path d="M464 471.6C676 478.4 985 464.8 1170 468.2" stroke="#C3F1FF" stroke-width="6" stroke-linecap="round" opacity=".45"/>
+  </g>
+  <g fill="url(#rivet)" stroke="#AF4E15" stroke-width="2.5">
+    <ellipse cx="504" cy="258.1" rx="6" ry="7"/><ellipse cx="620" cy="262.6" rx="6" ry="7"/>
+    <ellipse cx="736" cy="268.2" rx="6" ry="7"/><ellipse cx="852" cy="276.1" rx="6" ry="7"/>
+    <ellipse cx="968" cy="284" rx="6" ry="7"/><ellipse cx="1084" cy="294.2" rx="6" ry="7"/>
+    <ellipse cx="1200" cy="299.9" rx="6" ry="7"/><ellipse cx="1274" cy="327" rx="6" ry="7"/>
+    <ellipse cx="1298" cy="373.3" rx="6" ry="7"/><ellipse cx="1294" cy="429.8" rx="6" ry="7"/>
+    <ellipse cx="1263" cy="482.9" rx="6" ry="7"/><ellipse cx="1191" cy="495.4" rx="6" ry="7"/>
+    <ellipse cx="1075" cy="496.5" rx="6" ry="7"/><ellipse cx="959" cy="498.7" rx="6" ry="7"/>
+    <ellipse cx="843" cy="499.9" rx="6" ry="7"/><ellipse cx="727" cy="501" rx="6" ry="7"/>
+    <ellipse cx="611" cy="503.3" rx="6" ry="7"/><ellipse cx="497" cy="503.3" rx="6" ry="7"/>
+    <ellipse cx="430" cy="479.5" rx="6" ry="7"/><ellipse cx="403" cy="427.6" rx="6" ry="7"/>
+    <ellipse cx="402" cy="363.1" rx="6" ry="7"/><ellipse cx="425" cy="299.9" rx="6" ry="7"/>
+  </g>
+</svg>

@@ -1,0 +1,35 @@
+# Files that must NOT ship with the lesson. The deployable lesson is only:
+#   HI02H11_L03_S01_poem.html, card.json, assets/
+# (card.json is the lesson data; the HTML embeds the same data, so it is optional on a host that only
+#  serves the HTML.)
+
+# version control and editor/agent tooling
+.git/
+.gitignore
+.gitattributes
+.claude/
+.vscode/
+.idea/
+
+# dev tooling (the preload size-table generator)
+_dev/
+
+# design docs, review material and build notes
+PROGRESS.md
+VO_SCRIPT.md
+*.pptx
+_review_shots/
+_review_notes.json
+_review_overview.json
+_build_report.json
+
+# backups, quarantined originals and OS junk
+_quarantine_unused_assets/
+*.bak
+*.orig
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+__MACOSX/
+.deployignore

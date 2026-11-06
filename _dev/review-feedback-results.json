@@ -1,0 +1,28 @@
+{
+  "review_date": "2026-10-21",
+  "scope": "Only the supplied Desktop/HI02H11_L03_S01/HI02H11_L03_S01 copy",
+  "changes": [
+    "Practice hand overlaps the option edge without covering its label",
+    "Wrong-attempt counters and contextual clues are sentence-specific",
+    "Third wrong attempt demonstrates the correct option to the attempted blank once",
+    "One active hint; interactions clear hints and reset the separate inactivity timer",
+    "Correct sentences are locked and excluded from future hint targets",
+    "Two separate warm sentence panels, static blanks, quieter ocean background"
+  ],
+  "verified": [
+    "Real mouse drags for first, second and third wrong attempts",
+    "Wrong attempts on the other sentence do not inherit the first sentence's hint tier",
+    "Ghost uses the correct word for the attempted sentence",
+    "Correct answer locks only its sentence; the second answer remains playable",
+    "All twelve answers progress to the final screen",
+    "All eighteen slides mount without JavaScript errors or broken visible images",
+    "Sentence widths fit at desktop 1600x900 and tablet 1024x768",
+    "Practice hand overlaps the target edge by approximately 22 rendered pixels"
+  ],
+  "limitations": [
+    "Automated interaction tests stub game narration; full listening/synchronization review was not performed",
+    "Physical touchscreen testing was not performed",
+    "Only the supplied screenshots were available; no reference video was attached"
+  ],
+  "backup": "_dev/backup-feedback-20261019"
+}

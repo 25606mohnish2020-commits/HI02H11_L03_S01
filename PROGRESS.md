@@ -2959,6 +2959,1450 @@ Verified:
 
 ---
 
+## Round 85 — the sea fills the whole window in the two games
+
+**Asked** (with screenshots from a 1920×962 screen): fill the space on the left and right too,
+while keeping the actual playable screen.
+
+The stage is a fixed 1333×750 canvas scaled to fit the window. On a screen wider than 16:9 it
+leaves bands at the sides, painted the plain gutter colour. In the bubble game and the submarine
+game the sea now runs across the whole window:
+
+* **How.**
+  * `oceanDecor` puts the sea for these two games into a fixed full-window layer
+    (`.ocean-backdrop`) behind the stage, instead of inside the game card. The layer holds the sea
+    video, its wash and the rising bubbles; the bubbles keep their on-stage size.
+  * The stage and the card are see-through over it. The card's own light-streak layers are off, so
+    there is no seam at the stage's edges.
+  * The playable screen is untouched: same stage, same size, same layout. Bubbles, the जोड़ियाँ
+    tray, the submarine and its answers stay where they were.
+* **During the swim transition** from the bubble game to the submarine, the sea behind the bands
+  keeps playing, with only its sound hushed (`oceanStopAmbient(true)`). It no longer goes blank for
+  three seconds.
+* **Other screens.** The layer exists only while one of the two games is up. It is removed by the
+  game's cleanup, and every other screen is unchanged.
+
+Verified at 1920×962 (scale 1.28; the stage sits at x 105–1815):
+* sea across the full width in both games, with the playable layout unchanged;
+* the layer is present only on PAIR1 and SUB (gone on Q6, CEL and T1);
+* the sea kept playing, muted, through the swim transition;
+* all 18 slides mount with no errors.
+
+---
+
+## Round 86 — review pointers from the call (made outside this session)
+
+These changes were made to the files between sessions and were found in them on 2026-10-19; this
+entry only records what is there.
+
+* **Practice is guided.** The six सही-शब्द-चुनिए questions are now the guided-practice section
+  (`phase: guided`). The gate after the teaching section says *चलिए, साथ में करें।*
+  (`assets/Audio/review_guided_gate.mp3`, mapped as `vo_pt_guided`).
+* **Poem colour.** Each line starts navy. Words turn orange one at a time as they are spoken, and a
+  pair word turns orange only once it has been spoken.
+* **Poem sync.** The word highlight now waits for the clip's own clock. It used to run on the wall
+  clock while the clip buffered, which lit the first word twice.
+* **The टोपी page.** The second picture appears at "फिर उड़ीं सबकी टोपियाँ" (1.93s into the first
+  line) with no pause before the next line. The last line is now *फिर से हमने पकड़ लीं अपनी-अपनी
+  टोपियाँ।* (`review_topi_final.mp3`).
+* **Q1 introduction.** *सही शब्द चुनिए। एक है तो 'मछली', अनेक हैं तो 'मछलियाँ'।*
+  (`review_pick_intro.mp3`), with the hand going to मछलियाँ as the word is said.
+* **Third wrong answer (practice only).** The correct option is lit, the hand points at it, and the
+  other options fade.
+* **Submarine.** 1110px wide and moved up. The window holds two rows, with the pair's एक and अनेक
+  sentences one above the other.
+* **Title screen.** The landing Play-button flicker was addressed by guarding the landing VO from
+  starting twice.
+
+Note: some of these are applied at start-up by a small override at the top of the engine script
+(phases, the gate clip, the टोपी page) as well as in `card.json`.
+
+---
+
+## Round 87 — the two sentences in the submarine are one question
+
+**Asked:** with two sentences in the window (e.g. *मैदान में एक ___ खेल रहा है* over *मैदान में बहुत
+सारे ___ खेल रहे हैं*, answers लड़का / लड़के), dropping लड़का into the first made the question fade
+out and come back as the same question before लड़के could be placed. The two sentences are ONE
+question. The fade to the next question must come only after both are complete, not after one.
+
+**Cause.** The game still treated each sentence as its own question. Every pair was two entries
+in the plan: the एक sentence, then the अनेक sentence. Only one blank was live at a time, always the
+एक blank first, so the order itself was a pattern. Moving from the first entry to the second redrew
+the whole window: the words popped out and back in.
+
+**Now: one screen = one pair.**
+* Both sentences are up together and both blanks are live from the start, with the pair's two
+  answer bubbles below.
+* A word dropped into its own sentence's blank settles there (green, ring, chime). Its bubble
+  leaves the tray, and the screen stays exactly as it is — nothing fades, nothing is redrawn —
+  while the child places the other word.
+* Only when both blanks are filled does the next pair fade in, after the usual short beat.
+* A word dropped into the other sentence's blank is a wrong answer (wiggle, retry ladder).
+  * 2nd miss: the sentences' words pulse.
+  * 3rd miss: the dropped bubble glows and the blank it belongs in pulses.
+* **Dealt per visit.** The pairs come in a fresh order. Which sentence sits on top, and which bubble
+  sits on the left, follow no pattern: not all the same, not strictly alternating, never three in a
+  row.
+* **Counting.** The progress rail and the mastery score still count sentences (12). A sentence
+  counts as first-try if no wrong word was dropped into its blank.
+* **Ghost.** On the first screen it goes to the first open blank, with the bubble that belongs there.
+
+**Also fixed** — the confirmed findings of the Round 83–84 review:
+* **Bubble-game idle replay.** It now lights the pair the child is already working on (the selected
+  bubble's pair, or the guided pair). Following the glow can no longer cause a wrong match.
+* **Walk-through glow.** It stops if another clip cuts the instruction off, instead of lighting
+  both bubbles ahead of the voice. A selected bubble keeps its selection ring while lit.
+* **Submarine first-screen reminder.** The spoken reminder comes once only.
+* **Full screen.**
+  * The swim-transition overlay is square over the full-screen games.
+  * The card-margin reset is keyed on `:has()` like the other full-screen rules, so all of them
+    switch on or off together.
+
+Verified by playing all six screens by drag:
+* after the first correct drop there was no fade or redraw (no word left the window), one blank
+  stayed open, one bubble stayed in the tray, and the board was free;
+* the second drop brought the next pair;
+* a wrong drop did not fill the blank;
+* the top/left order varied with no pattern;
+* the end screen was reached (mastery 11/12, after one deliberate miss), and all 18 slides mount
+  with no errors.
+
+---
+
+## Round 88 — the submarine's two lines fill the glass; the games' playable screen is full screen
+
+**Asked** (with a screenshot):
+* The sentences in the window looked small and did not use the window's space. Make the text
+  bigger, so it fills the window properly.
+* The empty circle in the middle overlapped the window. Fix it; the overall UI should look really
+  clean.
+* In both mastery games the playable screen was cut. Make the playable screen itself full screen,
+  shifting elements as needed — e.g. the bubble game's जोड़ियाँ card to the right side.
+
+**Submarine window**
+* *Size.* The submarine is a little larger (1180px, was 1110), centred in the window, less the
+  progress card. It stays centred on resize; its position is now a CSS calc, not a one-off pixel
+  value.
+* *Rows.* The two rows now sit inside the glass's clear area: 47.8%–71.4% of the submarine's height,
+  measured on `submarine-sentence-window.svg` where the frame slopes. Before, the box reached up to
+  44% and touched the rim, so the upper blank overlapped the frame. The rows share that area evenly.
+* *Type.* Both lines start at 50px (was 32) and step down only if the longer line would not fit. All
+  six pairs fit at 50px; the widest line is 569px of a 684px box.
+* *Blanks.* 54px, with a 16px invisible landing ring.
+* *Placed answer.* A placed word no longer shrinks into the little circle. The blank becomes a clean
+  white pill (white rim, soft shadow) with the word in green at the sentence's own size.
+
+**Full-screen playable area**
+* `fit()` now also publishes how far the window reaches past the 1333×750 stage, in stage px
+  (`--fs-x`, `--fs-y`).
+* While a mastery game is up, the game card leaves the stage and covers the whole window, and the
+  stage stops clipping.
+  * *Bubble game:* the bubbles drift over the full width, and the जोड़ियाँ card sits at the window's
+    right edge.
+  * *Submarine game:* the submarine, its answers and the progress card are laid out across the whole
+    window, centred vertically on taller screens.
+* Every other screen still sits in the stage exactly as before.
+
+Verified:
+* 1920×962: the card covered the window; the tray was at the right edge (x 1615–1893); the bubbles
+  spread across the full width.
+* The submarine was centred. Both rows were at 50px, the upper blank was ~14px under the glass's
+  top edge and the lower one ~10px above its bottom. A placed word showed as a 162×54 pill at 50px.
+* 1024×768 (4:3): the card was full screen, the composition centred, and nothing overlapped.
+* The swim transition covered the full window.
+* T1, Q1 and CEL kept their normal stage. All 18 slides mount with no errors.
+
+---
+
+## Round 89 — the submarine's sentences: more space, a quieter empty slot, green bubbles for answers
+
+**Asked** (with a screenshot):
+* A little more spacing between the words.
+* Make the dotted empty circle subtler and nicer, with a different design.
+* After a correct answer, the answer should stay a bubble, slightly green (asked mid-way).
+
+* **Spacing.** 20px between the window's word groups (was 10), and wider spaces inside a two-word
+  group such as "बहुत सारी" or "तालाब में" (word-spacing .3em).
+* **The empty place.** A soft frosted slot (108×52) in place of the dashed circle. It has the
+  capsule shape of the answer that fills it: a pale glass body, a thin white rim and a faint inner
+  shade. It breathes very gently in brightness, with no dashes and no size pulse. A bubble dragged
+  over it warms it to a soft gold.
+* **The placed answer stays a bubble, slightly green.**
+  * A round bubble cannot hold the word at the sentence's size within one line of the window, so it
+    is drawn as a capsule-shaped bubble. It has the same glassy look as the answer bubbles: a bright
+    highlight top-left, a small one bottom-right, a thin white rim with faint blue and pink inner
+    tints, over a soft green body. The word stays dark green.
+* **No shrink after a drop.** The wider gaps and slot meant a long line could no longer stay at 50px
+  once its answer was in, so the type would have shrunk mid-screen. Now, when the size is chosen,
+  each empty slot is measured as the answer bubble that will fill it, so the type stays the same from
+  first frame to last. Each screen still takes the largest size that fits (42–50px across the six
+  pairs).
+
+Verified at 1920×962 by playing all six pairs: the type size was identical before and after each
+drop on every screen; the slot, the gold hover and the green answer bubble render as described;
+all 18 slides mount with no errors.
+
+---
+
+## Round 90 — a round empty slot; a correct answer stays the option's own bubble, slightly green
+
+**Asked** (with a close-up of the slots): make the empty slots circles, keeping their hover design.
+After a correct answer it should stay the same bubble as in the options.
+
+* **The empty slot** is a 74px circle with the Round-89 look: a frosted glass body with a thin
+  white rim, gentle brightness breathing, and the soft-gold hover. It is a little taller than a line
+  of the window. The sentence type is capped at 44px (was 50), which leaves room above and below
+  each line, so the circle never touches the other line or the glass rim. All six pairs now read at
+  the same 44px.
+* **A correct answer** stays the option's own round bubble (`bubble_light.png`) at the slot's size,
+  tinted slightly green. The skin is hue-shifted from blue to green over a soft green body. The word
+  inside is dark green, fitted to the bubble from 26px down: most words land at 23–26px, टोपियाँ at
+  22px and मछलियाँ at 17px.
+* Because the bubble is exactly the slot's size, a drop never changes a line's width, so the sentence
+  type never changes after a drop. The Round-89 pre-measuring is no longer needed and was removed.
+
+Verified at 1920×962 by playing all six pairs: the type was 44px on every screen, before and after
+each drop; the slots were 74px circles; the placed bubbles were green with their words fitted. All
+18 slides mount with no errors.
+
+---
+
+## Round 91 — the dragged bubble takes the slot's size while it is over the slot
+
+**Asked:** the answer bubbles (112px) and the empty circles (74px) differ in size. When a bubble is
+dragged over an empty slot, it should shrink smoothly to the slot's size, so it clearly reads as
+"this goes here". It grows back to its own size when moved away.
+
+* While a dragged bubble is over an empty slot (the slot or its invisible landing ring), it gets
+  `over-slot`. Its face eases to 68px (×1.08 for the drag lift ≈ the 74px slot) and its word scales
+  to 0.64. Both ease back the moment it leaves the slot or is let go.
+* The sizes change on the face (centred by its own translate) and on the label's own scale, never on
+  the dragged tile. The bubble therefore stays exactly under the finger.
+* This happens over any empty slot, right or wrong: the child finds out only on the drop.
+* The first-screen ghost now also ends at the slot's size (0.62 of the bubble, was 0.78).
+
+Verified at 1920×962 with a held drag:
+* halfway the face was 119px;
+* over the slot it was 72px (slot 73) with the word at 0.64, centred on the pointer;
+* moved away it returned to 119px, and back over the slot it was 72px again;
+* on the drop the answer filled the slot and the tile left the tray;
+* all 18 slides mount with no errors.
+
+---
+
+## Round 92 — a taller sentence window
+
+**Asked:** the submarine's window is long enough, but too thin top to bottom; make it a little taller
+so everything fits well.
+
+* **The window artwork** is a new file, `assets/UI/submarine-sentence-window-v2.svg`, so no browser
+  can show a cached copy of the old one.
+  * Every y in the frame, glass, highlights and rivet rows was moved to 392 + (y − 392) × 1.13 − 4.
+    The glass is 13% taller, about 269–491 where it was 287–483.
+  * The rivets keep their round size (only their centres moved), and the stroke widths are
+    unchanged. The glass gradients and the lilac glow moved and grew with it.
+  * The window stays clear of the periscope base above, the front fin below and the hull's
+    tapering top edge near the tail.
+* Both the game and the small progress-rail submarine use the new file. The old file is no longer
+  referenced and is left on disk.
+* **The two rows** use the extra height: 45.8%–72.2% of the submarine's height, inside the glass
+  where it slopes. Each row is now about 70px (was 62), so each 74px answer circle sits within its
+  own line instead of reaching the rim. The type is unchanged at 44px.
+
+Verified at 1920×962: the upper circle sits ~14px below the glass top and the lower one ~7px above
+its bottom; the frame covers neither the fin nor the periscope base. All 18 slides mount with no
+errors.
+
+---
+
+## Round 93 — the submarine game ends without a voice line; the end screen says "शाबाश! तुमने कर दिखाया!"
+
+**Asked:** when every question of the submarine game is done, the line that came next ("… अब तुम
+जानते हो कि गुब्बारा-गुब्बारे, लड़का-लड़के, बच्चा-बच्चे …") goes completely. The motor simply starts,
+the submarine leaves to the left, and then the final screen comes, where Swiftie just says
+"शाबाश, तुमने कर दिखाया".
+
+* **The submarine's finish.** No confetti and no voice line any more (`vo_well_done` is no longer
+  played anywhere). When the last word is in, the window empties, the motor starts, the submarine
+  leaves to the left with its bubble trail, and the end screen follows.
+* **The end screen's line** is now *शाबाश! तुमने कर दिखाया!*: `assets/Audio/ocean_end_praise.mp3`,
+  the two existing praise clips (`ocean_correct_1` + `ocean_correct_2`, the same voice) joined with a
+  0.34s pause. Speech runs 0.07–2.76s. It is listed as `OCEAN_VO.endPraise`.
+* **In step with Swiftie's beak.** The approved end animation talks only for frames 18–35 (1.6s),
+  too short for the longer line.
+  * The end screen now plays `assets/UI/swiftee_end_talk.webp`. It is the same 36 frames, with its
+    steady wave-and-talk stretch (frames 22–30) played three times instead of once: 54 frames ×
+    90ms = 4.86s, played once, then the calm still pose as before.
+  * The line starts so that its first syllable lands on frame 18, and it ends while she is still
+    talking.
+  * The old `swiftee_end_page.gif` is no longer referenced; it is left on disk.
+
+Note: the CEL slide still names `vo_well_done` as its prompt audio in the data, but the end screen
+plays its own line and never that one. The open item about `vo_well_done` saying बच्चा-बच्चे no longer
+affects the lesson.
+
+Verified at 1920×962 by playing all six pairs:
+* after the last answer there was no voice and no confetti, and the motor came on 0.8s later;
+* on the end screen the talking animation loaded, the praise started 1.6s in and ended 3.2s later,
+  and the still pose came at 4.9s;
+* all 18 slides mount with no errors.
+
+---
+
+## Round 94 — an excited शाबाश on the end screen
+
+**Asked:** the end screen's "शाबाश" sounds dry and dull next to the excited "तुमने कर दिखाया", so
+"शाबाश" should sound excited too. The voice must stay the same.
+
+* **Why it was dull.** It was measured, not guessed. The old clip (`ocean_correct_1`) is nearly
+  flat: about 137Hz, moving only ~13Hz, and quiet (mean −21.8dB). "तुमने कर दिखाया" (`ocean_correct_2`)
+  sits around 340Hz with a ~200Hz swing, and is louder (−13.5dB).
+* **The livelier शाबाश.** Every "शाबाश!" in the lesson is in the same voice (hi-IN-SwaraNeural; see
+  `gen_vo.js`). The liveliest is the one opening `vo_pick_ok_q1` ("शाबाश! आपने सही शब्द चुना…").
+  * Its pitch rises 281→421Hz on "शा" and 308→381Hz on "बाश" — an exclamation.
+  * Only that word is cut out (0.20–1.56s, ending in the pause before "आपने"). It is raised 5.5dB
+    (limited at −1dB) to the loudness of "तुमने कर दिखाया", and joined to it with a 0.2s pause.
+  * The result is `assets/Audio/ocean_end_praise_v2.mp3`: "शाबाश!" 0.07–1.26s, "तुमने कर दिखाया!"
+    1.46–3.02s, both about −14dB. It replaces the Round-93 clip, which is removed.
+  * It has a new file name so no browser plays a cached copy, and is mapped as `OCEAN_VO.endPraise`.
+* **Timing on Swiftie.** The first syllable still lands on the animation's frame 18. The line ends
+  during the cheerful arm-lowering frames, before the still pose.
+* **Also fixed:** the end screen's "go to the still pose" timer now lives on the shared end-screen
+  image. Re-entering the end screen (e.g. from the dev nav) cancels the old timer instead of letting
+  it cut the new animation short.
+
+Verified in the browser:
+* the praise started 1.6s after the animation, speech ended at ~4.7s, and the still pose came at
+  ~4.96s, also on re-entry;
+* all 18 slides mount with no errors.
+
+---
+
+## Round 95 — two flaws in the submarine art repaired
+
+**Asked** (with a screenshot circling two spots): fix the distortion on the submarine. The spots were
+the dome's lower-left edge by the steering wheel, and the tip of the rear lower fin.
+
+Both came from cutting the submarine out of video A in Round 77.
+
+* **The dome by the wheel.**
+  * There, the dome's dark outline and the cockpit behind the wheel are the same dark blue as the
+    water, so the cut-out lost them. A notch of sea showed through the glass, with loose dark
+    shards along the edge.
+  * The dome's bright inner rim is a clean line in the video. The outer edge is rebuilt from it:
+    rim − 5px, the outline width the cut-out keeps on the rest of the dome. The edge is fitted as one
+    smooth curve (within 1.1px of the rim everywhere) and anti-aliased.
+  * The shards outside the edge are removed. The hollow behind the wheel is filled back with the
+    video's own pixels: the glass, the brown band and the cockpit.
+* **The fin tip.** A drip of the coral behind the submarine hung below the fin and broke its dark
+  outline. The damaged columns are rebuilt from the fin's clean edge on either side. The outline now
+  runs unbroken to the tip, and nothing remains below it.
+* **Rebuilt from the repaired still**, at the same sizes and quality settings, with new file names so
+  no browser shows a cached copy:
+  * `sub_hold_v2.webp`: the progress marker;
+  * `sub_hull_v2.webp`: the game's hull, blades removed by the Round-83 rule;
+  * `sub_wave_sheet_v2.webp`: the waving cockpit. It is cut with the repaired outline, so the wave
+    has no gap at that spot either. Its frames are aligned exactly as before.
+* `sub_blades.webp` is unchanged. The old three files are no longer referenced and are left on disk.
+* The slide data in the lesson and in `card.json` names the new files.
+
+Verified at 1920×962, zoomed 3.2× on the live game:
+* the dome is whole by the wheel, both at rest and mid-wave;
+* the fin's outline is continuous with no drip;
+* all 18 slides mount with no errors and no broken images.
+
+---
+
+## Round 96 — the submarine leaves the screen completely
+
+**Asked:** when the submarine leaves to the left it does not fully disappear; its tail stays visible.
+
+* **Why.** It moved a fixed 1150px, set when the game sat in the 1333px stage. Since Round 88 the
+  game fills the window and the 1180px submarine is centred in it. The tail stayed on screen: 46px on
+  a 16:9 window, ~160px at 1920×962. On the way in, its nose already showed at the right edge before
+  it set off.
+* **Fix.** Both distances are now measured when each move starts. The whole submarine, propeller
+  included, ends 40px past the edge. Its speed is unchanged, so a longer way takes proportionally
+  longer (capped at 1.6×). With reduced motion it still just fades in place.
+* Verified by playing all six pairs at 1920×962, 2560×1080, 1333×750, 1024×768 and 375×812:
+  * before setting off, the submarine is fully past the right edge;
+  * after leaving, its right edge is 11–58px past the left edge.
+* An independent review confirmed the patch. Its remaining risk is a window resized *during* the
+  3s exit, which could bring the tail back into view; this is not handled.
+
+## Round 97 — "चलिए, साथ में करें।" before the bubble game
+
+**Asked:** the gate before the bubble game said "अब आपकी बारी!"; it should say
+"चलिए, साथ में करें।", with its VO.
+
+* The bubble slide's `gate_before` changed from `practice` to `guided`, in both the lesson and
+  `card.json`. It now plays the same line and clip as the gate before Q1
+  (`review_guided_gate.mp3`, the same voice).
+* The guided gate's on-screen line now ends in "।" (it was "!"), as asked and as the clip's text
+  reads. This applies to both gates.
+* "अब आपकी बारी!" / `vo_pt_practice` is no longer played anywhere. VO_SCRIPT.md still lists it,
+  because its generator hard-codes the tutorial and practice gates.
+
+Verified: finishing Q6 shows the gate with "चलिए, साथ में करें।" and plays `review_guided_gate.mp3`,
+then the bubble game opens with its instruction. The Q1 gate shows the same line. The title fits and
+sits above Swiftie.
+
+## Round 98 — टोपियाँ is highlighted once on the topi page
+
+**Asked:** on the poem page, टोपियाँ lit up orange on both lines; once it has been highlighted, the
+next line's टोपियाँ should not be.
+
+* The review round's last line ("फिर से हमने पकड़ लीं अपनी-अपनी टोपियाँ।") marked it as a target
+  word. The mark is removed from the runtime override and from `card.json`. The line still reads
+  word by word, with its timings unchanged.
+* No other poem page repeats a target word on its next line. गुब्बारे is highlighted on the first
+  page and again on the gust page, but that is a separate page.
+
+Verified: line 1's टोपी and टोपियाँ are highlighted, and line 2's टोपियाँ is plain.
+
+---
+
+## Round 99 — end-to-end optimisation (media formats, preloader, watchdogs, dead code)
+
+Work moved to this folder (`Desktop\HI02H11_L03_S01\HI02H11_L03_S01`) from this round on.
+**Deployed payload (HTML + card.json + assets): 96.05 MB → 19.00 MB (−80%).**
+
+| | before | after |
+|---|---|---|
+| video | 5 files, 38.75 MB | 3 files, 4.45 MB (−89%) |
+| audio | 80 files, 9.52 MB | 78 files, 4.61 MB (−52%) |
+| images | 110 files, 46.64 MB | 58 files, 9.19 MB (−80%) |
+| HTML | 1.08 MB | 0.69 MB (−36%) |
+
+### Media formats
+* **Video.** MP4 (H.264/AAC) became WebM (VP9 + Opus 96k), at source resolution and frame rate. The
+  encode used constrained quality: CRF 33 with the bitrate capped at 75% of the source's.
+  * title video 14.8 → 2.29 MB; sea background 14.6 → 1.15 MB; swim transition 6.2 → 1.23 MB.
+  * SSIM against the originals is 0.98–0.99. No file needed the two-pass fallback.
+* **Audio.** MP3 and Ogg Vorbis became Ogg Opus.
+  * Speech is mono 64k, and music is stereo 96k.
+  * The cap is 80% of the source bitrate, so no file grows: the 48k MP3s and the ~50k Vorbis
+    lines become ~38–40k Opus.
+  * The inline pop sound (a base64 data URI) was re-encoded too (5.9 → 3.8 KB).
+* **Images.** PNG became WebP q82, with alpha kept and checked on the title art. The loader GIF
+  became animated WebP.
+* **Every output is smaller than its source.** Each reference was rewritten by exact file name in
+  the HTML, card.json and both ocean helpers. The engine's default image extension is now webp. No
+  live reference to `.mp4/.mp3/.png/.gif` remains.
+* **Browser support:** Chrome, Edge, Firefox, and Safari 17+ (WebM/VP9) / 18.4+ (Ogg Opus). The
+  lesson already relied on Ogg for its VO.
+
+### Preloader (in `<head>`, before anything creates media)
+* **The bar.** The title screen shows a loading bar where Play stands. Play pops in only at 100%,
+  and `sgBtn` itself refuses until then, so a keyboard or script start waits too.
+* **Byte-accurate progress.** Files stream through `fetch` + reader and are weighted by their real
+  sizes. Content-Length refines the weights, and the bar never moves backwards.
+* **The size table** is generated from the files on disk by `_dev/gen_preload_manifest.js`.
+  **Re-run it after any change in assets/.**
+* **Order.** The landing's intro line goes first, then everything else smallest-first, 5 at a time.
+* **Not fetched twice:**
+  * what the landing markup and CSS load by themselves is waited for through Resource Timing;
+  * the title video streams in its own `<video>` (the landing card *is* that video, so it must
+    start at once), and the bar follows its buffered range;
+  * anything the page never requests is fetched once the page has loaded.
+* **Everything else is local.** Each fetched file becomes a `blob:` URL, used by:
+  * `img`/`audio`/`video`, including `new Audio()`, `setAttribute`, and elements created from HTML
+    strings;
+  * stylesheet `url()`s, rewritten at 100%;
+  * the submarine's inline wave sheet, through `assetURL()`.
+  Reading `.src`/`.currentSrc` still returns the original path, so the clip-name checks still work.
+  A blob that will not decode falls back once to the file, and a video resumes.
+* **Nothing blocks.** A failed, stalled (15s), over-long (90s) or aborted transfer counts as done.
+  On `file://` everything is done at once.
+* **Fewer duplicate loads.** The two animations restarted with `?r=` (Swiftie's peek, the end
+  animation) no longer load from the markup at page load.
+
+### Media-driven states
+* **`play()` watchdog.** After its length + 3s, re-armed while the sound still moves. No metadata
+  after 10s counts as a failed clip. A stalled clip can no longer leave the VO lock on or hold back
+  Next.
+* **Landing Play.** An intro that errors or stalls now counts as heard. A refused autoplay still
+  waits for a tap, as designed, but a watchdog (intro length + 4s) brings Play regardless. The
+  CSS comment always promised this; the code had stopped doing it.
+* **Swim transition.** The video's `error` now leads to the next screen, alongside `ended` and its
+  timers. The phase gate's fallback also shows Swiftie's picture.
+* **GPU audit.** Only one slide is ever mounted. Hidden overlays are `display:none`, and the landing
+  video is paused after Play. The confetti's 3D faces already have `backface-visibility:hidden` and
+  no filtered children. No change was needed.
+
+### Unused code and files
+* **58 slide modules** for types this card never uses were removed. Then 50 functions nothing
+  called, found with acorn and removed in rounds, including the hand-picture landing branch that
+  pointed at missing files.
+* **CSS.** 618 rules, 48 keyframes and 16 custom properties that nothing can match or read were
+  removed. Class prefixes the JS builds (`tri-`, `opt_`, `thm-`) were respected, after a first pass
+  broke the bubble pictures; that was caught by screenshot diffing. Before/after screenshots of
+  every slide and gate now match.
+* **Fonts.** The two embedded Baloo 2 fonts were already subset (a re-subset saved < 1 KB), so they
+  were left alone.
+* **Files.** 57 files (≈27 MB) that no live code reaches were moved to
+  `..\_quarantine_unused_assets\unreferenced`. The converted originals went to
+  `..\_quarantine_unused_assets\replaced_originals`. Nothing was deleted.
+* **Other.** The favicon 404 is gone (`<link rel="icon" href="data:,">`). `.deployignore` lists
+  what must not ship: `_dev/`, `.claude/`, PROGRESS/VO_SCRIPT, review material, the quarantine.
+
+### Verified (headless Chromium, local HTTP)
+* **Every slide and gated control.** All 18 slides, the gates and the swim transition were crawled.
+  Next appeared on all 9 story/compare pages and the finish button on the end screen.
+* **A full playthrough** (226s), every slide played as a child would:
+  * Q1 with a wrong answer first;
+  * all 7 bubble pairs;
+  * all 12 submarine sentences by drag;
+  * the end screen with its praise.
+* **Zero JS errors, zero 4xx/5xx, zero failed loads, zero broken img/video/audio.**
+* **Throttled to ~4 Mbit/s.** The bar climbs monotonically, small files first (109 of 139 by 11s).
+  The landing card plays from about 5s, and Play appears at 100% (~39s for 19 MB).
+* **Failure modes:**
+  * every fetch fails → still 100% and Play, and the lesson runs from the files;
+  * one transfer hangs → aborted at 15s;
+  * `file://` → instant;
+  * corrupt blob → falls back to the file and plays;
+  * landing intro hangs → Play at 13s;
+  * gate VO hangs → the gate still closes and the next slide mounts.
+
+Known, unchanged: the embedded card data still differs from `card.json` exactly where the review
+round's runtime override (engine start) patches it.
+
+---
+
+## Round 100 — the straight hull, and a window like the reference
+
+**Asked** (with three pictures): the window looked odd because the submarine narrows towards the tail.
+Use the supplied straight hull instead. Make the window and the two sentences look exactly like the
+reference. Do not change the answer options.
+
+* **The hull.** Another session had already switched to the supplied straight hull
+  (`sub_hull_equal_v3.png`, 1.3 MB) and drawn an amber window (v3). Both are now replaced:
+  * the hull is the same art as WebP (`sub_hull_equal_v3.webp`, alpha kept), on the submarine and
+    on the progress marker;
+  * the PNG and the v3 window are in `../_quarantine_unused_assets/replaced_originals`.
+* **The window** is a new `submarine-sentence-window-v4.svg`: an orange riveted frame round
+  sky-blue glass. It sits on the hull's straight body, measured on the art:
+  * right of the cockpit rim (x≈510 of 1824);
+  * below the periscope base (y≈285);
+  * above the front fin (y≈670).
+* **The two sentences** are two pale-blue pills with a white rim that fill the glass (83px each, 11px
+  apart), in navy type.
+* **Each blank** is the reference's light-blue circle in a white ring with a dashed blue border:
+  * it is 80px (was 74), nearly the height of its row;
+  * a bubble held over it still eases to the slot's size (face 74px × the 1.08 drag lift);
+  * the first-screen ghost now lands at 80/120, and the placed green bubble is 80px too.
+* **Unchanged:** the answer bubbles. Swiftie's wave frames and the spinning propeller sit correctly on
+  the new art.
+
+Verified at 1920×962, by playing all 12 sentences with real drags:
+* over a slot, the dragged bubble's face measured 103px against the 103px slot;
+* the placed bubble is 103px;
+* the game reached the end screen with no errors.
+
+---
+
+## Round 101 — a shorter जोड़ियाँ card, centred on the right
+
+**Asked:** in the bubble game the जोड़ियाँ card was too tall for its pairs, so it looked empty even
+when full. Make it a little smaller so it looks filled, and centre it vertically, keeping it on the
+right edge.
+
+* The card used to stretch the full height of the game (730px), while the title and all seven pairs
+  take ~477px. It is now 490px, just enough for all seven, and sits in the middle of the screen's
+  height against the right edge. The finished summary layout is unchanged.
+
+Verified at 1920×962 with all seven pairs placed: the card is 490px tall, starts 130px from the top
+of a 750px game, and the last pair ends 13px above its bottom.
+
+---
+
+## Round 102 — Swiftie waves hello on inactivity again
+
+**Asked:** Swiftie no longer waved from the submarine when the child did nothing; that hello must
+stay.
+
+* The wave itself was intact, but nothing called it any more. The submarine's idle beat had been
+  rewritten to outline the row that needs an answer, and the call to `wave()` was lost in that
+  rewrite.
+* The idle beat now calls it again. After 7s of real inactivity Swiftie waves from the cockpit while
+  the row hint shows, as before. As before, any touch restarts the 7s count.
+
+Verified at 1920×962: with no input, the wave started 6.9s after the board became free. It plays
+correctly on the new straight hull, with no errors.
+
+---
+
+## Round 103 — no third hand on the wheel while Swiftie waves
+
+**Asked:** when Swiftie waves, one hand stays stuck on the steering wheel.
+
+* **Why.** The wave frames show her left hand raised, but they fade out before the bottom of the
+  dome. The still hull's left glove, resting on the wheel there, showed through, so she had three
+  hands. The frames hold no real picture outside their fade, and the source video is no longer
+  available, so the frames could not be re-cut.
+* **Fix.** `assets/UI/sub_wave_hand_patch.webp` (2.7 KB) is a 96×96 piece of the hull art with that
+  glove painted out. The glove and its outline are filled from the brown cockpit wall above and the
+  dark console below, never from the yellow jacket. It sits on the hull under the wave frames and is
+  shown only while the wave plays.
+* The preloader's size table was regenerated.
+
+Verified at 1920×962 on a real idle wave:
+* at rest both hands are on the wheel and the patch is hidden;
+* mid-wave one hand is raised and only the other is on the wheel;
+* the patch hides again after the wave;
+* no errors.
+
+---
+
+## Round 104 — the submarine's motor sound
+
+**Asked** (with `freesound_community-thai-motor-boat-64851.mp3`): play that sound with the
+submarine's motor.
+* Arriving (right to left, as the game starts) it fades in as the submarine comes, and stops when
+  the motor stops.
+* Leaving at the end (middle to left) it fades out as the submarine goes.
+
+* **The sound.** `assets/Audio/sfx_submarine_motor.ogg` is a 10s steady stretch of the recording
+  (5–15s; its first seconds are silence and a run-up), looped. It is Ogg Opus 64k (82 KB, from a
+  60s 1.2 MB MP3), with 50ms edge fades for a click-free loop. The preloader table was regenerated.
+* **Arriving:** volume 0 → 0.55 over 70% of the glide, held, then a 0.4s fade and stop when the
+  motor stops at the parking spot.
+* **Leaving:** 0.55 → 0 over the whole exit, then stop.
+* **Conditions:** silent when the lesson is muted. Off with reduced motion, as the motor itself is.
+  Stopped if the game is left mid-move.
+
+Verified at 1920×962 by sampling the sound through a full game (all 12 sentences):
+* arriving: 0.03 → 0.55 by 2.7s, then stopped half a second after the motor stopped;
+* leaving: from 0.46 down to 0 as the submarine left, then stopped;
+* no errors.
+
+---
+
+## Round 105 — a new recording for “फिर से हमने पकड़ लीं अपनी-अपनी टोपियाँ।”
+
+**Asked** (with `Downloads/audio_1.wav`): use this audio for the topi page's second line.
+
+* **The clip.** `assets/Audio/review_topi_final_v2.ogg` is the supplied 4.08s WAV as Ogg Opus 48k
+  (22.7 KB). It has a new name, so no browser plays a cached copy. The old clip is in
+  `../_quarantine_unused_assets/replaced_originals`.
+* **The word cues** were re-timed to the new voice, set by the loudness profile against the old
+  clip's known timings:
+  * word starts: फिर .25, से .55, हमने .78, पकड़ 1.15, लीं 1.55, अपनी-अपनी 2.05, टोपियाँ 3.05s;
+  * cues `[100,430,660,1030,1430,1930,2930]`, each about 120ms ahead of its word, as before.
+* Both places that hold the line were updated: the runtime override at engine start and
+  `card.json`. The preloader table was regenerated.
+
+Verified at 1920×962 on the topi page:
+* line 2 plays the new clip;
+* each word lights as it is spoken (फिर 0.14s … टोपियाँ 3.06s);
+* Next appears after the line;
+* no errors.
+
+---
+
+## Round 106 — a new recording for the Q1 guided intro
+
+**Asked** (with `Downloads/audio_1 (1).wav`): use this as the voice-over where the सही-शब्द-चुनिए
+game starts, in the guided part that says “सही शब्द चुनिए। एक है तो मछली, अनेक हैं तो मछलियाँ”.
+
+* **The clip.** `assets/Audio/review_pick_intro_v2.ogg` is the supplied 5.56s WAV as Ogg Opus 48k
+  (30 KB). It has a new name, so no cached copy plays. The old 6.8s clip is in
+  `../_quarantine_unused_assets/replaced_originals`.
+* **The hand cue.** The hand that points at the right answer is timed to “मछलियाँ”, which now starts
+  at 4.35s (5.15s in the old clip). The cue moved from 5.182s to 4.37s. The phrase starts were read
+  off the loudness profile against the old clip: सही शब्द चुनिए .35, एक है तो मछली 2.00, अनेक हैं तो
+  3.70, मछलियाँ 4.35s.
+* The preloader table was regenerated.
+
+Verified at 1920×962 on Q1:
+* the new clip plays;
+* the hand points at the answer at 4.48s, while मछलियाँ is spoken;
+* the clip ends at 5.57s and the board unlocks;
+* no errors.
+
+---
+
+## Round 107 — Swiftie moves only while she is speaking
+
+**Asked:** after a second wrong answer (e.g. ताली for लड़की → लड़कियाँ), Swiftie's worried animation in
+the header kept looping after her line “दोबारा देखिए…” had ended. She should stop on one frame and move
+only while a voice-over plays. Fix it wherever the same thing happens.
+
+* **Why.** `setSwMood` chose the animated face (`sw_head_<expr>_anim.webp`) for every mood except
+  talking, and left it looping until the mood changed, whether or not anything was being said.
+* **Fix, in the shared header Swiftie (every screen that shows her):**
+  * the animated face is used only while a clip is sounding;
+  * otherwise she holds the same expression as a still (`sw_head_<expr>.webp`);
+  * `setPlaying` re-applies the mood whenever playback starts or stops, so the switch follows the
+    voice exactly. That call is guarded so it can never break playback.
+* **The other animated Swiftie pictures already stop with their line:**
+  * the title-screen Swiftie plays once (3.2s, loop count 1);
+  * the hint pop-up and the gate's peek close when their line ends;
+  * the end screen freezes on its still pose.
+
+Verified at 1920×962 on Q2:
+* during the second wrong answer's line she shows the animated worried face;
+* the moment it ends she is on the still worried face, and still 1.5s later;
+* no errors.
+
+---
+
+## Round 108 — Swiftie's default face between lines; worried only while she explains
+
+**Asked** (with two pictures): when a voice-over ends, Swiftie should go back to her default face,
+not the worried one.
+* The worried face, moving, shows only while she speaks: explaining a wrong answer (“एक है तो लड़की,
+  अनेक हों तो…”) and the inactivity reminder “सही शब्द चुनिए”.
+* With no voice-over she shows the default face.
+
+* **The rule** (shared header Swiftie, every screen):
+  * with nothing sounding she shows the default face (the resting talking head);
+  * while a clip sounds she shows the current mood's animated face: worried for a wrong-answer
+    explanation, happy for praise;
+  * with reduced motion, that mood's still picture is used.
+  * Round 107's still-worried resting face is replaced by this.
+* **Inactivity reminder.** On the सही-शब्द-चुनिए screens it now sets the worried mood just before it
+  is spoken (it used to stay on the neutral face).
+* **No restarts.** An unchanged face is not reloaded, so the play-once happy animation is not
+  restarted by every clip start.
+
+Verified at 1920×962 on Q2, all with no errors:
+
+| moment | face |
+|---|---|
+| at rest | default |
+| second wrong answer, speaking | worried, moving |
+| after that line | default |
+| inactivity reminder, speaking | worried, moving |
+| after the reminder | default |
+| correct answer, praise | happy, moving |
+
+---
+
+## Round 109 — the submarine's second wrong attempt: a voice line, no word highlight
+
+**Asked:** in the submarine game, a second wrong drop into the same sentence (e.g. लड़के into
+“मैदान में एक ___ खेल रहा है।”) highlighted the clue word (एक). Drop the highlight. Have Swiftie say an
+existing, relevant line once instead (nothing newly generated). The third attempt already shows the
+ghost.
+
+* The second wrong drop now plays the existing retry line from `OCEAN_VO.retry`: “दोबारा कोशिश करो।”
+  or “कोई बात नहीं, फिर से कोशिश करो।”, picked at random.
+* The board is held while she speaks, as for every voice line, and her worried face shows while the
+  line plays.
+* The clue-word highlight (`contextualHint`) is gone; the function is removed as nothing else used it.
+* Unchanged:
+  * the first wrong drop plays only the error sound;
+  * the third shows the ghost hint.
+
+Verified at 1920×962 with three wrong drops into one blank:
+* first: error sound only;
+* second: error sound + “दोबारा कोशिश करो।”, no highlighted word;
+* third: the ghost;
+* no errors.
+
+---
+
+## Round 110 — the transition and the poem's word walk, as in the reference game
+
+**Asked**, pointing at https://hindi-game-gender-identify.vercel.app/:
+* In its Swiftie transition she goes back DOWN when her line (“चलिए, शुरू करें” / “चलिए, साथ में
+  करें”) is done; ours did not.
+* The poem's words jump and turn orange as they are spoken. That behaviour should be exactly the
+  same here, and properly in sync with the voice.
+
+Studied in the reference's own code (same engine family): `phaseBlurTransition` + `.pg-sink`, and
+`prepVerseWords` + `.verse-word.saying` / `.verse-done`. Measured side by side in a headless browser.
+
+* **The transition.** When the gate's line is done Swiftie drops below the edge (0.34s,
+  `ease-in`, the reference's own timing), and only then does the gate lift and the next slide
+  mount.
+  * It applies to every gate (in the reference code only its first gate has it).
+  * Reduced motion skips the drop.
+* **The word walk.** Ours already ported the reference's mechanics: the spoken word turns orange and
+  lifts to 110% with a 0.15s ease, held for max(220, min(620, next cue − 40))ms, driven here by the
+  clip's own clock. Two differences remained, now aligned:
+  * the orange is the reference's #FF8A00 (ours was overridden to #ED8200);
+  * the एक/अनेक pair words (लड़का/लड़के…) are ordinary navy words while the line is read. They take
+    the moving orange on their turn and turn orange + bold together once the reading is over.
+    **This replaces** the pair words being orange from the first frame (an earlier change).
+* All nine poem beats have exactly one cue per word, so every word walks on its own cue.
+
+Verified at 1600×900:
+* T2's pair word लड़का: navy before it is spoken, orange and lifting while spoken, orange bold after
+  the line;
+* a gate's Swiftie ran `pgSinkDown` and the gate closed 0.33s later;
+* no errors.
+
+---
+
+## Round 111 — the poem's pair words stay pre-highlighted
+
+**Asked:** Round 110 was right except one thing. The एक/अनेक words in the poem (गुब्बारा/गुब्बारे,
+लड़की/लड़कियाँ, सहेली/सहेलियाँ, लड़का/लड़के…) must stay highlighted from the start. Only the animation
+was meant to follow the reference.
+
+* **Restored:** the pair words are orange (#FF8A00) and bold from the first frame, as before
+  Round 110.
+* **Kept from Round 110:**
+  * the reference's word walk: the spoken word turns orange and lifts to 110%, in sync with the
+    clip; a pair word lifts on its turn like every other word;
+  * Swiftie sinking out of the transitions.
+
+Verified on T2: लड़का is orange and bold before it is spoken, lifts while spoken, and stays orange
+after; no errors.
+
+---
+
+## Round 112 — the confetti, exactly as in the reference game
+
+**Asked** (reference: https://hindi-game-gender-identify.vercel.app/, code on
+https://github.com/Prashantkumar12345678/Hindi-game-gender-identify): every confetti burst should
+look exactly like the reference's.
+
+**Studied.** The reference's active `confettiCannon` (the last definition on its page) calls its FLN
+kit with `FLNMotion.confetti.burst({ host: "#fxLayer", phases: [], count: 100, fall: [1.6, 2.6] })`.
+It draws a window-wide layer whose pieces are sized with the stage at 1.5×.
+
+**Ours was an older copy of the same kit.** The keyframes (cfFall, cfGlide, cfRock, cfTumble) and the
+shape and colour tables are identical. What differed is now aligned:
+
+| | was | now (= reference) |
+|---|---|---|
+| pieces | 80 | 100 |
+| fall | 1.1–1.8s | 1.6–2.6s |
+| piece size | the kit's fixed px | × stage scale × 1.5 |
+| stars | none in the bubble and submarine games | in every burst (40% stars) |
+| reduced motion | confetti anyway | no confetti |
+
+Our celebration sound stays. Bursts now last up to ~1s longer, so the move on after a correct
+answer, which waits for the confetti, waits that much longer, as in the reference.
+
+Verified side by side at 1600×900, one burst each, 0.8s in:
+* reference: 100 pieces, max/avg side 29/21.5px, gone at 4.2s;
+* ours: 100 pieces, 27/20.1px, gone at 3.8s (random draw);
+* the same star-heavy mix;
+* no errors.
+
+---
+
+## Round 113 — the लड़का/लड़के poem page, re-synced
+
+**Asked:** on the poem page “एक लड़का उछलकर बोला, “मैं पकड़ूँगा सारे!” / फिर लड़के भी दौड़ पड़े— आगे-आगे
+गुब्बारे!” the word pop was not in sync with the voice.
+
+* **Why.** T2's two clips (vo_stanza3a, vo_stanza3b) had cues up to half a second off, e.g.:
+  * बोला lit at 1.97s, in the pause after the comma; it is spoken at 1.40s;
+  * पकड़ूँगा lit at 2.48s, before it starts at 2.68s;
+  * भी lit at 1.10s, the moment दौड़ begins (भी starts at 0.84s);
+  * गुब्बारे lit at 2.66s, early (it starts at 2.80s).
+* **Re-measured** from the clips at 20ms resolution: the pauses, plus the short closures before
+  stop consonants (ब, प, द, ग).
+  * Word starts, line 1: .26 .49 .82 1.40 2.34 2.68 3.20s.
+  * Word starts, line 2: .26 .46 .84 1.12 1.41 2.03 2.80s.
+* **New cues**, each ~30ms ahead of its word so the 0.15s lift peaks as the word sounds:
+  * line 1: `[230,460,790,1370,2310,2650,3170]`;
+  * line 2: `[230,430,810,1090,1380,2000,2770]`;
+  * in the lesson's card data and `card.json` alike.
+
+Verified at 1600×900. Each word first lit at:
+* line 1: एक .27, लड़का .48, उछलकर .80, बोला 1.39, मैं 2.33, पकड़ूँगा 2.70, सारे 3.17s;
+* line 2: फिर .26, लड़के .44, भी .82, दौड़ 1.10, पड़े 1.42, आगे-आगे 2.03, गुब्बारे 2.79s.
+
+Each is within a few hundredths of its spoken start. No errors.
+
+---
+
+## Round 114 — the hint GIF is back on the 3rd wrong answer; “सही शब्द चुनिए” said once
+
+**Asked:**
+* On the सही-शब्द-चुनिए screens the 3rd wrong answer used to show Swiftie's HINT animation in the
+  header bar. It had disappeared, and it was never asked to go.
+* With the hand nudge, “सही शब्द चुनिए” should be said ONCE, not over and over.
+* Standing instruction: change only what is asked, nothing else.
+
+* **Why the GIF went.** Rounds 107/108 (Swiftie's mood face only while a voice line plays) also
+  caught the 3rd attempt, which sets the hint mood with no voice line, so it fell back to the
+  default face. Now the hint mood keeps its animation with or without a voice, as before Round 107.
+  Everything else from 107/108 is unchanged.
+* **Said once.** On the 3rd wrong answer (correct option lit, the others faded, the hand on the
+  answer) Swiftie says “सही शब्द चुनिए” once. After that nothing repeats on that question. Two
+  reminders had to be silenced:
+  * the game's own inactivity reminder: its voice is off from then on, its visual pulse stays;
+  * the engine's one-per-slide idle prompt replay: marked as used.
+  Both reset on the next question.
+
+Verified at 1600×900 on Q2 with three wrong answers:
+* after the 3rd, only the error sound and one “सही शब्द चुनिए”;
+* nothing more in the next 27s;
+* the hint animation and the hand stayed on throughout;
+* no errors.
+
+---
+
+## Round 115 — the optimisation checklist, re-run on the current lesson
+
+**Asked:** the full optimisation checklist again (formats, preloader, media watchdogs, GPU,
+unused code/files, verification). Round 99 did it once; since then Rounds 100–114 added a new hull,
+window, motor sound, two recordings, a hand patch and code changes. So this round re-audits every
+section against the current files, fixes the drift, and re-verifies.
+
+**Drift found and fixed:**
+* `assets/UI/submarine-sentence-window-v2.svg` was no longer used (v4 replaced it in Round 100); it
+  was moved to `../_quarantine_unused_assets/unreferenced`.
+* `@keyframes subgSlot` (the Round-89 slot breathing; the slot now has `animation:none`) was
+  removed from `ocean-games.css`.
+* The preloader's size table was regenerated: 142 files, 19.38 MB.
+
+**Already in order (checked, nothing to change):**
+* **Formats:** only WebM, Ogg Opus, WebP and SVG in assets. Every file added since Round 99 was
+  converted at the time and is smaller than its source (hull PNG 1.3 MB → WebP; motor MP3
+  1.2 MB → 82 KB; WAVs → Ogg).
+* **References:** no live reference to an old extension, and none to a missing file. The only data
+  URIs are the two subset fonts and the Opus pop sound.
+* **Dead code:** no unreferenced function (acorn, to a fixed point). No unmatchable CSS rule or unused
+  custom property; the JS-built class fragments (`tri-`, `opt_`, `thm-`) are respected.
+* **Media watchdogs:** the new voice lines go through the protected `play()`; the motor sound gates
+  no UI.
+* **GPU:** unchanged since the Round-99 audit.
+* **Files:** no junk files, and `.deployignore` is current.
+
+**Verified** (headless Chromium, local HTTP; the harness was rebuilt, as the scratchpad had been
+cleared):
+* **Crawl at 1920×962:**
+  * the bar from 1%, monotonic; Play only after 100% (10.5s, after the intro);
+  * every gated control appeared (T1…C4 Next 5–13s, end button);
+  * zero 4xx/5xx, failed loads, console errors, page errors and broken media;
+  * screenshots of the key states checked.
+* **Throttled to ~4 Mbit/s:** 0 → 8% (6.8s) → 49% (20s) → 100% at 39.3s, monotonic. Small files
+  landed first (86 of 142 by 6.8s), and Play appeared at 100%. Zero errors.
+* **Failure modes:**
+  * every fetch fails → still 100% and Play, and the lesson runs (0 broken images);
+  * one transfer hangs → aborted at 15.9s, Play;
+  * `file://` → instant;
+  * corrupt blob → falls back to the file (8.13s clip decodes);
+  * landing intro hangs → Play at 13.2s, no VO lock.
+* **Full playthrough:** landing → all 18 screens → end button in 218s, with zero errors, 4xx/5xx or
+  broken media.
+
+**Payload now 19.24 MB** (the original was 96.05 MB, −80%):
+
+| | files | size |
+|---|---|---|
+| video | 3 | 4.45 MB |
+| audio | 79 | 4.70 MB |
+| images | 60 | 9.33 MB |
+| HTML | 1 | 0.69 MB |
+
+---
+
+## Round 116 — poem pair words light up only when they are spoken
+
+**Asked:** in the whole poem section the pair words must NOT be pre-highlighted.
+* Each line first appears in blue, and the words turn orange one by one as they are spoken (the
+  bounce).
+* गुब्बारा, गुब्बारे, सहेली, सहेलियाँ, लड़का, लड़के… turn orange only when the voice reaches them, and
+  stay highlighted from then on.
+
+* **Starting state.** `.hl-orange` now inherits the line's navy, so nothing is orange before it is
+  spoken. This replaces Round 111's pre-highlight.
+* **When spoken.** The word walk marks a pair word `.pair-spoken` the moment it is spoken, and that
+  class turns it orange and bold and keeps it so. A replay of the line clears it, so the pair is
+  earned again.
+* Ordinary words still flash orange only while spoken, then return to blue. The bounce, sync and
+  colour (#FF8A00) are unchanged from Rounds 110/113.
+
+Verified at 1600×900 on all five poem pages (T1, T1B, T2, T3, T4): the first pair word was blue
+before it was spoken, orange while spoken, and still orange after; other words were back to blue. No
+errors.
+
+---
+
+## Round 117 — a lit pair word stays lit into the next line
+
+**Asked:** once a pair word has lit up (e.g. लड़का in line 1), it must STAY highlighted. It went
+back to blue when the next line started. Once lit, it stays lit for the whole poem section.
+
+* **Why.** Before each new line, the page stops the previous line's word walk (`reset`). That
+  reset also removed Round 116's `.pair-spoken`.
+* **Fix.** The reset still stops the moving highlight, but no longer clears `.pair-spoken`. A pair
+  word, once spoken, keeps its orange-bold for the rest of the page.
+
+Verified at 1600×900:
+* when line 2 starts, line 1's pair word is still orange on T1 (गुब्बारा), T2 (लड़का), T3 (टोपी,
+  टोपियाँ) and T4 (सहेली), and line 2's is still blue;
+* when the page is done, both are orange;
+* no errors.
+
+---
+
+## Round 118 — the bubble game's gate says "चलिए, अब आपकी बारी।"
+
+**Asked:** before the bubble game, the gate must say "चलिए, अब आपकी बारी।" instead of "चलिए, साथ
+में करें।". This reverses Round 97.
+
+* **Gate.** PAIR1 `gate_before` is back to "practice" (in the embedded card and in `card.json`).
+  `PHASE_GATE_TITLE.practice` = "चलिए, अब आपकी बारी।". Only this gate reaches it.
+* **VO.** No new VO was generated. The new `review_practice_gate.ogg` (2.44s) joins two existing
+  clips in the same voice:
+  * "चलिए," from `review_guided_gate.ogg` (0–0.98s);
+  * "अब आपकी बारी।" from `vo_pt_practice.ogg` (from 1.15s; its "वाह!" is dropped).
+  
+  Both cuts sit in silence. The runtime override points `vo_pt_practice` at it. The preload
+  manifest was regenerated.
+
+Verified: Q6 → gate "चलिए, अब आपकी बारी।" plays `review_practice_gate.ogg`, the text fits, and
+PAIR1 mounts. The gate before Q1 is unchanged ("चलिए, साथ में करें।"). No errors.
+
+---
+
+## Round 119 — the new poem, with the user's four recordings
+
+**Asked:** replace the poem section with the new four-stanza text, using the four recordings
+`Downloads/audio_1 (3)…(6).wav`.
+
+* **Which file is which stanza.** (3) गुब्बारा, (4) हवा/लड़का, (5) टोपी, (6) सहेली. This was matched
+  from each file's pause pattern against the stanza's commas.
+* **Clips.** Each file was split in the middle of its line-break pause into an a/b clip, one per
+  line, as before. They are saved as Opus, 48 kHz, 44 kbps, under the beat keys `vo_stanza1a/1b`
+  (T1), `3a/3b` (T2), `4a/4b` (T3) and `5a/5b` (T4); the engine builds a beat's path from its key.
+  Loudness already matched the old clips, so there was no gain change.
+* **Text.** One line per beat, with the pair word starred, in the embedded card and `card.json`
+  (lines and audio_text alike):
+  * T1: "आज है मीरा का जन्मदिन, उसने एक *गुब्बारा* लगाया," / "पापा और *गुब्बारे* लाए, मिलकर घर सजाया।"
+  * T2: "तभी हवा का झोंका आया, *लड़का* दौड़कर आया," / "पीछे-पीछे *लड़के* दौड़े, सबने फिर हाथ बढ़ाया।"
+  * T3: "मीरा की एक *टोपी* उड़कर हवा में लहराई," / "फिर सबकी *टोपियाँ* उड़ीं और सबने दौड़ लगाई।"
+  * T4: "केक कटा, खुश हुई एक *सहेली* प्यारी," / "संग नाचीं *सहेलियाँ*, बाजाएँ तालियाँ ढेर सारी।"
+    "बाजाएँ" is kept exactly as the user typed it.
+* **T1B (the old hawa page) is removed.** Its line "तभी हवा का झोंका आया" now opens stanza 2 on T2.
+  The flow is T1 C1 T2 C2 T3 C3 T4 C4 …
+* **T3 override cleaned up.** T3's runtime overrides (r98 line, r105 `review_topi_final_v2`,
+  `reveal_next_ms`) are removed. टोपी and टोपियाँ now sit one per line.
+* **Quarantined.** The old clips, `vo_stanza_hawa`, `review_topi_final_v2` and `scn_hawa.webp` are in
+  `../_quarantine_unused_assets/r119_old_poem/`. The preload manifest was regenerated.
+* **Cues.** Every word start was measured from the clips: speech chunks between pauses, then the
+  energy dips (stop closures, fricatives) inside each chunk. Each cue is ~30ms ahead of its word, as
+  in r113. Word starts:
+  * 1a: .28 .66 .85 1.31 1.55 2.64 2.98 3.45 3.90
+  * 1b: .26 .82 1.07 1.53 2.34 2.89 3.14
+  * 3a: .28 .72 1.19 1.43 1.90 2.74 3.38 3.87
+  * 3b: .31 1.13 1.65 2.29 2.91 3.28 3.53
+  * 4a: .27 .82 1.09 1.47 1.93 2.65 2.98 3.20
+  * 4b: .30 .61 1.16 1.68 2.33 2.65 3.20 3.39
+  * 5a: .28 .67 1.45 1.83 2.03 2.24 2.75
+  * 5b: .23 .59 1.09 2.03 2.63 3.21 3.65
+
+Verified at 1600×900:
+* each page plays its new clips and shows the new text;
+* every word first lit within ~20ms of its cue;
+* a pair word stays orange into line 2 and both are lit at the end;
+* no 404s or errors;
+* full playthrough T1 → CEL in 211s, end button shown.
+
+Not changed (not asked): the submarine game's sentence "मीरा ने एक ___ टाँगा।" still uses the
+old poem's wording.
+
+---
+
+## Round 120 — the compare screens recap the new poem
+
+**Asked:** after a poem page, the compare screen (गुब्बारा | गुब्बारे) still recapped the OLD poem
+("मीरा ने एक गुब्बारा टाँगा…"). It must say the new poem's lines, and the same goes for every pair.
+
+* **What changed.** Only the four recap clips `vo_cmp_*_1` were on old wording. Each was rebuilt
+  from the user's new stanza recordings: the two half-lines that hold the pair words. That is the
+  same voice, nothing generated. Each clip has ~0.27s lead and 0.25s tail silence.
+  * C1 gubbara: "उसने एक गुब्बारा लगाया, पापा और गुब्बारे लाए।" (4.57s), from (3) 2.56–4.70 + 5.02–6.92.
+  * C2 ladka: "लड़का दौड़कर आया, पीछे-पीछे लड़के दौड़े।" (4.03s), from (4) 2.68–4.36 + 4.76–6.58.
+  * C3 topi: "मीरा की एक टोपी उड़कर हवा में लहराई, फिर सबकी टोपियाँ उड़ीं।" (5.94s), from (5)
+    0.25–3.84 + 4.24–6.06.
+  * C4 saheli: "केक कटा, खुश हुई एक सहेली प्यारी, संग नाचीं सहेलियाँ।" (5.28s), from (6) 0.25–3.28 +
+    3.54–5.26.
+* **Text.** `audio_text` is updated in the card and `card.json`. The screen times each word card's
+  reveal from the recap text's character position, so the text must match the clip.
+* **Unchanged.** The "एक है तो …, अनेक है तो …" explain clips were already correct.
+* **Quarantined.** The old clips are in `../_quarantine_unused_assets/r120_old_recap/`. The preload
+  manifest was regenerated.
+
+Verified: C1–C4 each play the new recap, then the explain clip. The cards appear at:
+
+| Screen | Singular | Plural |
+|---|---|---|
+| C1 | गुब्बारा .76s | गुब्बारे 3.19s |
+| C2 | लड़का .00s | लड़के 2.77s |
+| C3 | टोपी 1.05s | टोपियाँ 4.51s |
+| C4 | सहेली 1.94s | सहेलियाँ 4.33s |
+
+This is on or a little ahead of each spoken word (the reveal timing is the screen's existing
+text-position rule, unchanged). No errors or 404s.
+
+---
+
+## Round 121 — title screen: no star, no shell, a slightly bigger title
+
+**Asked:** on the title screen, remove the yellow star above "मीरा" and the purple shell right of
+"जन्मदिन"; only the text stays. Also make the "मीरा का जन्मदिन" title a little bigger.
+
+The title is baked into `assets/UI/title_swifty_swimming.webm` (1920×1080, 30fps, 10s). The
+title_art image is hidden on this screen and is a different design. So the video itself was
+re-rendered frame by frame, with the same file name and no code change.
+
+* **Star** (frame x 736–797, y 56–115; static ±2px). It sat on sloping bands: water, plate rim,
+  plate fill, navy outline, yellow headline. Each column under it is a piecewise morph between the
+  columns just left (x 727) and right (x 806) of it. The band edges (rim / navy / yellow) are
+  detected per frame and matched, so every band continues at its own slope. The water above it
+  stays animated.
+* **Shell** (x 1308–1376, y 198–262) and the little plate lobe that only held it were removed. That
+  area gets the same frame's water from 80px to the right, with a 3px feathered edge.
+* **Bigger title.** The plate (text + its bubbly blue plate) is scaled 1.15× about its centroid
+  (951, 150) and laid over the frame with a 2px soft edge. The new title spans ~x 489–1441,
+  y 42–286; the old one was 549–1377, 49–268.
+  * The plate mask was traced from the plate's dark rim outline, cleaned with opening, closing
+    (r 8) and hole fill, and lies inside the 1.15× copy, so the old title never shows through.
+  * The small pink sparkle by न is kept, since it was not asked to be removed.
+  * Meera's head stays clear in every frame.
+* **Encoding.** VP9, crf 30 / 2.4M cap, original Opus audio copied; 2.29 MB, the same as before.
+  The original is in `../_quarantine_unused_assets/r121_old_title/`. The preload manifest was
+  regenerated.
+
+Verified:
+* 10 frames across the clip, all clean;
+* the landing screen in Chromium: video plays, no errors (screenshot checked).
+
+---
+
+## Round 122 — the submarine game reads both lines once a pair is done
+
+**Asked:** in the submarine game, once BOTH sentences of a pair are filled in correctly, a voice
+line repeats the two lines. The user's recordings are `Downloads/audio_1 (12/13/15/16).wav`.
+
+* **Which file is which pair.**
+  * Found by keyword spotting (MFCC + DTW against the existing word clips): (13) = m1 मछली (मछली
+    @1.86s, मछलियाँ @5.64s) and (15) = b3 केला (केला @1.56s, केले @5.38s).
+  * Confirmed by the user: (12) = l1 लड़का and (16) = p3 पौधा.
+  * g1 (गुब्बारा) and t3 (टोपी) have no recording. As the user chose, they stay as before, with no
+    voice line.
+* **Clips.** `assets/Audio/sub_lines_{l1,m1,b3,p3}.ogg` are the recordings as delivered (Opus,
+  48 kHz, 44 kbps, 5.9–6.8s). Each voiced pair carries `"vo"` in the embedded card and `card.json`.
+* **Behaviour.** When the second blank of a pair is filled, the board stays locked and the idle
+  timer is reset. After the usual 450ms the correct-sound has played and Swiftie reads the clip
+  (talking face). Then the next pair comes after 450ms, as before. Pairs without `vo` take the old
+  path unchanged.
+* The preload manifest was regenerated.
+
+Verified: the whole game played through in Chromium. Each clip played exactly once, right after
+its own pair, with the board locked. The game then left to CEL. No errors.
+
+**Round 122b — the last two recordings.**
+* The user sent `audio_1 (14).wav` and `(17).wav`. Keyword spotting identified them:
+  * (14) = g1 गुब्बारा (गुब्बारे @4.94s, cost 1.58 — the strongest match of any file);
+  * (17) = t3 टोपी (सहेलियों @3.22s at the start of the second sentence, टोपियाँ @4.98s).
+* Added as `sub_lines_g1.ogg` (6.41s) and `sub_lines_t3.ogg` (6.65s), with `"vo"` in the card and
+  `card.json`. All six pairs now read their lines. The preload manifest was regenerated.
+* Verified: all six clips played once each, right after their own pair, board locked, no errors.
+  This run stopped at the test loop's iteration limit after the last pair, so the exit to CEL was
+  not re-observed here; it was observed in the r122 run above.
+
+---
+
+## Round 123 — the submarine read-back bounces word by word, like the poem
+
+**Asked:** while Swiftie reads the two lines (r122), the words must highlight with the same bounce
+as the poem's word walk.
+
+* **Same rule as the poem's `storyTypeSync`.**
+  * The spoken word turns #FF8A00 and scales to 1.10, 0.15s each way (`.subg .subg-vw.is-speaking`
+    in `ocean-games.css`).
+  * The word lit is the last one whose cue has passed, held max(220, min(620, gap − 40))ms, on the
+    clip's own clock.
+* **Word spans.** `readLines()` splits each row's chunks into word spans at read time, including the
+  clue words and the placed answer. The एक sentence is read first (as recorded), whichever row it
+  sits in.
+* **Cues.** `pair.vo_cues_ms = [एक cues, अनेक cues]`, in the card and `card.json`, one per word,
+  ~30ms ahead of the word. They were measured from the clips as follows:
+  * pause chunks;
+  * syllable peaks;
+  * closure dips (त before सारे/सारी, क/ख/प/ट before केले/खा/पहनी/टोपियाँ);
+  * keyword anchors where reliable (मछली 1.87, टोपियाँ 5.33).
+* **Bug fixed while testing.** The split regex lost its backslash (`/(s+)/`), so "तालाब में" stayed
+  one span and that line's cue count did not match. It was fixed to `/(\s+)/`.
+
+Verified, with the whole game played in Chromium: all 71 words of the six pairs lit in order at
+their cues (e.g. मछलियाँ 5.53s, टोपियाँ 5.32s). The game left to CEL. No errors. The screenshot shows
+मछलियाँ orange and lifted.
+
+---
+
+## Round 124 — read-back in sync, always from the top line
+
+**Asked:**
+1. The voice and the highlight were out of sync: she said one line while the other line lit.
+2. Whichever line the child fills first, the voice and the highlight always start from the TOP line.
+
+* **Cause of (1).** r123 assumed every recording reads the एक sentence first. Three do not: लड़का
+  (12), पौधा (16) and गुब्बारा (14) read the अनेक sentence first. Re-checked from the pause structure:
+  * a long unbroken first sentence (11 / 9 / 10 syllable peaks);
+  * then "मैदान में | एक लड़का…", "गमले में | एक पौधा है", "मीरा ने एक | गुब्बारा टाँगा".
+
+  गुब्बारा now sits at 4.78s, which agrees with the keyword match (4.94s). Those three were
+  re-aligned to the right sentences.
+* **Fix for (2).** Each recording is cut at the middle of its between-sentence pause into one clip
+  per sentence: `sub_lines_<id>_{one,many}.ogg`, 0.25s lead, 0.3s tail. In the card and
+  `card.json`:
+  * `pair.vo = { one, many }`;
+  * `pair.vo_cues_ms = { one, many }`, each on its own clip's clock.
+
+  `readLines()` plays the top row's clip with its word walk, waits 250ms, then plays the bottom
+  row's. The bounce is unchanged.
+* **Quarantined.** The six whole-pair clips are in `../_quarantine_unused_assets/r124_whole_line_clips/`.
+  The preload manifest was regenerated.
+
+Verified: the whole game played in Chromium, with the bottom blank filled first on half the pairs.
+Every pair lit row 0 (top) with the top clip first, then row 1 with its own clip. Each word lit at
+its cue, e.g. "r0 g1_many पापा .22 … गुब्बारे 1.31", "r1 g1_one … गुब्बारा 1.26". The game left to
+CEL. No errors.
+
+---
+
+## Round 125 — submarine questions arrive line by line, words and circle together
+
+**Asked:** when the submarine arrives, the empty circles showed first and the words followed.
+Instead, the first line should arrive together with its empty circle, with a soft bounce-pop.
+Then the second line arrives the same way. It should look smooth.
+
+* `putWords` now keeps both lines hidden (`.row-wait`, opacity 0, and the words' own scale-in
+  switched off) while it builds them. The words are placed at full size inside the hidden line.
+* Each whole line then pops (`.row-pop`): scale .6→1.06→.98→1 with a fade in, 0.56s. The top line
+  starts at 40ms and the bottom line 420ms later.
+* The circles start their usual pulse, and the board unlocks, 120ms after the second pop ends.
+* Under reduced motion it is a plain 0.3s fade.
+* This runs for every pair, since every pair goes through `putWords`, not only the first one after
+  the submarine arrives.
+
+Verified in Chromium:
+* the per-frame timeline shows both lines at opacity 0 (circles included); the top line rises
+  0.60→1.06→0.98→1.00, then the bottom line follows the same curve 420ms later;
+* screenshots at 150 / 600 / 1500ms;
+* two full playthroughs reached CEL, the read-back still starts from the top line, no errors.
+
+---
+
+## Round 126 — the line panels stay hidden while the submarine arrives
+
+**Asked:** while the submarine glides in, the two light-blue line panels inside its window must
+not show. They appear only with the question's pop.
+
+* The two `.subg-sentence-row` elements are now created with `row-wait`, so they are at opacity 0
+  from mount. The first `row-pop` (r125) is their first appearance. Nothing else changed.
+
+Verified:
+* the per-frame timeline has both rows at opacity 0 from mount until the first pop;
+* a screenshot 2.5s into the glide shows the window empty;
+* a full playthrough reached CEL with no errors.
+
+---
+
+## Round 127 — two new poem images
+
+**Asked:** replace the current images with the two supplied ones.
+
+* `scn_topi_p.webp` (T3 line 2 and C3) is now three children with three flying party hats; it was
+  four of each.
+* `scn_gubbara_s.webp` (T1 line 1 and C1) is now Meera taping the balloon to the wall, without the
+  bunting.
+* Both are the user's WebP files as supplied (1672×941, the same size as before), so there was no
+  code or data change. The old images are in `../_quarantine_unused_assets/r127_old_images/`. The
+  preload manifest was regenerated.
+
+Verified: T1, C1, T3 and C3 each show the new image (loaded, 1672px wide), no errors, screenshots
+checked.
+
+**Round 128 — the टोपी image without the bunting.**
+* Asked: the Meera image on the टोपी screen should also be without decoration. That is
+  `scn_topi_s.webp` (T3 line 1 and C3).
+* No new file was supplied, so the bunting (x 0–720, y 0–180) was painted out of the current image:
+  * the bunting is the non-wall pixels in that zone, dilated 5px;
+  * they were filled with a smooth wall-colour surface (a quadratic in x and y, per channel) fitted
+    to 43k clean wall samples around it, mean error 0.7 levels per channel;
+  * the edge is feathered over 3px.
+* Nothing else in the picture changed. Saved as WebP q90, 1672×941. The old file is in
+  `../_quarantine_unused_assets/r127_old_images/`. The preload manifest was regenerated.
+* Verified: C3 and T3 show it (loaded), no errors, screenshot checked.
+
+---
+
+## Round 129 — Q1 intro: the fish pulse with the words, then the hand
+
+**Asked:** in the first सही-शब्द-चुनिए screen, Swiftie says "एक है तो मछली, अनेक हैं तो मछलियाँ".
+* At "एक है तो मछली", the single fish and its word pulse together.
+* At "अनेक हैं तो मछलियाँ", the four fish pulse.
+* Only after that pulse does the hand go to the answer मछलियाँ. Before, it came at 'मछलियाँ' itself.
+
+Implementation:
+* The word starts were measured in `review_pick_intro_v2.ogg`: मछली 2.70s (before the छ closure at
+  2.86) and मछलियाँ 4.45s (after the तो closure at 4.36).
+* The screen's own pulse is used (pvwPulse, .9s × 2 = 1.8s) on `.src-qty` + `.pvw-src`, then on
+  `.tgt-qty`. The hand follows 1.8s after the plural pulse starts.
+* If the clip ends or fails before 4.45s, its end still runs the plural pulse and then the hand.
+  Replaying the intro resets both.
+* The hand timer is cleared on cleanup.
+* Note: a `sed -i` here turned the file's CRLF into LF. It was restored to CRLF (6121, no lone LF).
+
+Verified in Chromium:
+* single fish + मछली pulse at vo 2.73s;
+* four fish pulse at vo 4.45s;
+* the hand appears at 6.37s on the wall clock, after the pulse, with no hand before;
+* no errors.
+
+---
+
+## Round 130 — submarine: the answer bubbles come after both lines
+
+**Asked:** the two answer options must appear only after both lines (top, then bottom) have come in.
+
+* `showQuestion` now calls `putOptions` inside `putWords`' completion (after the second line's
+  pop), instead of before it.
+* The board opens, or on the first question the instruction starts, 640ms later, once the bubbles'
+  own pop-in (140 + 140 + 340ms) is done. Nothing else changed.
+
+Verified in Chromium (first question):
+* line 1 complete at 5.05s and line 2 at 5.44s;
+* bubble 1 in at 6.03s and bubble 2 at 6.16s;
+* the board unlocked after the instruction.
+
+Two full playthroughs reached CEL, all six read-backs still start from the top line, no errors.
+
+---
+
+## Round 131 — title: the pink sparkle by न removed too
+
+**Asked:** remove the little star over "न" in the title. This is the pink sparkle kept in r121.
+
+* The title video was re-rendered from the original
+  (`../_quarantine_unused_assets/r121_old_title/`) with the r121 pipeline plus a sparkle fill:
+  * its pink pixels are flooded from a seed, so the न letter behind the navy band stays out, and
+    dilated 4px;
+  * each frame they are filled by inverse-distance weighting of the light water/bubble pixels
+    around them (G ≥ 190, R ≤ 150);
+  * this runs before the plate is enlarged.
+* The r121 addition of the sparkle to the plate mask was dropped. The plate mask is again the
+  rim-outline mask with closing r8, so the bubble beside it now shows whole.
+* Same file name and size (2.29 MB). The preload manifest was regenerated.
+
+Verified:
+* 10 frames across the clip: no sparkle, no patch at natural size;
+* the landing video plays in Chromium, no errors.
+
+---
+
+## Round 132 — four fixes: bubble taps, swim sound, bigger answer bubbles, gate words in sync
+
+1. **Bubble game intro.** Asked: no tap while the VO explains, but the moment the pair lights up
+   (the nudge), taps must work. Before, the board stayed locked to the end of the line, so a right
+   tap on the glowing pair did nothing.
+   * `walkPair(one, many, onLit)` now calls `onLit` once, when the first bubble lights.
+   * The intro passes an unlock there; the line plays on.
+   * Taps before the glow stay ignored.
+2. **Swim transition.** Asked: a bubbles sound while Swiftie swims across.
+   * The kit has no bubble/underwater SFX, so `assets/Audio/sfx_swim_bubbles.ogg` (3.8s) was
+     synthesised: 14 rising-pitch bubble blips over a soft low water swell, edges faded.
+   * `oceanFishTransition` plays it with the video (`playKitSfx`, vol .6; it respects mute).
+3. **Submarine answer bubbles bigger.** Asked so that the word is bigger.
+   * The bubble is 150px (was 120) and the face 140px (was 112).
+   * `fitBubble` starts at 36px (was 28), fits within 116px, min 22.
+   * Over a slot, the label scale is .55 (was .69), so it still fits the 74px slot face.
+   * The ghost lands at scale .533 (80/150).
+4. **Gates.** Asked: in चलिए शुरू करें / चलिए, साथ में करें / चलिए, अब आपकी बारी, the words and the VO
+   come together.
+   * The title is built as word spans. Each word writes itself in (the same left-to-right pgWipe,
+     0.32s per word) when the clip's clock reaches it. The box itself no longer wipes as a whole.
+   * `GATE_WORD_CUES`, measured from pauses, closures and syllable peaks:
+
+     | Gate | Clip | Word starts |
+     |---|---|---|
+     | शुरू करें | `vo_pt_tutorial` | चलिए 3.30, शुरू 3.89, करें 4.20 |
+     | साथ में करें | `review_guided_gate` | चलिए .33, साथ 1.19, में 1.58, करें 1.80 |
+     | अब आपकी बारी | `review_practice_gate` | चलिए .33, अब 1.17, आपकी 1.30, बारी 1.60 |
+
+   * r82's tutorial-only phrase cue is folded into this.
+   * If the clip does not play, or a gate has no table, the whole line shows at once. Closing the
+     gate always leaves the whole line up.
+
+Verified in Chromium:
+* **Gates.** Words in at:
+  * tutorial: चलिए 3.30, शुरू 3.87, करें 4.20;
+  * guided: .31 / 1.19 / 1.57 / 1.77;
+  * practice: .34 / 1.18 / 1.29 / 1.59.
+* **Bubble intro.** Unlocked at vo 5.20s, the same frame the glow appears; locked before.
+* **Swim.** `sfx_swim_bubbles.ogg` starts with the swim video.
+* **Submarine.** Bubbles 150px with the word at 36px, clear of the submarine (screenshot). A full
+  submarine game by drag reached CEL.
+* **Full lesson.** T1 → CEL in 247s, no 4xx/5xx, no errors, no broken media.
+
+---
+
+## Round 133 — gate titles reverted to their own style; sync only checked
+
+**Asked:** the r132 word-by-word gate text was not wanted. Keep the gates' own style and only check
+whether the text and the VO are in sync.
+
+* **Reverted** r132 item 4 completely:
+  * no `GATE_WORD_CUES`, no word spans, no per-word CSS;
+  * the whole line wipes in again (pgWipe 0.9s);
+  * the tutorial gate waits for its phrase at 3.15s, as before.
+
+  Items 1–3 of r132 are untouched.
+* **Sync check, original style, nothing changed:**
+
+  | Gate | Wipe runs | Speech |
+  |---|---|---|
+  | चलिए, शुरू करें! | VO 3.19 → 4.09s | 3.30–4.44 |
+  | चलिए, साथ में करें। | VO 0.00 → 0.90s | चलिए .33–.77, साथ में करें 1.19–2.08 |
+  | चलिए, अब आपकी बारी। | VO 0.00 → 0.90s | चलिए .33–.77, अब आपकी बारी 1.17–2.03 |
+
+  * शुरू करें: in sync. The text starts 0.1s before the voice and is written while she says it.
+  * साथ में करें and अब आपकी बारी: the line is fully written before she has finished "चलिए" (about
+    1.2s ahead of the voice).
+
+  Reported to the user; nothing changed without their go-ahead.
+
+---
+
+## Round 134 — submarine answer bubbles centred on the screen
+
+**Asked:** move the two bubble options slightly right so they sit in the middle of the screen.
+
+* They sat exactly 60 stage-px left of the screen's centre. `.subg .subg-opts` had
+  `left:calc(50% - 60px)` and its content centres on that left edge.
+* It is now `left:50%` (in `ocean-games.css`). Nothing else changed.
+
+Verified:
+* at 1887×926 and 1333×750, the pair's midpoint equals the viewport's midpoint (offset 0);
+* a full submarine game by drag reached CEL, no errors.
+
+---
+
+## Round 135 — end screen: faint box beside Swiftee removed
+
+**Asked:** remove the strange semi-transparent background beside Swiftee on the end screen.
+
+* Not in the art: both `swiftee_end_talk.webp` and `swiftee_end_pause.webp` have alpha that is
+  only 0 or 255, and `end_screen.webp` is clean.
+* The strips' straight vertical edges fall exactly on the mascot image's box edges. The source is
+  `.end-mascot`'s `filter:drop-shadow(0 12px 22px rgba(0,47,118,.22))`: the GPU clips the navy blur to
+  the image box, which reads as a translucent panel.
+* `.end-screen .end-mascot` now sets `filter:none`. That rule only affects the end screen; nothing else
+  changed.
+
+Verified in the browser pane:
+* the computed filter is `none`;
+* the end screen still plays the talk animation, then swaps to the pause pose;
+* no console errors.
+
+---
+
 ## Open items
 
 **Checklist gaps from Round 58** (18 fails, 7 partials), in rough priority order: end screen uses
