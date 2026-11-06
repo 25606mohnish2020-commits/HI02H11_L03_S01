@@ -4403,6 +4403,131 @@ Verified in the browser pane:
 
 ---
 
+## Round 136 — the birthday cover from Figma, the candles blown out, confetti, Play right after the intro
+
+**Asked** (cover page only; reference Figma `FLN-by-MJ`, node 906-119): replace the picture inside the
+cover frame (the underwater title video) with the Figma cover picture; keep the bird and the speaker
+icon exactly where they are; remove the loading bar at the Play button, show Play only once the bird's
+intro is over, pulsing as soon as it appears, as now; add birthday-party confetti in the picture's
+background, sized to it, and Meera blowing out the candles on the cake she holds, both before the
+intro is over and Play appears. Nothing else changes.
+
+| # | Ask | Done |
+|---|---|---|
+| 1 | Figma picture inside the frame | Every Figma layer at its own position (Figma x/y − 7px: the Figma frame is 1114×456 like the card and its white rim sits inside it, as the card's 7px border does). Rendered cover vs Figma's own render: wall 2.1/765 mean difference, objects 4–15/765 (resampled edges) |
+| 2 | Bird stays put | `.sg-mascot` rect before = after: 101.5, 422.22, 180 × 176.78 |
+| 3 | Speaker stays put | `#sgVo` rect before = after: 212.5, 532, 70 × 70 |
+| 4 | No loading bar | bar markup and CSS removed |
+| 5 | Play right after the intro | the `assets-ready` gate (CSS and the click guard) removed; Play shows on `landing-play-ready` |
+| 6 | Pulses at once, as now | same pop-in + `sgBtnPulse` 1.35s; Play rect unchanged (596.5, 436, 140 × 140) |
+| 7 | Confetti behind the party | the lesson's own confetti (pieces, colours, paper motion), 90 pieces sized for the picture, in a layer right above the room |
+| 8 | Meera blows out the candles | breath in, round "o" face, three puffs of air, flames lean and go out left to right, smoke from each wick, smile back |
+| 9 | Before the intro ends and Play appears | starts with the intro clip; last confetti piece gone ~7.6s in; intro is 8.13s |
+
+**The picture.** `assets/Images/landing_cover_*.webp`, all from the Figma file's own images:
+`room` (image 264), `bunting` (906:125; 906:124 is the same art mirrored), `balloons_yellow` /
+`balloons_pink` (906:126 / 906:127), `title` (image 262, the मीरा का जन्मदिन banner), `gift` (image 267,
+plus its #F1C299 floor ellipse in CSS) and `meera` (906:129). 228 KB in all, against 2.6 MB for the
+underwater video, its sea backdrop and the two hidden title/girl images it replaces.
+
+**Meera.** Her five flames were painted out of `landing_cover_meera.webp` (2× the Figma source) so
+they can be drawn live and blown out: flame pixels are the saturated yellow/orange with almost no blue
+(the shadowed neck beside the first flame has more, so it is left alone), each run of a row is filled
+from its two ends, and the flames' warm glow that the art had painted onto the hair around them went
+back to the plain hair colour — without that, the empty spot read as an orange smudge. The flames are
+now SVG in the picture's own pixel space (228×365), at each wick, flickering. The blowing face
+(`landing_cover_meera_blow.webp`) covers the smile with the face's own skin, filled from around it,
+then a small round "o" and slightly rounder cheeks; the eyes are protected.
+
+**Timing** (t = 0 when the intro clip starts sounding): 0.45s breath in · 0.75s the "o" face ·
+1.3s puffs of air · 1.5s flames out, 0.1s apart · 1.95s smoke · 2.35s confetti and the smile back ·
+~7.6s all over · 8.13s the intro ends and Play pops in and pulses.
+
+* It starts on the clip's `playing` event, so it is in step with the line. When the intro cannot sound
+  — autoplay refused before the first tap (any first visit on the web) or a broken clip — it plays once
+  on its own, so the cover is not still until the watchdog brings Play; a tap that then starts the
+  intro replays it in step. A replay from the speaker chip relights the candles and plays it again.
+* Under reduced motion / `?still`: no beat, candles stay lit.
+* After the intro, the existing rule pauses everything in the card except Play; by then the scene is
+  at rest (candles out, no confetti).
+
+**Gone with the video.** Its looping underwater soundtrack (the round-58 audit called it underwater
+ambience and flagged that music should only start after Play), the code that started, ducked and
+stopped it, and its sea backdrop. The underwater video, `start_card_sea.webp`,
+`landing_title_meera_transparent.webp` and `landing_meera_birthday.webp` are in
+`../_quarantine_unused_assets/r136_underwater_cover/`.
+
+**Preloader.** It still warms every asset in the background; it no longer holds Play back. The manifest
+was regenerated (157 files, 17.16 MB, was 19.54 MB): Node is not installed here, so with a Python port
+of `_dev/gen_preload_manifest.js` that reproduced the previous manifest byte-for-byte first. The
+generator's lists were updated to match, so a Node run gives the same table.
+
+Verified in headless Chrome:
+* Intro allowed: beat at intro start, flames out by 2.45s, 90 confetti pieces, none left at 8.0s, Play
+  visible with pop-in + pulse after the intro.
+* Speaker replay: candles relit, beat again, Play hidden for the replay and back after it.
+* Play → the peek transition → T1.
+* Autoplay refused, never tapped: silent beat, then the watchdog's Play at ~11.5s with the scene at
+  rest. Tapped at 4s: the intro starts and the beat restarts in step.
+* Reduced motion: no beat, flames lit, Play after the intro.
+* All 17 slides mount with no exceptions.
+* The landing requests the 8 cover images and nothing retired; the preloader finishes 157/157 with
+  none failed.
+* `verify_bundle`: `13 pass · 5 FAIL · 6 warn`. The 5 FAIL lines are identical on the pre-change copy:
+  stale engine stamp, `vo_pt_guided`, `start_mascot.png`, phase_distribution 18 vs 17, silent T1–T4/SUB
+  prompts. None is from this round.
+* One `net::ERR_ABORTED` media request right after Play: identified in round 137 as the lesson music
+  (`standard_background_music_2.ogg`, started by the Play tap). The pre-change build does exactly the
+  same, 4 of 4 runs, and the music plays normally. Not from this round.
+
+---
+
+## Round 137 — only the cake rises; Meera herself stays still
+
+**Asked:** don't move the whole girl on the cover. Only show her raising the cake a little in her
+hands and blowing out the candles. Cover page only; nothing else changes.
+
+* **The whole-girl lean is gone.** Round 136's rotate/scale of Meera's whole picture is removed.
+  `.bc-meera` has no transform and no animation at any point in the beat (measured at 7 moments).
+* **What moves now.**
+  * The cake piece (cake, candles, plate and both hands) rises 6 picture-px (4.3158 CSS px) over 0.4s
+    from 0.3s, holds while she blows, and comes back down from 2.55s to 2.95s.
+  * The left forearm tilts about the elbow (skewY 10.62°, tan = 6/32 from elbow to wrist), so the wrist
+    rises the same 6px and stays on the hand.
+  * The drawn flames, wicks and smoke ride with the cake on the same timeline. Measured in step: both at
+    3.036 picture-px at 0.5s.
+* **How.**
+  * Two cut-outs from the same Figma art, `landing_cover_meera_cake.webp` and
+    `landing_cover_meera_arm.webp`, sit exactly over the static picture `landing_cover_meera.webp`.
+    At rest the three together are the original picture.
+  * The static picture was rebuilt so the strips the lift uncovers show what lies behind. That is the
+    picture just below, mirrored, where it is shirt outline or empty background. Where it would be
+    anything paler (a polka dot's edge, the plate's pale underside) it is the same column's solid shirt
+    purple. So no ghost rim, half-dots or streaks appear.
+  * The cuts include the art's 2px soft outline under the plate, so nothing of the plate stays behind.
+    Around the candle tops there is no such margin, so no shirt rides up onto the hair.
+* **The blowing face** now swaps in ~0.13s each way. The 0.24s / 0.4s cross-fade briefly showed both
+  mouths at once.
+* **Preloader.** The two cut-outs are listed as landing art; the manifest was regenerated (159 files,
+  17.18 MB) and the Node generator's list matches.
+
+Verified in headless Chrome:
+* Each moment of the beat:
+  * cake at 0, then −2.18 (rising), −4.3158 (held), −1.26 (lowering), 0 CSS px;
+  * forearm skew in step;
+  * flames out by 2.45s;
+  * the girl's own transform `none` throughout.
+* Close-ups at rest and at full lift: no seams at rest, no gap at the wrist, and the shirt shows under
+  the raised plate.
+* Rendered cover vs Figma still matches (Meera 16.9/765 mean, resampled edges).
+* Swiftee, the speaker chip and Play are at the same positions as before r136.
+* Speaker replay, Play → T1, autoplay refused (silent beat; tap re-syncs), reduced motion (still).
+* All 17 slides mount without exceptions.
+* Preloader 159/159 with none failed.
+* `verify_bundle`: `13 pass · 5 FAIL · 6 warn`, the same 5 pre-existing FAILs as before r136.
+
+---
+
 ## Open items
 
 **Checklist gaps from Round 58** (18 fails, 7 partials), in rough priority order: end screen uses

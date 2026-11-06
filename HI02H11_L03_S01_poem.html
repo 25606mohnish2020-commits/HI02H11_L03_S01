@@ -289,16 +289,91 @@ body.is-start{background:#47BCFD;}   /* [20a landing] new-blue ground */
 .start-gate.hidden{display:none;}
 /* inner white tile is the provided image (border + faint rays baked in) */
 .sg-card{position:relative;width:1114px;height:456px;background:url("assets/UI/start_card.webp") center/100% 100% no-repeat;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow:hidden;border-radius:34px;border:7px solid rgba(255,255,255,.94);box-shadow:0 16px 38px rgba(0,48,103,.22);}
-.sg-bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;z-index:0;display:block;background:transparent;}
-/* Keep the original title boundary/placements; contain the native video inside it.
-   [r52] The card is 1114x456 and the title clip is 16:9, so contained it left 152px of flat teal
-   down each side. Only Meera and the bubbles move in that clip — its seabed is still, measured at
-   about 2 of 255 across the ten seconds — so the picture is simply carried out into those bars by
-   a backdrop built from it (assets/UI/start_card_sea.webp): a median still of several frames, with
-   each bar a mirror of the picture's own outer edge so the join is exact, fading into deeper water
-   towards the card's rim. The clip still plays contained, on top of its own continuation. */
-.sg-card.has-title-video{background:url("assets/UI/start_card_sea.webp") center/100% 100% no-repeat;}
-.sg-card.has-title-video::before{display:none;}
+/* ===== [r136] THE BIRTHDAY COVER — the picture inside the frame is Figma 906:119 (FLN-by-MJ,
+   "start_activity_html_layout"), replacing the underwater title video. Asked: change only the picture
+   inside the frame; Swiftee and the speaker chip keep their places. Every layer is Figma's own art at
+   Figma's own position: the Figma frame is 1114x456 like .sg-card, and its white rim sits inside the
+   frame just as this card's 7px border does, so each layer is placed at its Figma x/y minus 7px
+   (children are positioned from the padding box). Layers, back to front: room · confetti · bunting ·
+   balloons · title · Meera · gift. The confetti layer sits right above the room on purpose: it falls
+   "in the background", behind the party.
+   The birthday beat (JS adds .bc-blowing when Swiftee's intro starts sounding; t = 0 there):
+     0.3s  [r137] Meera lifts the cake a little in her hands (only the cake, its plate and candles, her
+           hands and left forearm move — never the whole girl) · 0.75s her face goes to a round "o"
+     1.3s  three puffs of air sweep from her mouth across the candles
+     1.5s  the flames lean away and go out, left to right, 0.1s apart; smoke curls from each wick
+     2.35s confetti falls behind the party; her smile is back · 2.55s the cake comes back down
+     ~7.6s the last confetti piece is gone — before the 8.1s intro ends and Play appears.
+   Under reduced motion / ?still there is no beat: the candles stay lit and nothing falls. */
+.sg-card.has-birthday-cover{background:#FBF7F1;}
+.sg-card.has-birthday-cover::before{display:none;}
+.sg-card.has-birthday-cover .sg-content{display:none;}
+.bc-scene{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+.bc-scene img{position:absolute;display:block;max-width:none;}
+.bc-room{left:-22px;top:-105px;width:1158px;height:651px;}
+.bc-confetti{position:absolute;inset:0;overflow:hidden;}
+.bc-bunting{top:1px;width:185px;height:101px;}
+.bc-bunting-l{left:-12px;}
+.bc-bunting-r{left:940px;top:-16px;transform:scaleX(-1);}   /* Figma 906:124 is the same art mirrored */
+.bc-balloons{width:80px;height:110px;}
+.bc-balloons-l{left:170px;top:42px;}
+.bc-balloons-r{left:828px;top:48px;}
+.bc-title{left:326px;top:-17px;width:448px;height:180px;}
+.bc-meera{position:absolute;left:202px;top:170px;width:164px;height:262px;}
+.bc-scene .bc-meera img,.bc-meera svg{position:absolute;left:0;top:0;width:100%;height:100%;}
+.bc-meera-blow{opacity:0;}
+/* [r137] the two pieces that move when she lifts the cake, cut from the same art and laid exactly over
+   it (boxes in % of her 228x365 picture): the cake piece (cake, candles, plate, both hands) rises 6
+   picture-px; the left forearm tilts about its elbow (a vertical skew) so the wrist rises the same 6px
+   and stays on the hand. The static picture under them has the strips they uncover filled with shirt. */
+.bc-scene .bc-meera .bc-meera-cake{left:41.2281%;top:34.2466%;width:53.2895%;height:21.3699%;}
+.bc-scene .bc-meera .bc-meera-arm{left:27.193%;top:42.4658%;width:16.6667%;height:12.6027%;transform-origin:15.789% 50%;}
+.bc-gift-shadow{position:absolute;left:873px;top:374px;width:124px;height:20px;border-radius:50%;background:#F1C299;}
+.bc-gift{left:849px;top:251px;width:172px;height:172px;}
+/* candles: the flames are drawn here (the picture's own flames were painted out), so they can flicker
+   and be blown out. Drawn in the picture's own pixel space (viewBox 228x365). */
+.bc-fx{overflow:visible;}
+.bc-fx *{transform-box:fill-box;}
+.bc-wick{fill:none;stroke:#4A3426;stroke-width:.9;stroke-linecap:round;}
+.bc-glow{fill:url(#bcGlowGrad);}
+.bc-fo{fill:url(#bcFlameGrad);}
+.bc-fi{fill:#FFFBE3;}
+.bc-flame,.bc-flick,.bc-smoke{transform-origin:50% 100%;}
+.bc-flick{animation:bcFlick var(--fd,.7s) ease-in-out var(--fdl,0s) infinite;}
+.bc-smoke{fill:none;stroke:rgba(122,120,132,.85);stroke-width:1.5;stroke-linecap:round;opacity:0;}
+.bc-wind path{fill:none;stroke:#FFFFFF;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:70;stroke-dashoffset:70;opacity:0;}
+.bc-blowing .bc-meera-cake{animation:bcCakeLift 2.65s ease-in-out .3s both;}
+.bc-blowing .bc-meera-arm{animation:bcArmLift 2.65s ease-in-out .3s both;}
+.bc-blowing .bc-candles{animation:bcCandlesLift 2.65s ease-in-out .3s both;}   /* the drawn flames ride with the cake */
+.bc-blowing .bc-meera-blow{animation:bcFace 2s ease-in-out .75s both;}
+.bc-blowing .bc-wind path{animation:bcWind .9s ease-out calc(1.3s + var(--w, 0) * .1s) both;}
+.bc-blowing .bc-flame{animation:bcOut .55s ease-in calc(1.5s + var(--i, 0) * .1s) both;}
+.bc-blowing .bc-smoke{animation:bcSmoke 1.5s ease-out calc(1.95s + var(--i, 0) * .1s) both;}
+@keyframes bcFlick{0%,100%{transform:scale(1,1) skewX(0deg);}25%{transform:scale(.93,1.07) skewX(3deg);}50%{transform:scale(1.05,.94) skewX(-2deg);}75%{transform:scale(.96,1.04) skewX(1.5deg);}}
+/* up over 0.4s, held while she blows, down over 0.4s — one timeline for all three, so they stay together
+   (6 picture-px = 4.3158 CSS px in the 164px-wide picture; tan(10.6197deg) = 6/32, elbow to wrist) */
+@keyframes bcCakeLift{0%,100%{transform:translateY(0);}15%,85%{transform:translateY(-4.3158px);}}
+@keyframes bcArmLift{0%,100%{transform:skewY(0deg);}15%,85%{transform:skewY(-10.6197deg);}}
+@keyframes bcCandlesLift{0%,100%{transform:translateY(0);}15%,85%{transform:translateY(-6px);}}
+@keyframes bcFace{0%{opacity:0;}6%,93%{opacity:1;}100%{opacity:0;}}   /* [r137] a quick swap (~0.13s each way): a slow cross-fade showed both mouths at once */
+@keyframes bcWind{0%{stroke-dashoffset:70;opacity:0;}20%{opacity:.95;}70%{stroke-dashoffset:0;opacity:.8;}100%{stroke-dashoffset:-30;opacity:0;}}
+@keyframes bcOut{0%{transform:skewX(0deg) scale(1,1);opacity:1;}40%{transform:skewX(-28deg) scale(1,.82);opacity:1;}100%{transform:skewX(-34deg) scale(.25,0);opacity:0;}}
+@keyframes bcSmoke{0%{opacity:0;transform:translateY(0) scale(.7);}20%{opacity:.85;}100%{opacity:0;transform:translateY(-12px) scale(1.25);}}
+/* confetti behind the party: the lesson's own confetti (same pieces, colours and paper motion as
+   confettiCannon), sized for this picture rather than the whole screen */
+.bc-confetti .p{position:absolute;top:0;left:var(--x);animation:cfFall var(--fall) linear var(--delay) both;}
+.bc-confetti .w{display:block;perspective:600px;animation:cfGlide var(--rockT) linear var(--delay) infinite both;}
+.bc-confetti .f{display:block;position:relative;transform-style:preserve-3d;width:calc(var(--w) * var(--z));height:calc(var(--h) * var(--z));opacity:var(--dim,1);animation:cfRock var(--rockT) linear var(--delay) infinite both;}
+.bc-confetti .f.tum{animation:cfTumble var(--rockT) linear var(--delay) infinite both;}
+.bc-confetti .f::before,.bc-confetti .f::after{content:"";position:absolute;inset:0;border-radius:inherit;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.bc-confetti .f::before{background:var(--c);}
+.bc-confetti .f::after{background:var(--c2);transform:rotateY(180deg);}
+.bc-confetti .sq{--w:8px;--h:8px;border-radius:1px;}
+.bc-confetti .rc{--w:6px;--h:13px;border-radius:1px;}
+.bc-confetti .ln{--w:2.5px;--h:15px;border-radius:2px;}
+.bc-confetti .st{--w:12px;--h:12px;}
+.bc-confetti .st::before,.bc-confetti .st::after{clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);}
+@media (prefers-reduced-motion:reduce){ .bc-scene,.bc-scene *{animation:none !important;} }
 /* A faint wash preserves title/play-button readability while keeping the supplied video visible. */
 .sg-card::before{content:"";position:absolute;inset:0;z-index:1;background:rgba(224,248,255,.16);pointer-events:none;}
 /* full-body standing mascot (feet included): size by HEIGHT so the whole body incl. feet shows;
@@ -322,15 +397,6 @@ body.is-start{background:#47BCFD;}   /* [20a landing] new-blue ground */
 .sg-sub{font-weight:700;font-size:28px;color:var(--navy-dk);opacity:.9;}
 /* r4: landing concept strip — SHOW the 3 ordering concepts (size/length/weight) as images, not words (Shruti pattern) */
 .sg-art{display:flex;gap:46px;align-items:flex-end;justify-content:center;margin-top:10px;}
-.sg-birthday-girl{position:absolute;left:50%;top:150px;transform:translateX(-50%);height:192px;max-width:210px;object-fit:contain;z-index:2;pointer-events:none;}
-.sg-title-art{display:none;}
-.sg-card.has-title-art .sg-content,
-.sg-card.has-title-art .sg-birthday-girl{display:none;}
-.sg-card.has-title-art .sg-title-art{display:block;position:absolute;left:50%;top:0;transform:translateX(-50%);
-  width:600px;height:290px;object-fit:contain;object-position:center;z-index:2;pointer-events:none;}
-.sg-card.has-title-video .sg-content,
-.sg-card.has-title-video .sg-title-art,
-.sg-card.has-title-video .sg-birthday-girl{display:none;}
 /* r4/P4: staggered pop-in — paused until body.loaded (set when the boot loader dismisses) */
 .sg-acell{display:flex;flex-direction:column;align-items:center;gap:6px;animation:fingerPop .5s cubic-bezier(.34,1.5,.6,1) both;animation-play-state:paused;}
 body.loaded .sg-acell{animation-play-state:running;}
@@ -358,7 +424,8 @@ body.loaded .sg-acell{animation-play-state:running;}
 .sg-btn:active{transform:translateX(-50%) translateY(3px);}
 @keyframes sgBtnPulse{0%,100%{transform:translateX(-50%) scale(1);}50%{transform:translateX(-50%) scale(1.075);}}
 /* After the landing VO ends, the play button becomes the only moving foreground element.
-   The looping title video and the soft, outer sky/glow decoration remain as background motion. */
+   The soft, outer sky/glow decoration remains as background motion. [r136] The cover's birthday beat
+   (candles, confetti) has finished by then; this freezes the scene in its resting state. */
 body.is-start.landing-play-ready .sg-card :not(.sg-btn):not(.sg-btn *){animation-play-state:paused!important;}
 body.is-start.landing-play-ready .sg-btn:not(:disabled){animation:sgBtnPulse 1.35s ease-in-out infinite;}
 /* [r59] NO PLAY BUTTON UNTIL THE INTRO HAS FINISHED. The title screen showed a still yellow Play
@@ -375,23 +442,14 @@ body.is-start .sg-btn{opacity:0;visibility:hidden;pointer-events:none;
   transition:opacity .35s ease,visibility 0s linear .35s;}
 body.is-start.landing-play-ready .sg-btn{opacity:1;visibility:visible;pointer-events:auto;
   transition:opacity .35s ease,visibility 0s;}
-/* [opt] PLAY WAITS FOR EVERY ASSET. Until the preloader reports 100% (body.assets-ready) the loading bar
-   stands in the button's place; then the bar goes and Play pops in (and only then starts pulsing). */
-body.is-start:not(.assets-ready) .sg-btn{opacity:0!important;visibility:hidden!important;pointer-events:none!important;}
-body.is-start.landing-play-ready.assets-ready .sg-btn:not(:disabled){
+/* [r136] PLAY COMES STRAIGHT AFTER THE INTRO — NO LOADING BAR. Asked: remove the loading bar at the Play
+   button; Play appears as soon as Swiftee's intro is over and starts pulsing at once, as before.
+   (Was [opt]: Play waited for body.assets-ready, with a 0–100% bar standing in its place.) The preloader
+   still warms every asset in the background; it just no longer holds Play back. */
+body.is-start.landing-play-ready .sg-btn:not(:disabled){
   animation:sgBtnPopIn .5s cubic-bezier(.34,1.56,.64,1) both,sgBtnPulse 1.35s ease-in-out .5s infinite;}
 @keyframes sgBtnPopIn{0%{opacity:0;transform:translateX(-50%) scale(.35);}70%{opacity:1;transform:translateX(-50%) scale(1.1);}100%{opacity:1;transform:translateX(-50%) scale(1);}}
-.preload-bar{display:none;position:absolute;left:50%;bottom:58px;transform:translateX(-50%);z-index:4;width:300px;
-  flex-direction:column;align-items:center;gap:8px;pointer-events:none;transition:opacity .3s ease;}
-body.is-start .preload-bar{display:flex;}
-body.assets-ready .preload-bar{opacity:0;}
-.pl-track{position:relative;width:100%;height:22px;border-radius:999px;overflow:hidden;
-  background:rgba(255,255,255,.55);box-shadow:inset 0 2px 5px rgba(11,61,140,.28),0 0 0 3px rgba(255,255,255,.85),0 6px 16px rgba(0,47,118,.25);}
-.pl-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
-  background:linear-gradient(180deg,#FFE27A 0%,#FFC21A 55%,#F2A100 100%);box-shadow:inset 0 -3px 0 rgba(160,90,0,.25);transition:width .25s ease-out;}
-.pl-shine{position:absolute;left:10px;right:10px;top:4px;height:5px;border-radius:999px;background:rgba(255,255,255,.55);}
-.pl-pct{font-family:var(--font-hi);font-weight:800;font-size:22px;line-height:1;color:#fff;text-shadow:0 2px 0 rgba(11,61,140,.45),0 0 8px rgba(11,61,140,.35);}
-@media (prefers-reduced-motion:reduce){ body.is-start.landing-play-ready.assets-ready .sg-btn:not(:disabled){animation:none;} .pl-fill{transition:none;} }
+@media (prefers-reduced-motion:reduce){ body.is-start.landing-play-ready .sg-btn:not(:disabled){animation:none;} }
 /* landing "listen" button — a warm welcome plays on the title screen; tap to replay */
 .sg-vo{position:absolute;left:96px;bottom:-6px;z-index:5;width:58px;height:58px;background:none;border:none;padding:0;cursor:pointer;animation:none;}   /* Slightly raised so the speaker chip clears the white frame edge; size and horizontal placement stay unchanged. */
 .sg-vo img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;}
@@ -1851,9 +1909,11 @@ body.ocean-full .stage .slide-host > .subg::before,body.ocean-full .stage .slide
 <link rel="icon" href="data:,">   <!-- [opt] no favicon: stops the browser's automatic /favicon.ico 404 -->
 <script>
 /* ============ ASSET PRELOADER ============
-   [opt] Every asset the lesson uses is fetched behind a progress bar on the title screen; the Play
-   button appears only when 100% has arrived. The size table below is generated from the real files by
-   _dev/gen_preload_manifest.js (re-run it whenever assets/ changes).
+   [opt] Every asset the lesson uses is fetched in the background while the title screen is up.
+   [r136] There is no progress bar any more and Play no longer waits for 100%: it appears as soon as
+   Swiftee's intro ends. (paint() below still looks for the old bar's elements; it finds none and does
+   nothing.) The size table below is generated from the real files by _dev/gen_preload_manifest.js
+   (re-run it whenever assets/ changes).
    Formats: video is WebM (VP9 + Opus), audio is Ogg Opus, pictures are WebP — Chrome, Edge, Firefox
    and recent Safari (Safari 17+ for WebM/VP9, 18.4+ for Ogg Opus) play them all.
    - byte-accurate: each file is streamed (fetch + reader), weighted by its real size and refined by the
@@ -1863,14 +1923,15 @@ body.ocean-full .stage .slide-host > .subg::before,body.ocean-full .stage .slide
      inline background-image styles and stylesheet url()s) that asks for it gets the blob instead.
      Code that reads .src/.currentSrc back still sees the original path. A blob that fails to play
      falls back, once, to the original file (and a video resumes);
-   - what the title screen requests by itself is not fetched twice: the bar waits for the page's own
-     request (Resource Timing) and counts its bytes. The title card's video streams in its own <video>
-     (the card is that video, so it must start at once) and the bar follows its buffered range;
+   - what the title screen requests by itself is not fetched twice: the preloader waits for the page's
+     own request (Resource Timing) and counts its bytes. A media element listed with an element id
+     would be followed by its buffered range instead (that was the underwater title video; since r136
+     the cover has none);
    - nothing can block: a failed, stalled (15s without a byte), over-long (90s) or aborted transfer —
      or file://, where fetch is not allowed — counts as done and the element keeps its own URL. */
 (function(){
   "use strict";
-  const M = /*PRELOAD-MANIFEST*/{"v":"2026-10-29","total":19539106,"first":1,"own":[["assets/UI/loader.webp",163836],["assets/UI/nudge_hand_new.svg",6860],["assets/UI/sw_head_talking.webp",37384],["assets/UI/btn-next-disabled.svg",673],["assets/UI/btn-next.svg",1271],["assets/UI/sw_anim_rest.webp",6856],["assets/UI/new_landing_swiftee_anim.webp",1682486],["assets/Images/landing_title_meera_transparent.webp",138254],["assets/Images/landing_meera_birthday.webp",22808],["assets/UI/btn-play-round.svg",2645],["assets/UI/btn-play-round-waiting.svg",2655],["assets/UI/btn-finish.svg",1316],["assets/UI/startnew_bg_plain.webp",24446],["assets/UI/bgdeco_star_o.svg",448],["assets/UI/bgdeco_spark.svg",220],["assets/UI/bgdeco_star.svg",391],["assets/UI/start_card_sea.webp",156378],["assets/UI/title_swifty_swimming.webm",2294028,"sgBgVideo"]],"fetch":[["assets/Audio/vo_landing.ogg",39118],["assets/UI/start_card.webp",1024],["assets/Audio/sfx_next_button.ogg",1523],["assets/UI/submarine-sentence-window-v4.svg",2134],["assets/UI/sub_wave_hand_patch.webp",2674],["assets/Audio/sfx_play_button.ogg",3015],["assets/Audio/vo_w_kela_p.ogg",4715],["assets/Audio/vo_w_paudha_s.ogg",4720],["assets/Audio/vo_w_tali_s.ogg",4774],["assets/Audio/vo_w_topi_s.ogg",4921],["assets/Audio/vo_w_kela_s.ogg",5054],["assets/Audio/vo_w_ladki_s.ogg",5059],["assets/Audio/vo_w_topi_p.ogg",5181],["assets/Audio/vo_w_ghoda_p.ogg",5316],["assets/UI/sub_blades.webp",5402],["assets/Audio/vo_w_paudha_p.ogg",5514],["assets/Audio/vo_w_ghoda_s.ogg",5523],["assets/Audio/vo_w_machli_s.ogg",5610],["assets/Audio/vo_w_gubbara_p.ogg",6033],["assets/Audio/vo_w_saheli_s.ogg",6146],["assets/Audio/vo_w_ladki_p.ogg",6189],["assets/Audio/vo_w_gubbara_s.ogg",6312],["assets/Audio/vo_w_machli_p.ogg",6605],["assets/Audio/sfx_wrong_new.ogg",6657],["assets/Audio/vo_w_saheli_p.ogg",6675],["assets/UI/mascot.webp",8006],["assets/Audio/vo_pick_prompt.ogg",8293],["assets/Images/bubble_light.webp",8608],["assets/Audio/vo_try_again.ogg",9002],["assets/Audio/vo_mtp_sahi.ogg",9726],["assets/Audio/sfx_correct_new.ogg",10123],["assets/Audio/vo_mtp_now_tap.ogg",10463],["assets/Audio/review_practice_gate.ogg",10852],["assets/Images/obj_kela_s.webp",10888],["assets/Audio/sfx_celebrate.ogg",11479],["assets/Audio/review_guided_gate.ogg",11554],["assets/Audio/vo_mtp_listen.ogg",11658],["assets/Audio/sub_lines_p3_one.ogg",11987],["assets/Audio/ocean_correct_1.ogg",12204],["assets/Images/obj_topi_s.webp",12388],["assets/Audio/vo_pt_practice.ogg",12468],["assets/Audio/sub_lines_t3_one.ogg",13548],["assets/Audio/sub_lines_b3_one.ogg",13699],["assets/Audio/sub_lines_g1_one.ogg",14505],["assets/Audio/sub_lines_g1_many.ogg",14869],["assets/Audio/vo_cmp_ladka_2b.ogg",15012],["assets/Images/obj_paudha_s.webp",15050],["assets/Audio/sub_lines_m1_one.ogg",15059],["assets/Images/obj_machli_s.webp",15074],["assets/Audio/ocean_correct_3.ogg",15502],["assets/Images/obj_gubbara_s.webp",15732],["assets/Audio/sub_lines_p3_many.ogg",15833],["assets/Audio/ocean_bubble_guided_pair.ogg",16075],["assets/Audio/ocean_retry_1.ogg",16147],["assets/Audio/sub_lines_b3_many.ogg",16633],["assets/Audio/sub_lines_l1_one.ogg",16849],["assets/UI/swiftee_end_pause.webp",17360],["assets/Audio/sub_lines_l1_many.ogg",17787],["assets/Audio/ocean_instruction_pick.ogg",17819],["assets/Audio/vo_stanza5a.ogg",17952],["assets/UI/start_mascot.webp",18020],["assets/Images/obj_ghoda_s.webp",18044],["assets/Audio/sub_lines_m1_many.ogg",18275],["assets/Audio/vo_pick_ok_q4.ogg",18441],["assets/Audio/vo_pick_ok_q6.ogg",18678],["assets/Audio/vo_pick_ok_q5.ogg",18714],["assets/Audio/vo_mtp_prompt.ogg",18731],["assets/Audio/sub_lines_t3_many.ogg",19472],["assets/Audio/vo_pick_ok_q3.ogg",19549],["assets/Audio/vo_cmp_gubbara_2b.ogg",20374],["assets/Audio/vo_mtp_retry.ogg",20530],["assets/Audio/ocean_correct_2.ogg",20614],["assets/Audio/vo_cmp_ladka_1.ogg",20827],["assets/Audio/vo_stanza4a.ogg",20912],["assets/Audio/vo_pick_ok_q2.ogg",20972],["assets/Audio/vo_stanza1b.ogg",20988],["assets/Audio/sfx_swim_bubbles.ogg",21510],["assets/Audio/vo_stanza4b.ogg",21823],["assets/Audio/vo_mtp_tap.ogg",22157],["assets/Audio/vo_cmp_saheli_2b.ogg",22320],["assets/Audio/vo_pick_ok_q1.ogg",22570],["assets/Audio/vo_stanza3b.ogg",22851],["assets/Audio/vo_pt_tutorial.ogg",22969],["assets/Audio/vo_cmp_topi_2b.ogg",23044],["assets/Audio/vo_stanza3a.ogg",23402],["assets/Audio/ocean_retry_2.ogg",23449],["assets/Audio/vo_cmp_gubbara_1.ogg",23519],["assets/Audio/vo_stanza5b.ogg",23637],["assets/Audio/vo_pick_retry_q6.ogg",24003],["assets/Audio/vo_pick_retry_q3.ogg",25228],["assets/Audio/vo_pick_retry_q2.ogg",25286],["assets/Audio/vo_pick_retry_q4.ogg",25784],["assets/Audio/vo_pick_retry_q5.ogg",25911],["assets/Audio/vo_stanza1a.ogg",26278],["assets/Audio/vo_pick_retry_q1.ogg",27019],["assets/Audio/ocean_end_praise_v2.ogg",27427],["assets/Audio/vo_cmp_saheli_1.ogg",27531],["assets/Audio/ocean_instruction_fill.ogg",29161],["assets/UI/ui_level1_done.webp",29744],["assets/Audio/review_pick_intro_v2.ogg",30116],["assets/Audio/vo_mtp_done.ogg",30216],["assets/Audio/vo_cmp_topi_1.ogg",30547],["assets/UI/sw_head_hint.webp",36812],["assets/UI/ui_level2_done.webp",37412],["assets/UI/sw_head_celebrate.webp",41998],["assets/Images/scn_topi_s.webp",46142],["assets/Images/scn_ladka_s.webp",48308],["assets/UI/sw_head_tryagain.webp",48836],["assets/UI/end_screen.webp",50224],["assets/Images/obj_ladki_s.webp",60130],["assets/Images/obj_saheli_s.webp",60130],["assets/Audio/vo_well_done.ogg",61109],["assets/Images/bubble_blue.webp",62168],["assets/Images/scn_gubbara_s.webp",64992],["assets/Images/scn_ladka_p.webp",68018],["assets/Audio/ocean_instruction_bubble.ogg",72113],["assets/Images/scn_gubbara_p.webp",78060],["assets/Audio/sfx_submarine_motor.ogg",81850],["assets/UI/sub_hold_v2.webp",111140],["assets/Images/scn_saheli_s.webp",113536],["assets/Images/scn_topi_p.webp",116660],["assets/UI/sub_hull_v2.webp",128006],["assets/Images/obj_saheli_p.webp",130522],["assets/UI/sub_hull_equal_v3.webp",148070],["assets/Images/scn_saheli_p.webp",189946],["assets/UI/sw_head_celebrate_anim.webp",390546],["assets/UI/sw_head_tryagain_anim.webp",429222],["assets/UI/sw_head_hint_anim.webp",435706],["assets/UI/sub_wave_sheet_v2.webp",565068],["assets/UI/sw_lg_hint_anim.webp",878778],["assets/Video/background_sea.webm",1145701],["assets/Video/swiftie_swimming_v2.webm",1231380],["assets/UI/swiftee_end_talk.webp",1296868],["assets/UI/peeking_up.webp",1691502],["assets/Audio/standard_background_music_2.ogg",3478457]]}/*END-PRELOAD-MANIFEST*/;
+  const M = /*PRELOAD-MANIFEST*/{"v":"2026-11-06","total":17175324,"first":1,"own":[["assets/UI/loader.webp",163836],["assets/UI/nudge_hand_new.svg",6860],["assets/UI/sw_head_talking.webp",37384],["assets/UI/btn-next-disabled.svg",673],["assets/UI/btn-next.svg",1271],["assets/UI/sw_anim_rest.webp",6856],["assets/UI/new_landing_swiftee_anim.webp",1682486],["assets/UI/btn-play-round.svg",2645],["assets/UI/btn-play-round-waiting.svg",2655],["assets/UI/btn-finish.svg",1316],["assets/UI/startnew_bg_plain.webp",24446],["assets/UI/bgdeco_star_o.svg",448],["assets/UI/bgdeco_spark.svg",220],["assets/UI/bgdeco_star.svg",391],["assets/Images/landing_cover_room.webp",15176],["assets/Images/landing_cover_bunting.webp",6340],["assets/Images/landing_cover_balloons_yellow.webp",7476],["assets/Images/landing_cover_balloons_pink.webp",6646],["assets/Images/landing_cover_title.webp",72798],["assets/Images/landing_cover_meera.webp",96264],["assets/Images/landing_cover_meera_cake.webp",15900],["assets/Images/landing_cover_meera_arm.webp",3728],["assets/Images/landing_cover_meera_blow.webp",7264],["assets/Images/landing_cover_gift.webp",16094]],"fetch":[["assets/Audio/vo_landing.ogg",39118],["assets/UI/start_card.webp",1024],["assets/Audio/sfx_next_button.ogg",1523],["assets/UI/submarine-sentence-window-v4.svg",2134],["assets/UI/sub_wave_hand_patch.webp",2674],["assets/Audio/sfx_play_button.ogg",3015],["assets/Audio/vo_w_kela_p.ogg",4715],["assets/Audio/vo_w_paudha_s.ogg",4720],["assets/Audio/vo_w_tali_s.ogg",4774],["assets/Audio/vo_w_topi_s.ogg",4921],["assets/Audio/vo_w_kela_s.ogg",5054],["assets/Audio/vo_w_ladki_s.ogg",5059],["assets/Audio/vo_w_topi_p.ogg",5181],["assets/Audio/vo_w_ghoda_p.ogg",5316],["assets/UI/sub_blades.webp",5402],["assets/Audio/vo_w_paudha_p.ogg",5514],["assets/Audio/vo_w_ghoda_s.ogg",5523],["assets/Audio/vo_w_machli_s.ogg",5610],["assets/Audio/vo_w_gubbara_p.ogg",6033],["assets/Audio/vo_w_saheli_s.ogg",6146],["assets/Audio/vo_w_ladki_p.ogg",6189],["assets/Audio/vo_w_gubbara_s.ogg",6312],["assets/Audio/vo_w_machli_p.ogg",6605],["assets/Audio/sfx_wrong_new.ogg",6657],["assets/Audio/vo_w_saheli_p.ogg",6675],["assets/UI/mascot.webp",8006],["assets/Audio/vo_pick_prompt.ogg",8293],["assets/Images/bubble_light.webp",8608],["assets/Audio/vo_try_again.ogg",9002],["assets/Audio/vo_mtp_sahi.ogg",9726],["assets/Audio/sfx_correct_new.ogg",10123],["assets/Audio/vo_mtp_now_tap.ogg",10463],["assets/Audio/review_practice_gate.ogg",10852],["assets/Images/obj_kela_s.webp",10888],["assets/Audio/sfx_celebrate.ogg",11479],["assets/Audio/review_guided_gate.ogg",11554],["assets/Audio/vo_mtp_listen.ogg",11658],["assets/Audio/sub_lines_p3_one.ogg",11987],["assets/Audio/ocean_correct_1.ogg",12204],["assets/Images/obj_topi_s.webp",12388],["assets/Audio/vo_pt_practice.ogg",12468],["assets/Audio/sub_lines_t3_one.ogg",13548],["assets/Audio/sub_lines_b3_one.ogg",13699],["assets/Audio/sub_lines_g1_one.ogg",14505],["assets/Audio/sub_lines_g1_many.ogg",14869],["assets/Audio/vo_cmp_ladka_2b.ogg",15012],["assets/Images/obj_paudha_s.webp",15050],["assets/Audio/sub_lines_m1_one.ogg",15059],["assets/Images/obj_machli_s.webp",15074],["assets/Audio/ocean_correct_3.ogg",15502],["assets/Images/obj_gubbara_s.webp",15732],["assets/Audio/sub_lines_p3_many.ogg",15833],["assets/Audio/ocean_bubble_guided_pair.ogg",16075],["assets/Audio/ocean_retry_1.ogg",16147],["assets/Audio/sub_lines_b3_many.ogg",16633],["assets/Audio/sub_lines_l1_one.ogg",16849],["assets/UI/swiftee_end_pause.webp",17360],["assets/Audio/sub_lines_l1_many.ogg",17787],["assets/Audio/ocean_instruction_pick.ogg",17819],["assets/Audio/vo_stanza5a.ogg",17952],["assets/UI/start_mascot.webp",18020],["assets/Images/obj_ghoda_s.webp",18044],["assets/Audio/sub_lines_m1_many.ogg",18275],["assets/Audio/vo_pick_ok_q4.ogg",18441],["assets/Audio/vo_pick_ok_q6.ogg",18678],["assets/Audio/vo_pick_ok_q5.ogg",18714],["assets/Audio/vo_mtp_prompt.ogg",18731],["assets/Audio/sub_lines_t3_many.ogg",19472],["assets/Audio/vo_pick_ok_q3.ogg",19549],["assets/Audio/vo_cmp_gubbara_2b.ogg",20374],["assets/Audio/vo_mtp_retry.ogg",20530],["assets/Audio/ocean_correct_2.ogg",20614],["assets/Audio/vo_cmp_ladka_1.ogg",20827],["assets/Audio/vo_stanza4a.ogg",20912],["assets/Audio/vo_pick_ok_q2.ogg",20972],["assets/Audio/vo_stanza1b.ogg",20988],["assets/Audio/sfx_swim_bubbles.ogg",21510],["assets/Audio/vo_stanza4b.ogg",21823],["assets/Audio/vo_mtp_tap.ogg",22157],["assets/Audio/vo_cmp_saheli_2b.ogg",22320],["assets/Audio/vo_pick_ok_q1.ogg",22570],["assets/Audio/vo_stanza3b.ogg",22851],["assets/Audio/vo_pt_tutorial.ogg",22969],["assets/Audio/vo_cmp_topi_2b.ogg",23044],["assets/Audio/vo_stanza3a.ogg",23402],["assets/Audio/ocean_retry_2.ogg",23449],["assets/Audio/vo_cmp_gubbara_1.ogg",23519],["assets/Audio/vo_stanza5b.ogg",23637],["assets/Audio/vo_pick_retry_q6.ogg",24003],["assets/Audio/vo_pick_retry_q3.ogg",25228],["assets/Audio/vo_pick_retry_q2.ogg",25286],["assets/Audio/vo_pick_retry_q4.ogg",25784],["assets/Audio/vo_pick_retry_q5.ogg",25911],["assets/Audio/vo_stanza1a.ogg",26278],["assets/Audio/vo_pick_retry_q1.ogg",27019],["assets/Audio/ocean_end_praise_v2.ogg",27427],["assets/Audio/vo_cmp_saheli_1.ogg",27531],["assets/Audio/ocean_instruction_fill.ogg",29161],["assets/UI/ui_level1_done.webp",29744],["assets/Audio/review_pick_intro_v2.ogg",30116],["assets/Audio/vo_mtp_done.ogg",30216],["assets/Audio/vo_cmp_topi_1.ogg",30547],["assets/UI/sw_head_hint.webp",36812],["assets/UI/ui_level2_done.webp",37412],["assets/UI/sw_head_celebrate.webp",41998],["assets/Images/scn_topi_s.webp",46142],["assets/Images/scn_ladka_s.webp",48308],["assets/UI/sw_head_tryagain.webp",48836],["assets/UI/end_screen.webp",50224],["assets/Images/obj_ladki_s.webp",60130],["assets/Images/obj_saheli_s.webp",60130],["assets/Audio/vo_well_done.ogg",61109],["assets/Images/bubble_blue.webp",62168],["assets/Images/scn_gubbara_s.webp",64992],["assets/Images/scn_ladka_p.webp",68018],["assets/Audio/ocean_instruction_bubble.ogg",72113],["assets/Images/scn_gubbara_p.webp",78060],["assets/Audio/sfx_submarine_motor.ogg",81850],["assets/UI/sub_hold_v2.webp",111140],["assets/Images/scn_saheli_s.webp",113536],["assets/Images/scn_topi_p.webp",116660],["assets/UI/sub_hull_v2.webp",128006],["assets/Images/obj_saheli_p.webp",130522],["assets/UI/sub_hull_equal_v3.webp",148070],["assets/Images/scn_saheli_p.webp",189946],["assets/UI/sw_head_celebrate_anim.webp",390546],["assets/UI/sw_head_tryagain_anim.webp",429222],["assets/UI/sw_head_hint_anim.webp",435706],["assets/UI/sub_wave_sheet_v2.webp",565068],["assets/UI/sw_lg_hint_anim.webp",878778],["assets/Video/background_sea.webm",1145701],["assets/Video/swiftie_swimming_v2.webm",1231380],["assets/UI/swiftee_end_talk.webp",1296868],["assets/UI/peeking_up.webp",1691502],["assets/Audio/standard_background_music_2.ogg",3478457]]}/*END-PRELOAD-MANIFEST*/;
   const MAX_PARALLEL = 5, STALL_MS = 15000, HARD_MS = 90000, OWN_WAIT_MS = 20000;
   const TYPES = { webm: "video/webm", ogg: "audio/ogg", webp: "image/webp", svg: "image/svg+xml", png: "image/png", gif: "image/gif", json: "application/json" };
   const BASE = new URL(".", location.href);
@@ -2228,9 +2289,47 @@ body.ocean-full .stage .slide-host > .subg::before,body.ocean-full .stage .slide
 
   <!-- TAP-TO-START — uses provided title-screen art -->
   <div class="start-gate" id="startGate">
-    <div class="sg-card has-title-art has-title-video">
-      <video class="sg-bg-video" id="sgBgVideo" src="assets/UI/title_swifty_swimming.webm"
-             autoplay loop playsinline preload="auto" aria-hidden="true"></video>
+    <div class="sg-card has-birthday-cover">
+      <!-- [r136] the picture inside the frame: Figma 906:119, layer by layer (was the underwater title video) -->
+      <div class="bc-scene" id="bcScene">
+        <img class="bc-room" src="assets/Images/landing_cover_room.webp" alt="">
+        <div class="bc-confetti" id="bcConfetti"></div>
+        <img class="bc-bunting bc-bunting-l" src="assets/Images/landing_cover_bunting.webp" alt="">
+        <img class="bc-bunting bc-bunting-r" src="assets/Images/landing_cover_bunting.webp" alt="">
+        <img class="bc-balloons bc-balloons-l" src="assets/Images/landing_cover_balloons_yellow.webp" alt="">
+        <img class="bc-balloons bc-balloons-r" src="assets/Images/landing_cover_balloons_pink.webp" alt="">
+        <img class="bc-title" src="assets/Images/landing_cover_title.webp" alt="मीरा का जन्मदिन">
+        <div class="bc-meera">
+          <img class="bc-meera-img" src="assets/Images/landing_cover_meera.webp" alt="केक पकड़े मीरा">
+          <img class="bc-meera-arm" src="assets/Images/landing_cover_meera_arm.webp" alt="">
+          <img class="bc-meera-cake" src="assets/Images/landing_cover_meera_cake.webp" alt="">
+          <img class="bc-meera-blow" src="assets/Images/landing_cover_meera_blow.webp" alt="">
+          <svg class="bc-fx" viewBox="0 0 228 365" aria-hidden="true">
+            <defs>
+              <linearGradient id="bcFlameGrad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0" stop-color="#FF8A1C"/><stop offset=".45" stop-color="#FFC21A"/><stop offset="1" stop-color="#FFE56E"/>
+              </linearGradient>
+              <radialGradient id="bcGlowGrad">
+                <stop offset="0" stop-color="#FFE7A0" stop-opacity=".75"/><stop offset="1" stop-color="#FFD36B" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <g class="bc-wind">
+              <path style="--w:0" pathLength="70" d="M129 102C136 108 144 113 153 115S172 117 190 113"/>
+              <path style="--w:1" pathLength="70" d="M127 104C132 112 140 118 150 121S170 124 192 121"/>
+              <path style="--w:2" pathLength="70" d="M131 100C140 104 150 107 160 108S178 108 194 104"/>
+            </g>
+            <g class="bc-candles">
+            <g transform="translate(125.5 129)" style="--i:0;--fd:.62s;--fdl:-.10s"><path class="bc-wick" d="M0 .4V-2.2"/><g class="bc-flame"><ellipse class="bc-glow" cx="0" cy="-7" rx="7" ry="7"/><g class="bc-flick"><path class="bc-fo" d="M0 0C-3.9 0-4.3-4.6-2.5-8.2C-1.4-10.6-.3-13 0-16.2C.6-13 1.6-10.6 2.7-8.2C4.4-4.6 3.9 0 0 0Z"/><path class="bc-fi" d="M0-1.4C-2.1-1.4-2.3-3.9-1.2-6C-.6-7.4-.1-8.6 0-10C.3-8.6 .8-7.4 1.3-6C2.3-3.9 2.1-1.4 0-1.4Z"/></g></g><path class="bc-smoke" d="M0-1.5C-2.2-4.5 2-7 0-10C-2-13 1.6-15.5 0-18.5"/></g>
+            <g transform="translate(139 129)" style="--i:1;--fd:.74s;--fdl:-.35s"><path class="bc-wick" d="M0 .4V-2.2"/><g class="bc-flame"><ellipse class="bc-glow" cx="0" cy="-7" rx="7" ry="7"/><g class="bc-flick"><path class="bc-fo" d="M0 0C-3.9 0-4.3-4.6-2.5-8.2C-1.4-10.6-.3-13 0-16.2C.6-13 1.6-10.6 2.7-8.2C4.4-4.6 3.9 0 0 0Z"/><path class="bc-fi" d="M0-1.4C-2.1-1.4-2.3-3.9-1.2-6C-.6-7.4-.1-8.6 0-10C.3-8.6 .8-7.4 1.3-6C2.3-3.9 2.1-1.4 0-1.4Z"/></g></g><path class="bc-smoke" d="M0-1.5C-2.2-4.5 2-7 0-10C-2-13 1.6-15.5 0-18.5"/></g>
+            <g transform="translate(152 128.5)" style="--i:2;--fd:.58s;--fdl:-.22s"><path class="bc-wick" d="M0 .4V-2.2"/><g class="bc-flame"><ellipse class="bc-glow" cx="0" cy="-7" rx="7" ry="7"/><g class="bc-flick"><path class="bc-fo" d="M0 0C-3.9 0-4.3-4.6-2.5-8.2C-1.4-10.6-.3-13 0-16.2C.6-13 1.6-10.6 2.7-8.2C4.4-4.6 3.9 0 0 0Z"/><path class="bc-fi" d="M0-1.4C-2.1-1.4-2.3-3.9-1.2-6C-.6-7.4-.1-8.6 0-10C.3-8.6 .8-7.4 1.3-6C2.3-3.9 2.1-1.4 0-1.4Z"/></g></g><path class="bc-smoke" d="M0-1.5C-2.2-4.5 2-7 0-10C-2-13 1.6-15.5 0-18.5"/></g>
+            <g transform="translate(163.8 129)" style="--i:3;--fd:.68s;--fdl:-.48s"><path class="bc-wick" d="M0 .4V-2.2"/><g class="bc-flame"><ellipse class="bc-glow" cx="0" cy="-7" rx="7" ry="7"/><g class="bc-flick"><path class="bc-fo" d="M0 0C-3.9 0-4.3-4.6-2.5-8.2C-1.4-10.6-.3-13 0-16.2C.6-13 1.6-10.6 2.7-8.2C4.4-4.6 3.9 0 0 0Z"/><path class="bc-fi" d="M0-1.4C-2.1-1.4-2.3-3.9-1.2-6C-.6-7.4-.1-8.6 0-10C.3-8.6 .8-7.4 1.3-6C2.3-3.9 2.1-1.4 0-1.4Z"/></g></g><path class="bc-smoke" d="M0-1.5C-2.2-4.5 2-7 0-10C-2-13 1.6-15.5 0-18.5"/></g>
+            <g transform="translate(176.2 128)" style="--i:4;--fd:.66s;--fdl:-.05s"><path class="bc-wick" d="M0 .4V-2.2"/><g class="bc-flame"><ellipse class="bc-glow" cx="0" cy="-7" rx="7" ry="7"/><g class="bc-flick"><path class="bc-fo" d="M0 0C-3.9 0-4.3-4.6-2.5-8.2C-1.4-10.6-.3-13 0-16.2C.6-13 1.6-10.6 2.7-8.2C4.4-4.6 3.9 0 0 0Z"/><path class="bc-fi" d="M0-1.4C-2.1-1.4-2.3-3.9-1.2-6C-.6-7.4-.1-8.6 0-10C.3-8.6 .8-7.4 1.3-6C2.3-3.9 2.1-1.4 0-1.4Z"/></g></g><path class="bc-smoke" d="M0-1.5C-2.2-4.5 2-7 0-10C-2-13 1.6-15.5 0-18.5"/></g>
+            </g>
+          </svg>
+        </div>
+        <span class="bc-gift-shadow"></span>
+        <img class="bc-gift" src="assets/Images/landing_cover_gift.webp" alt="">
+      </div>
       <img class="sg-mascot" src="assets/UI/new_landing_swiftee_anim.webp" alt="Swiftee"
            onerror="this.style.display='none'">
       <div class="sg-content">
@@ -2242,14 +2341,7 @@ body.ocean-full .stage .slide-host > .subg::before,body.ocean-full .stage .slide
              ordering task (no words); a new game just declares its cells in card.json. -->
         <div class="sg-art" id="sgHero"></div>
       </div>
-      <img class="sg-title-art" src="assets/Images/landing_title_meera_transparent.webp" alt="मीरा का जन्मदिन">
-      <img class="sg-birthday-girl" src="assets/Images/landing_meera_birthday.webp" alt="केक पकड़े मीरा">
       <button class="sg-vo" id="sgVo" type="button" aria-label="सुनो"><svg viewBox="0 0 62 60" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Audio"><g filter="url(#sgChipShadow)"><rect x="8" y="4" width="46" height="44" rx="22" fill="url(#sgChipGrad)"/><rect x="6" y="2" width="50" height="48" rx="24" stroke="white" stroke-width="4"/><path d="M29.8466 19.0574C29.8804 19.0524 29.9145 19.0496 29.9487 19.0488C30.6094 19.0317 31.0021 19.5124 31.0015 20.1414C31.0008 20.9661 31.0003 21.7911 31.0005 22.6158L31.001 27.7212L31.0009 30.5591C31.0009 31.0364 31.0122 31.5472 30.9863 32.0228C30.9662 32.2709 30.902 32.4608 30.7251 32.643C30.3831 32.9952 29.8337 33.0842 29.4386 32.7671C29.0784 32.4781 28.7473 32.1159 28.4181 31.7862L26.4414 29.8087C26.1771 29.5426 25.9071 29.2636 25.6339 29.0081C25.0227 28.9649 24.3645 29.017 23.7487 28.9979C23.445 28.9885 23.1625 29.0211 22.8589 28.9606C22.3751 28.8616 22.0618 28.4823 22.0642 27.9824C22.0706 26.5937 22.0287 25.1949 22.0828 23.8081C22.0884 23.6626 22.2302 23.4334 22.3309 23.3252C22.454 23.1907 22.6146 23.0963 22.792 23.0543C23.0567 22.9904 23.5328 23.016 23.8224 23.0128C24.4143 23.0063 25.0171 23.0277 25.609 23.0073C25.6794 22.9529 25.8505 22.7743 25.919 22.706L26.5305 22.0945L28.5396 20.0838C28.9157 19.7059 29.3217 19.1749 29.8466 19.0574Z" fill="white"/><path class="wv wv2" d="M36.2367 18.6905C36.8783 18.6449 37.3041 19.231 37.6725 19.6829C38.7675 21.0046 39.4982 22.5894 39.7923 24.2804C40.2503 26.8763 39.6548 29.5478 38.1378 31.7035C37.8393 32.1274 37.508 32.5324 37.149 32.9063C36.9404 33.1236 36.7646 33.2558 36.4622 33.3081C36.2013 33.3412 35.9378 33.2717 35.7272 33.1144C35.5185 32.9615 35.3816 32.7298 35.3483 32.4733C35.2786 31.9235 35.5696 31.6821 35.8914 31.3297C36.0448 31.1639 36.1901 30.9908 36.3269 30.811C38.3669 28.136 38.4986 24.4654 36.6555 21.6511C36.4826 21.3899 36.2966 21.1376 36.0984 20.8951C35.8252 20.5652 35.3947 20.2691 35.3472 19.8184C35.2845 19.2225 35.6439 18.768 36.2367 18.6905Z" fill="white"/><path class="wv wv1" d="M33.3868 21.5044C33.9769 21.4549 34.2563 21.7845 34.5981 22.1981C35.1982 22.924 35.6149 23.7691 35.8211 24.6886C36.171 26.2384 35.8867 27.8637 35.0314 29.2026C34.7421 29.6568 34.2333 30.3745 33.6937 30.4946C33.1633 30.5437 32.6759 30.2927 32.5495 29.7376C32.3921 29.0462 32.9849 28.6956 33.3274 28.1763C34.2088 26.833 34.1932 25.0908 33.288 23.7635C33.0747 23.4522 32.6159 23.0564 32.5518 22.7133C32.4377 22.1027 32.7745 21.619 33.3868 21.5044Z" fill="white"/></g><defs><filter id="sgChipShadow" x="0" y="0" width="62" height="60" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="4"/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/></filter><linearGradient id="sgChipGrad" x1="8" y1="26" x2="54" y2="26" gradientUnits="userSpaceOnUse"><stop stop-color="#1987FC"/><stop offset="1" stop-color="#1565F4"/></linearGradient></defs></svg></button>
-      <!-- [opt] loading bar: stands where Play will appear, until every asset has arrived -->
-      <div class="preload-bar" role="progressbar" aria-label="लोड हो रहा है" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-        <div class="pl-track"><div class="pl-fill"></div><span class="pl-shine"></span></div>
-        <div class="pl-pct">0%</div>
-      </div>
       <button class="sg-btn" id="sgBtn" aria-label="शुरू करें">
         <img class="btn-play" src="assets/UI/btn-play-round.svg" alt="">
         <img class="btn-wait" src="assets/UI/btn-play-round-waiting.svg" alt="">
@@ -2541,8 +2633,6 @@ function setPlaying(on){
   fadeBackgroundMusic(on?BGM_VO_VOLUME:BGM_VOLUME);
   document.body.classList.toggle("landing-play-ready",
     document.body.classList.contains("is-start") && !on && _landingVoHasPlayed);
-  const landingVideo = $("sgBgVideo");
-  if(landingVideo && document.body.classList.contains("is-start")) landingVideo.volume = on ? .08 : .32;
   /* [30g] VO LOCK — untappable, zero visual. See style.css. Driven off setPlaying (never a timer) so
      the lock cannot outlive the audio; toggled on `on` alone so it tracks the tap gate under mute. */
   document.body.classList.toggle("vo-lock", !!on);
@@ -5370,8 +5460,6 @@ function clearHost(){
 }
 
 function mountSlide(idx){
-  const titleVideo = $("sgBgVideo");
-  if(titleVideo){ titleVideo.pause(); titleVideo.currentTime = 0; }
   state.idx = idx;
   state.slideStart = Date.now();
   state.attempts = 0; state.selectedKey = null; state.locked = false;
@@ -5824,6 +5912,57 @@ function boot(){
   const greetSrc = (CARD.assets && CARD.assets.audio && CARD.assets.audio["vo_greeting"]) || null;
   const _onLanding = ()=> !$("startGate").classList.contains("hidden");
   let landingInFlight = false;
+  /* [r136] THE COVER'S BIRTHDAY BEAT — Meera blows her candles out, then confetti falls behind the
+     party, all while Swiftee's intro is speaking (asked: both before the intro is over and Play
+     appears). It starts when the intro clip is actually SOUNDING (its "playing" event), not when it is
+     merely requested, so it stays in step with the line. The timeline is in the .bc-* CSS; the last
+     confetti piece is gone ~7.6s in, inside the 8.1s intro. A replay from the speaker chip relights the
+     candles and plays the beat again with the line.
+     When the intro cannot sound — autoplay refused before the first tap (any first visit on the web),
+     or a broken clip — the beat still plays once on its own, so the cover is not left still until the
+     watchdog brings Play (~intro + 4s later); a tap that then starts the intro replays it in step.
+     None of it under reduced motion / ?still. */
+  let coverBeatTimer = 0, coverConfettiTimer = 0, coverBeatUntil = 0;
+  const coverConfetti = ()=>{
+    const host = $("bcConfetti");
+    if(!host || !_onLanding()) return;
+    host.textContent = "";
+    const n = 90, dist = 490;   // pieces start 40px above the picture and leave below its floor
+    let maxLife = 0;
+    for(let i=0;i<n;i++){
+      const z = confettiRnd(.75,1.15), fall = confettiRnd(2.2,3.0)/z, delay = confettiRnd(0,1.2);
+      maxLife = Math.max(maxLife, fall + delay);
+      const pair = CONFETTI_COLORS[i % CONFETTI_COLORS.length], flutter = Math.random() > .22;
+      const rockT = flutter ? confettiRnd(.6,1.2) : confettiRnd(.75,1.5);
+      const sway = flutter ? confettiRnd(8,26) : confettiRnd(2,6);
+      const drift = flutter ? confettiRnd(-10,10) : confettiRnd(-36,36);
+      const bob = flutter ? confettiRnd(3,6) : confettiRnd(2,4);
+      const p = document.createElement("i"); p.className = "p";
+      p.style.cssText =
+        `--x:${confettiRnd(1,97).toFixed(1)}%;--dist:${dist}px;--fall:${fall.toFixed(2)}s;`+
+        `--delay:${delay.toFixed(2)}s;--drift:${drift.toFixed(0)}px;--sway:${sway.toFixed(0)}px;`+
+        `--bob:${bob.toFixed(1)}px;--rockT:${rockT.toFixed(2)}s;--amp:${Math.round(confettiRnd(28,52))}deg;`+
+        `--yaw:${Math.round(confettiRnd(-30,30))}deg;--tilt:${Math.round(confettiRnd(-25,25))}deg;`+
+        `--z:${z.toFixed(2)};--dim:${(.72+(z-.75)/.4*.28).toFixed(2)};--c:${pair[0]};--c2:${pair[1]};`;
+      const w = document.createElement("i"); w.className = "w";
+      const f = document.createElement("i");
+      f.className = `f ${CONFETTI_SHAPES[Math.floor(Math.random()*CONFETTI_SHAPES.length)]}${flutter ? "" : " tum"}`;
+      w.appendChild(f); p.appendChild(w); host.appendChild(p);
+    }
+    clearTimeout(coverConfettiTimer);
+    coverConfettiTimer = setTimeout(()=>{ host.textContent = ""; }, (maxLife + .3) * 1000);
+  };
+  const coverBeat = ()=>{
+    const scene = $("bcScene");
+    if(!scene || !_onLanding() || SW_STILL || document.documentElement.classList.contains("no-anim")) return;
+    scene.classList.remove("bc-blowing"); void scene.offsetWidth; scene.classList.add("bc-blowing");
+    coverBeatUntil = performance.now() + 7800;
+    clearTimeout(coverBeatTimer); coverBeatTimer = setTimeout(coverConfetti, 2350);
+  };
+  const coverBeatIfIdle = ()=>{ if(performance.now() > coverBeatUntil) coverBeat(); };   // never restarts one mid-way
+  const armCoverBeat = ()=>{ const a = currentAudio; if(!a || !a.addEventListener) return;
+    a.addEventListener("playing", coverBeat, { once:true });         // the intro is sounding: play in step
+    a.addEventListener("error", coverBeatIfIdle, { once:true }); };  // broken clip: its silent beat still runs
   const playLanding = ()=>{
     if(!_onLanding() || landingInFlight) return;
     landingInFlight = true;
@@ -5835,9 +5974,11 @@ function boot(){
       /* [opt] …but a broken or stalled intro clip is: Play must still come (error / watchdog paths) */
       if(_lastPlayEnd === "error" || _lastPlayEnd === "watchdog") _landingVoHasPlayed=true;
       setPlaying(false);
+      if(_lastPlayEnd === "blocked") coverBeatIfIdle();   // [r136] autoplay refused: the beat plays on its own
     };
     if(greetSrc) play(greetSrc, ()=>{ if(_onLanding()) play(landSrc, finish); });
     else play(landSrc, finish);
+    armCoverBeat();   // [r136] the birthday beat rides on the first clip of the intro
   };
   const sgVo = $("sgVo"); if(sgVo) sgVo.onclick = (e)=>{ e.stopPropagation(); if(isPlaying) return;
     GameBus.xapi("audio_replayed", { type: "audio", id: "landing_chip" }, null);   // [spec] replay chip on the start screen (no slide context yet)
@@ -5887,27 +6028,8 @@ function boot(){
     else window.addEventListener("load", ready);
     setTimeout(ready, 2500);   // watchdog: never strand the child on the loader
   })();
-  /* Supplied title video: loop inside the landing card, with its own soundtrack. Browsers may block
-     unmuted autoplay; in that case keep the visual looping muted and unlock its audio on the first
-     non-Play interaction. Pressing Play stops it before the lesson begins. */
-  const titleVideo = $("sgBgVideo");
-  if(titleVideo){
-    titleVideo.volume = .32;
-    const attempt = titleVideo.play();
-    if(attempt && attempt.catch) attempt.catch(()=>{
-      titleVideo.muted = true;
-      const mutedAttempt = titleVideo.play(); if(mutedAttempt && mutedAttempt.catch) mutedAttempt.catch(()=>{});
-    });
-    window.addEventListener("pointerdown", function unlockTitleVideo(ev){
-      if(!document.body.classList.contains("is-start")){
-        window.removeEventListener("pointerdown", unlockTitleVideo); return;
-      }
-      if(ev && ev.target && ev.target.closest && ev.target.closest("#sgBtn,.sg-btn")) return;
-      titleVideo.muted = false; titleVideo.volume = .32;
-      const resumed = titleVideo.play(); if(resumed && resumed.catch) resumed.catch(()=>{});
-      window.removeEventListener("pointerdown", unlockTitleVideo);
-    });
-  }
+  /* [r136] The underwater title video (and its looping soundtrack) is gone: the cover is now the
+     Figma birthday picture, so there is no title video to start, duck or stop any more. */
   // landing VO best-effort on first interaction too (some browsers block autoplay pre-gesture)
   window.addEventListener("pointerdown", function once(ev){
     /* [2026-08-04] NEVER let शुरू करें be the gesture that starts the greeting. pointerdown fires
@@ -5930,7 +6052,7 @@ function boot(){
        itself explicitly, and only on a gesture it actually acted on. */
 
   $("sgBtn").onclick = ()=>{
-    if(!window.__assetsReady) return;   // [opt] the preloader has not reached 100% yet
+    /* [r136] no longer waits for the preloader's 100%: Play is live as soon as it shows (after the intro) */
     /* [h01 local] Yasir 2026-07-31: RULING_no_tapping_during_VO applied to the landing screen too —
        शुरू करें must not cut the landing line off mid-sentence (same fix as HI01H04_L02_S02).
        body.vo-lock is already toggled by setPlaying() while any clip plays; this JS guard is

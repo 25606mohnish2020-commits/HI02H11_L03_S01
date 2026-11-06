@@ -4,7 +4,8 @@
    Every file under assets/ (except the two helper files the page loads with <link>/<script>) is listed
    with its real byte size. Four groups:
    - FIRST: the landing's intro line — fetched before everything else so it is local when it plays.
-   - OWNED_MEDIA: the title video streams in its own <video>; the bar follows its buffered range.
+   - OWNED_MEDIA: a media element that streams by itself (path -> element id); the preloader follows
+     its buffered range. Empty since r136: the underwater title video it was made for is gone.
    - OWNED: what the landing markup/CSS requests by itself (measured with a headless crawl). The
      preloader does NOT fetch these a second time; it waits for the page's own request to complete
      (Resource Timing) and counts its bytes.
@@ -14,15 +15,21 @@ const fs = require("fs"), path = require("path");
 const ROOT = path.resolve(__dirname, "..");
 const HTML = path.join(ROOT, "HI02H11_L03_S01_poem.html");
 const FIRST = ["assets/Audio/vo_landing.ogg"];
-/* streamed by its own element (the landing card is this video): the bar follows that element's buffering */
-const OWNED_MEDIA = { "assets/UI/title_swifty_swimming.webm": "sgBgVideo" };
+/* streamed by its own element: the preloader follows that element's buffering. [r136] none any more —
+   the cover is the Figma birthday picture, not the underwater title video */
+const OWNED_MEDIA = {};
 const OWNED = [
   "assets/UI/loader.webp", "assets/UI/nudge_hand_new.svg", "assets/UI/sw_head_talking.webp",
   "assets/UI/btn-next-disabled.svg", "assets/UI/btn-next.svg", "assets/UI/sw_anim_rest.webp",
-  "assets/UI/new_landing_swiftee_anim.webp", "assets/Images/landing_title_meera_transparent.webp",
-  "assets/Images/landing_meera_birthday.webp", "assets/UI/btn-play-round.svg", "assets/UI/btn-play-round-waiting.svg",
+  "assets/UI/new_landing_swiftee_anim.webp", "assets/UI/btn-play-round.svg", "assets/UI/btn-play-round-waiting.svg",
   "assets/UI/btn-finish.svg", "assets/UI/startnew_bg_plain.webp", "assets/UI/bgdeco_star_o.svg",
-  "assets/UI/bgdeco_spark.svg", "assets/UI/bgdeco_star.svg", "assets/UI/start_card_sea.webp"
+  "assets/UI/bgdeco_spark.svg", "assets/UI/bgdeco_star.svg",
+  /* [r136] the birthday cover's layers (requested by the landing markup itself) */
+  "assets/Images/landing_cover_room.webp", "assets/Images/landing_cover_bunting.webp",
+  "assets/Images/landing_cover_balloons_yellow.webp", "assets/Images/landing_cover_balloons_pink.webp",
+  "assets/Images/landing_cover_title.webp", "assets/Images/landing_cover_meera.webp",
+  "assets/Images/landing_cover_meera_cake.webp", "assets/Images/landing_cover_meera_arm.webp",   /* [r137] the cake lift */
+  "assets/Images/landing_cover_meera_blow.webp", "assets/Images/landing_cover_gift.webp"
 ];
 const SKIP = new Set(["assets/ocean-games.css", "assets/ocean-vo-config.js"]);
 const files = [];
