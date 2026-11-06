@@ -1,0 +1,6 @@
+{
+  "cleanUrls": false,
+  "rewrites": [
+    { "source": "/", "destination": "/HI02H11_L03_S01_poem.html" }
+  ]
+}
