@@ -1,5 +1,5 @@
 # Files that must NOT ship with the lesson. The deployable lesson is only:
-#   HI02H11_L03_S01_poem.html, card.json, assets/
+#   HI02H05_L02_S01_poem.html, card.json, assets/
 # (card.json is the lesson data; the HTML embeds the same data, so it is optional on a host that only
 #  serves the HTML.)
 

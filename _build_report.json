@@ -1,10 +1,10 @@
 {
  "schema": "swiftpal-build-report/1",
  "generated_at": "2026-09-10T14:46:39",
- "skill_code": "HI02H11_L03_S01",
+ "skill_code": "HI02H05_L02_S01",
  "engine_expected": "2026.07.16i-r4-unified",
  "engine_file_sha256": {
-  "HI02H11_L03_S01_poem.html": "8694f68843e4710e3be5f4371689826ad7d1c5493366dca6cce70694b956af88"
+  "HI02H05_L02_S01_poem.html": "8694f68843e4710e3be5f4371689826ad7d1c5493366dca6cce70694b956af88"
  },
  "receipt": {
   "counts": "16 pass / 3 FAIL / 6 warn",
@@ -13,7 +13,7 @@
    {
     "ok": true,
     "label": "Playable HTML present",
-    "detail": "HI02H11_L03_S01_poem.html"
+    "detail": "HI02H05_L02_S01_poem.html"
    },
    {
     "ok": true,
@@ -103,7 +103,7 @@
    {
     "ok": true,
     "label": "SME review PPT generated",
-    "detail": "HI02H11_L03_S01_poem_review.pptx"
+    "detail": "HI02H05_L02_S01_poem_review.pptx"
    },
    {
     "ok": true,

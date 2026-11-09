@@ -1,9 +1,9 @@
 {
   "version": "0.1",
-  "skill_code": "HI02H11_L03_S01",
-  "lo_code": "HI02H11_L03",
+  "skill_code": "HI02H05_L02_S01",
+  "lo_code": "HI02H05_L02",
   "grade": "G2",
-  "attribute": "H11",
+  "attribute": "H05",
   "skill_type": "CORE",
   "part_label": "poem",
   "title": {

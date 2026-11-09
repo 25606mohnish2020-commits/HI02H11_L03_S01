@@ -1,4 +1,4 @@
-# VO recording script — HI02H11_L03_S01
+# VO recording script — HI02H05_L02_S01
 
 **59 lines.** Deliver one audio file per line, named exactly `<id>.ogg`, into
 `assets/Audio/`. The build picks them up automatically — no code change is needed for any of them.

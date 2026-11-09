@@ -1,4 +1,4 @@
-/* Regenerates the preloader's size table inside HI02H11_L03_S01_poem.html from the files on disk.
+/* Regenerates the preloader's size table inside HI02H05_L02_S01_poem.html from the files on disk.
    Run after adding, removing or re-encoding anything in assets/:   node _dev/gen_preload_manifest.js
 
    Every file under assets/ (except the two helper files the page loads with <link>/<script>) is listed
@@ -13,7 +13,7 @@
      never starved behind the large media files. */
 const fs = require("fs"), path = require("path");
 const ROOT = path.resolve(__dirname, "..");
-const HTML = path.join(ROOT, "HI02H11_L03_S01_poem.html");
+const HTML = path.join(ROOT, "HI02H05_L02_S01_poem.html");
 const FIRST = ["assets/Audio/vo_landing.ogg"];
 /* streamed by its own element: the preloader follows that element's buffering. [r136] none any more —
    the cover is the Figma birthday picture, not the underwater title video */

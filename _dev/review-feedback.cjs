@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--autoplay-policy=no-user-gesture-required']});
  const page=await browser.newPage({viewport:{width:1600,height:900}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://127.0.0.1:8769/HI02H11_L03_S01_poem.html?dev=1',{waitUntil:'domcontentloaded'});
+ await page.goto('http://127.0.0.1:8769/HI02H05_L02_S01_poem.html?dev=1',{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>typeof mountSlide==='function');
  await page.evaluate(()=>{
   document.querySelector('#startGate')?.classList.add('hidden');document.body.classList.remove('is-start');document.body.classList.add('loaded');document.querySelector('#bootLoader')?.remove();

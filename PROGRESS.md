@@ -1,8 +1,8 @@
-# HI02H11_L03_S01 — Progress Log
+# HI02H05_L02_S01 — Progress Log
 
 **Lesson:** मीरा का जन्मदिन — एकवचन / बहुवचन (एक और अनेक)
-**Build:** `HI02H11_L03_S01_poem.html` (single self-contained file) + `card.json` + `assets/`
-**Sources of truth:** this log, the review deck `Copy of HI02H11_L03_S01_poem_review.pptx`, and the
+**Build:** `HI02H05_L02_S01_poem.html` (single self-contained file) + `card.json` + `assets/`
+**Sources of truth:** this log, the review deck `Copy of HI02H05_L02_S01_poem_review.pptx`, and the
 two written game specs (Part 1 MATCH_THE_PAIR, Part 2 drag-and-drop).
 
 > This file is updated on **every** change request. Newest round at the bottom.
@@ -3365,7 +3365,7 @@ Verified: line 1's टोपी and टोपियाँ are highlighted, and l
 
 ## Round 99 — end-to-end optimisation (media formats, preloader, watchdogs, dead code)
 
-Work moved to this folder (`Desktop\HI02H11_L03_S01\HI02H11_L03_S01`) from this round on.
+Work moved to this folder (`Desktop\HI02H05_L02_S01\HI02H05_L02_S01`) from this round on.
 **Deployed payload (HTML + card.json + assets): 96.05 MB → 19.00 MB (−80%).**
 
 | | before | after |
