@@ -4528,6 +4528,106 @@ Verified in headless Chrome:
 
 ---
 
+## Round 138 — no translate pop-up, Play stays up on replay, poem lines back to back, Q2–Q6 reminder repeats, pause in a hidden tab
+
+**Asked:**
+1. On the Vercel link, no Google Translate pop-up on the title screen.
+2. Title: once Play is up, a tap on the speaker must not make Play disappear while the intro repeats;
+   the speaker's own animation stays as it is.
+3. T1, T2, T3, T4: आगे and the speaker came alive between the two lines. They should wake only when
+   both lines are over, with no pause between the lines.
+4. Q2–Q6 (pages 10–14): with complete inactivity, the instruction repeats every 7 seconds.
+5. Another tab opened: the lesson pauses completely where it is; back on its tab, it carries on from
+   there.
+
+Standing instruction: nothing else changes.
+
+| # | Done |
+|---|---|
+| 1 | `<html translate="no" class="notranslate">` + `<meta name="google" content="notranslate">`. `lang="hi"` stays |
+| 2 | Play's visibility, pop-in and pulse moved from `landing-play-ready` to a new `landing-play-shown` (on from the end of the first intro until Play is tapped). `landing-play-ready` still freezes the cover scene, so the replay's candle beat, its confetti and the speaker's waves run as before |
+| 3 | STORY_SCENE runs the next line in the same step as the previous one ends (the 1s `PACE.tail` gap is gone, on the first read and on a replay) |
+| 4 | A repeating 7s-of-quiet reminder in PICK_VACHAN_WORD for Q2–Q6 only |
+| 5 | A pause layer, the first script on the page: timers, media, animations and an elapsed-time clock all hold while the tab is hidden |
+
+**1 — translate.** Chrome offers translation when the page language differs from the browser's. The
+lesson is Hindi on purpose, so the page now says "do not translate" in both ways Chrome reads.
+
+**2 — Play on replay.** Before, the replay hid Play (opacity 0) for the whole 8.1s and popped it in
+again afterwards. Now Play stays visible and keeps the same pulse throughout (the same animation
+start time before, during and after the replay, so there is no second pop-in). The speaker is
+unchanged: waves running, dimmed to .58 while speaking. A tap on Play *during* the replay is still
+ignored, as before (RULING_no_tapping_during_VO: Play must not cut the intro off). Once Play is
+tapped it fades as the gate line starts, as before.
+
+**3 — the two poem lines.** Cause: the one-second `PACE.tail` beat between line 1 and line 2 was
+silence, so the speaker chip came alive for that second. On a speaker replay, आगे also turned yellow
+and tappable for that second (measured on the old build: 5042 → 6046ms). Now the next line starts
+in the same step as the previous one ends, so the chip and आगे never see a silent moment. What
+remains between the lines is the breath inside the recordings (~0.25s at the end of line 1 and
+~0.25s at the start of line 2), about the length of a comma pause inside a line. Each page is now
+~1s shorter.
+
+**4 — Q2–Q6 reminder.** Before: the opening "सही शब्द चुनिए", the reminder ~4.3s after it, one more
+reminder with the word pulse at ~15.6s, then silence for good. Now a 100ms ticker counts 7s of
+complete quiet. Nothing may be sounding, the board must not be locked, and the tab must be in view.
+Any touch or key anywhere resets the count to zero. When the 7s are reached, `ocean_instruction_pick`
+plays with the worried face (r108). From the second reminder on, the word being changed pulses with
+it, as the old second beat did. This repeats for as long as the child does nothing.
+* Unchanged from r114: after the 3rd wrong answer (answer lit, hand, the line said once) nothing more
+  is spoken on that question. The old visual-only pulse carries on through `oceanIdle`.
+* The engine's one-per-slide idle replay is marked spent on these five screens, so two reminders
+  never overlap.
+* **Q1 is not in the list and is unchanged.** Its 40s idle timeline matches the old build.
+
+**5 — hidden tab.** One small script, installed before the preloader. While the tab is in view it is
+a pass-through.
+* **Timers.** `setTimeout`/`setInterval` keep their remaining time while hidden and finish it on
+  return.
+* **Media.** Every sounding `<audio>`/`<video>`/`new Audio()` (VO, music, SFX, the sea and swim
+  videos) is paused and resumed from the same moment. A `play()` asked for while hidden waits for the
+  tab. A clip the lesson itself stops while hidden is not brought back.
+* **Animations.** CSS animations freeze (`html.lesson-paused`). Script animations and CSS transitions
+  are paused and played on. The SFX AudioContext is suspended.
+* **Clock.** `lessonNow()` is wall time minus the time spent hidden. The few elapsed-time checks now
+  use it: the engine idle ticker, the drag VO gate, `play()`'s silent-beat fallback, the bubble
+  game's pair walk, `afterConfetti`'s 8s cap and the phase gate's hold. Time in another tab never
+  counts as time in the lesson.
+* **Not covered.** Animated WebP pictures (Swiftee, the gate's peeking Swiftie) cannot be paused by a
+  page. A tab that is actually *closed* ends the session; this covers switching tabs and minimising.
+
+Verified in headless Chrome (system Chrome via Playwright; the hidden tab is the real
+`visibilitychange` event with `document.hidden` stubbed, since headless has no tab switching):
+* **Title.**
+  * Replay: Play `visible/1.00` all through, pulse unbroken, no re-pop. Speaker `WAVES/disabled/0.58`
+    as before.
+  * Cover beat on replay: identical to the old build (90 confetti, 280 animations running, frozen
+    again at rest).
+  * Tap on Play mid-replay: ignored, as before. Play after the replay → gate → T1.
+* **T1–T4.**
+  * First read: line 1 → line 2 with no enabled moment for the speaker or आगे; both wake only at the
+    end.
+  * Replay of T1: the same. The old build's 1s yellow आगे is gone.
+* **Q2.** 40s untouched: reminders 7.16 / 7.08 / 7.09 / 7.06s after each line ends.
+* **Q3.** Taps at 5s and 15s: reminders 7.19s and 7.12s after them.
+* **Q4.** A wrong answer: the count starts when the wiggle ends.
+* **Q6.** Three wrong answers: identical to the old build.
+* **Pause.**
+  * T1 hidden 5s mid-line: the clip holds at 1.673s and resumes from there. The mascot animation is
+    paused; line 2 and आगे come 5.3s later.
+  * Q2 hidden 5→15s: the reminder comes exactly 10s later.
+  * Q5 hidden mid-reminder: the line finishes on return.
+  * Title hidden mid-intro: voice, candle beat and 90 confetti pieces frozen (292 animations paused).
+    Play comes when the intro's remaining 4.9s are over.
+  * Sea video in PAIR1 and SUB: held on its frame and resumed.
+  * Phase gate hidden mid-line: T1 still mounts after.
+* **Whole lesson.** All 17 slides mount with no page errors. A click-through from the title (Play,
+  आगे, correct answers) reaches PAIR1 through all three gates with 6 bubbles on the field and no
+  errors.
+* **Line endings.** The HTML keeps its CRLF line endings.
+
+---
+
 ## Open items
 
 **Checklist gaps from Round 58** (18 fails, 7 partials), in rough priority order: end screen uses

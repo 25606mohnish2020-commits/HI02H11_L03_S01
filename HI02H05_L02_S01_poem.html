@@ -1,7 +1,9 @@
 <!doctype html>
-<html lang="hi">
+<html lang="hi" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
+<!-- [r138] no Google Translate offer on the title screen (or anywhere): the lesson is Hindi on purpose -->
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><!-- [24a N9] pinch-zoom lock: a child two-finger-zooms the game off-centre in any real browser without it -->
 <title>SwiftPAL · MTKGA02_L02_S02 · क्रम में लगाओ</title>
 <!-- OFFLINE BUILD — factory.py replaces the marker below with a <style>@font-face…</style>.
@@ -427,29 +429,35 @@ body.loaded .sg-acell{animation-play-state:running;}
    The soft, outer sky/glow decoration remains as background motion. [r136] The cover's birthday beat
    (candles, confetti) has finished by then; this freezes the scene in its resting state. */
 body.is-start.landing-play-ready .sg-card :not(.sg-btn):not(.sg-btn *){animation-play-state:paused!important;}
-body.is-start.landing-play-ready .sg-btn:not(:disabled){animation:sgBtnPulse 1.35s ease-in-out infinite;}
+body.is-start.landing-play-shown .sg-btn:not(:disabled){animation:sgBtnPulse 1.35s ease-in-out infinite;}
+/* [r138] PLAY STAYS UP WHILE THE SPEAKER REPLAYS THE INTRO. Asked: once Play has appeared, a tap on the
+   speaker chip must not make it disappear while the intro repeats; the speaker chip animates exactly
+   as before. Play's visibility, pop-in and pulse now ride on `landing-play-shown` (on from the end of
+   the first intro until the lesson starts, whether or not a line is sounding); `landing-play-ready`
+   ("intro heard AND nothing speaking") still drives the scene freeze above, so the replay's candle
+   beat and the speaker chip's waves play as they always did. The Play pop-in is not repeated. */
 /* [r59] NO PLAY BUTTON UNTIL THE INTRO HAS FINISHED. The title screen showed a still yellow Play
    before the intro, swapped it for the grey "waiting" Play while the intro spoke, and only then made
    it yellow and pulsing. Now there is no Play button at all — neither grey nor yellow — until the
    intro completes; then the yellow one fades in and pulses exactly as before.
    `landing-play-ready` is the existing signal for "the intro has played and nothing is speaking"
-   (setPlaying), so this needs no timer of its own: a replay from the speaker chip hides Play again
-   for the length of the replay and brings it back afterwards.
+   (setPlaying), so this needs no timer of its own. ([r138]: a replay from the speaker chip no longer
+   hides Play — see `landing-play-shown` above.)
    Never stranded: when the browser blocks autoplay, play() ends the attempt at once and the same
    signal turns on, so Play appears rather than leaving the child with nothing to press — and the
    first tap anywhere other than Play still starts the real intro (the pointerdown fallback below). */
 body.is-start .sg-btn{opacity:0;visibility:hidden;pointer-events:none;
   transition:opacity .35s ease,visibility 0s linear .35s;}
-body.is-start.landing-play-ready .sg-btn{opacity:1;visibility:visible;pointer-events:auto;
+body.is-start.landing-play-shown .sg-btn{opacity:1;visibility:visible;pointer-events:auto;
   transition:opacity .35s ease,visibility 0s;}
 /* [r136] PLAY COMES STRAIGHT AFTER THE INTRO — NO LOADING BAR. Asked: remove the loading bar at the Play
    button; Play appears as soon as Swiftee's intro is over and starts pulsing at once, as before.
    (Was [opt]: Play waited for body.assets-ready, with a 0–100% bar standing in its place.) The preloader
    still warms every asset in the background; it just no longer holds Play back. */
-body.is-start.landing-play-ready .sg-btn:not(:disabled){
+body.is-start.landing-play-shown .sg-btn:not(:disabled){
   animation:sgBtnPopIn .5s cubic-bezier(.34,1.56,.64,1) both,sgBtnPulse 1.35s ease-in-out .5s infinite;}
 @keyframes sgBtnPopIn{0%{opacity:0;transform:translateX(-50%) scale(.35);}70%{opacity:1;transform:translateX(-50%) scale(1.1);}100%{opacity:1;transform:translateX(-50%) scale(1);}}
-@media (prefers-reduced-motion:reduce){ body.is-start.landing-play-ready .sg-btn:not(:disabled){animation:none;} }
+@media (prefers-reduced-motion:reduce){ body.is-start.landing-play-shown .sg-btn:not(:disabled){animation:none;} }
 /* landing "listen" button — a warm welcome plays on the title screen; tap to replay */
 .sg-vo{position:absolute;left:96px;bottom:-6px;z-index:5;width:58px;height:58px;background:none;border:none;padding:0;cursor:pointer;animation:none;}   /* Slightly raised so the speaker chip clears the white frame edge; size and horizontal placement stay unchanged. */
 .sg-vo img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;}
@@ -1904,9 +1912,121 @@ body.ocean-full .stage .slide-host > .subg::before,body.ocean-full .stage .slide
 
 /* One tempo for the answer-feedback pair. */
 /* ===== FLN ANIMATION KIT: current-generation overrides END ===== */
+
+/* [r138] TAB HIDDEN = LESSON PAUSED. While another tab is in front, every CSS animation stands still
+   where it is and carries on from that frame when the tab comes back (see the pause layer script). */
+html.lesson-paused *,html.lesson-paused *::before,html.lesson-paused *::after{animation-play-state:paused!important;}
 </style>
 <link rel="stylesheet" href="assets/ocean-games.css">
 <link rel="icon" href="data:,">   <!-- [opt] no favicon: stops the browser's automatic /favicon.ico 404 -->
+<script>
+/* ============ [r138] PAUSE LAYER — TAB HIDDEN: EVERYTHING STOPS; TAB BACK: IT CARRIES ON ============
+   Asked: when another tab is opened, the lesson pauses completely at the point where it was left, and
+   when its tab is opened again it continues from exactly there. Installed before anything else runs,
+   so every part of the lesson is covered without each screen having to know about it:
+   - VOICE, MUSIC, SFX, VIDEO: every <audio>/<video> and every new Audio() that is sounding is paused
+     on the spot and resumed from the same moment. A play() asked for while hidden waits for the tab.
+     A clip the lesson itself stops while hidden (pause()) is not brought back.
+   - TIMERS: setTimeout/setInterval keep their remaining time while hidden and finish it afterwards,
+     so a beat that was 3s from its next step is still 3s from it — nothing jumps or fires in a burst.
+   - ANIMATION: CSS animations freeze on their frame (html.lesson-paused, in the stylesheet); script
+     animations (.animate) and CSS transitions are paused and played on.
+   - CLOCK: lessonNow() is wall time minus the time spent hidden; the lesson's few "how long has it
+     been" checks (the 7s inactivity count, the gate's hold, the confetti wait…) use it, so time in
+     another tab never counts as time in the lesson.
+   While the tab is in view all of this is a straight pass-through: nothing behaves differently. */
+(function(){
+  "use strict";
+  const W = window, MP = W.HTMLMediaElement && HTMLMediaElement.prototype;
+  const nST = W.setTimeout, nCT = W.clearTimeout;
+  const clock = () => (W.performance && performance.now) ? performance.now() : Date.now();
+  let paused = false, pausedAt = 0, pausedTotal = 0;
+  W.lessonNow = () => Date.now() - pausedTotal - (paused ? Date.now() - pausedAt : 0);
+
+  /* ---- timers: same API, same ids-in/ids-out, but holdable ---- */
+  const T = new Map(); let seq = 1e9;            // ids far above the browser's own, so the two never meet
+  const run = t => { if(typeof t.fn === "function") t.fn.apply(W, t.args); };
+  function arm(id, t, wait){
+    t.due = clock() + wait;
+    t.h = nST.call(W, () => {
+      if(T.get(id) !== t) return;
+      t.h = 0;
+      if(t.every) arm(id, t, t.ms); else T.delete(id);
+      run(t);
+    }, wait);
+  }
+  function add(fn, ms, args, every){
+    const id = ++seq;
+    ms = Math.max(0, Number(ms) || 0);
+    const t = { fn: typeof fn === "function" ? fn : new Function(String(fn)), ms, args, every, h: 0, due: 0, left: ms };
+    T.set(id, t);
+    if(!paused) arm(id, t, ms);
+    return id;
+  }
+  function drop(id){
+    const t = T.get(id);
+    if(t){ T.delete(id); if(t.h) nCT.call(W, t.h); return; }
+    nCT.call(W, id);                             // a timer from before this layer
+  }
+  W.setTimeout    = function(fn, ms, ...args){ return add(fn, ms, args, false); };
+  W.setInterval   = function(fn, ms, ...args){ return add(fn, ms, args, true); };
+  W.clearTimeout  = function(id){ drop(id); };
+  W.clearInterval = function(id){ drop(id); };
+
+  /* ---- media ---- */
+  const MEDIA = new Set();
+  const nPlay = MP && MP.play, nPause = MP && MP.pause;
+  if(MP){
+    MP.play = function(){
+      MEDIA.forEach(el => { if((el.paused || el.ended) && !el.__lpResume) MEDIA.delete(el); });   // keep the set small
+      MEDIA.add(this);
+      if(paused){ this.__lpResume = true; return Promise.resolve(); }   // starts when the tab is back
+      return nPlay.apply(this, arguments);
+    };
+    MP.pause = function(){ this.__lpResume = false; return nPause.apply(this, arguments); };
+  }
+
+  /* ---- pause / resume ---- */
+  let anims = [], acHeld = null;
+  function hold(){
+    if(paused) return;
+    paused = true; pausedAt = Date.now();
+    const c = clock();
+    T.forEach(t => { if(t.h){ nCT.call(W, t.h); t.h = 0; t.left = Math.max(0, t.due - c); } });
+    if(MP){
+      document.querySelectorAll("audio,video").forEach(el => MEDIA.add(el));
+      MEDIA.forEach(el => {
+        if(!el.paused && !el.ended){ el.__lpResume = true; try{ nPause.call(el); }catch(e){} }
+        else if(!el.__lpResume) MEDIA.delete(el);
+      });
+    }
+    document.documentElement.classList.add("lesson-paused");
+    anims = [];
+    try{ document.getAnimations().forEach(a => {
+      if(a.playState !== "running" || (W.CSSAnimation && a instanceof CSSAnimation)) return;   // CSS animations: the class
+      try{ a.pause(); anims.push(a); }catch(e){}
+    }); }catch(e){}
+    try{ if(typeof _juiceAC !== "undefined" && _juiceAC && _juiceAC.state === "running"){ acHeld = _juiceAC; _juiceAC.suspend(); } }catch(e){}
+  }
+  function carryOn(){
+    if(!paused) return;
+    pausedTotal += Date.now() - pausedAt;
+    paused = false;
+    document.documentElement.classList.remove("lesson-paused");
+    anims.forEach(a => { try{ if(a.playState === "paused") a.play(); }catch(e){} }); anims = [];
+    try{ if(acHeld){ acHeld.resume(); acHeld = null; } }catch(e){}
+    if(MP) MEDIA.forEach(el => {
+      if(!el.__lpResume) return;
+      el.__lpResume = false;
+      try{ const p = nPlay.call(el); if(p && p.catch) p.catch(() => {}); }catch(e){}
+    });
+    T.forEach((t, id) => { if(!t.h && T.get(id) === t) arm(id, t, t.left); });
+  }
+  const sync = () => { if(document.hidden) hold(); else carryOn(); };
+  document.addEventListener("visibilitychange", sync);
+  if(document.hidden) hold();                    // opened in a background tab: wait to be looked at
+})();
+</script>
 <script>
 /* ============ ASSET PRELOADER ============
    [opt] Every asset the lesson uses is fetched in the background while the title screen is up.
@@ -2633,10 +2753,16 @@ function setPlaying(on){
   fadeBackgroundMusic(on?BGM_VO_VOLUME:BGM_VOLUME);
   document.body.classList.toggle("landing-play-ready",
     document.body.classList.contains("is-start") && !on && _landingVoHasPlayed);
+  /* [r138] Play, once it has come, stays on screen through a speaker-chip replay of the intro. Once
+     Play has been tapped (body.gating — the blurred "चलिए शुरू करें" gate) it goes as the gate line
+     starts, exactly as before. */
+  document.body.classList.toggle("landing-play-shown",
+    document.body.classList.contains("is-start") && _landingVoHasPlayed &&
+    !(on && document.body.classList.contains("gating")));
   /* [30g] VO LOCK — untappable, zero visual. See style.css. Driven off setPlaying (never a timer) so
      the lock cannot outlive the audio; toggled on `on` alone so it tracks the tap gate under mute. */
   document.body.classList.toggle("vo-lock", !!on);
-  if(on) _voStart = Date.now();   // drag VO-gate 4s safety: stamp when a VO began so a stalled clip can't soft-lock the tiles
+  if(on) _voStart = lessonNow();   // drag VO-gate 4s safety: stamp when a VO began so a stalled clip can't soft-lock the tiles
   document.querySelectorAll(".audio-chip, .tut-audio, .sg-vo, .read-whole-btn").forEach(c => c.classList.toggle("playing", on && !isMuted));
   syncSpeakerDisabled();
   syncNavButton();
@@ -2692,7 +2818,7 @@ function play(src, onEnd, onMissing){
     return;
   }
   setPlaying(true);
-  const plannedEnd = Date.now() + authoredVoHoldMs(src);
+  const plannedEnd = lessonNow() + authoredVoHoldMs(src);
   let done=false, dog=0; const fire=(why)=>{ if(done || myGen!==_audioGen)return; done=true; clearTimeout(dog); _lastPlayEnd = typeof why === "string" ? why : "ended"; setPlaying(false); if(onEnd) onEnd(); };
   {
     const a=new Audio(src); currentAudio=a;
@@ -2705,7 +2831,7 @@ function play(src, onEnd, onMissing){
       /* [r39] A caller may offer a stand-in for a line that has not been recorded yet. Without one
          we keep the old behaviour: hold for the authored beat so the pacing survives, in silence. */
       if(onMissing){ setPlaying(false); onMissing(); return; }
-      setTimeout(fire, Math.max(0, plannedEnd - Date.now())); };   // authored visual VO beat; never synthetic speech
+      setTimeout(fire, Math.max(0, plannedEnd - lessonNow())); };   // authored visual VO beat; never synthetic speech
     a.onended=()=>fire("ended");
     a.onerror=()=>{ _lastPlayEnd="error"; onFail(); };
     /* [opt] WATCHDOG — the third way out, next to "ended" and "error". A clip that stalls on a
@@ -3176,8 +3302,8 @@ function armIdleVo(){
     // slide — measured in-browser, which is the only way this was visible. Slide teardown is what
     // really ends the watch, and after a correct answer the hold simply means nothing more is spoken.
     if(state.locked || state.hintActive || isPlaying || state.revealing || state.demoRunning){ _idleSince = 0; return; }
-    if(!_idleSince){ _idleSince = Date.now(); return; }
-    if(Date.now() - _idleSince < ms) return;
+    if(!_idleSince){ _idleSince = lessonNow(); return; }
+    if(lessonNow() - _idleSince < ms) return;
     // [27f] ONE reminder, then done for this slide. Mark spent and stop the ticker BEFORE speaking,
     // so a pointerdown arriving during the replay cannot re-arm it.
     _idleVoFired = true;
@@ -3547,7 +3673,7 @@ function makeDraggable(tileEl, onDrop, opts){
     return _decision;
   }
   function gate(e){
-    const now = Date.now();
+    const now = lessonNow();
     let d;
     if(e.type === "pointerdown" || !_decision || now - _decidedAt > 400){
       d = decide(e, now);                                      // fresh press (or no pointer events on this browser)
@@ -4070,18 +4196,18 @@ const SlideModules = {
       function walkPair(one, many, onLit){
         endWalk(); if(!one || !many) return;
         walking = [one, many];
-        const began = Date.now(); let heard = false, endAt = 0, clip = null;
+        const began = lessonNow(); let heard = false, endAt = 0, clip = null;
         walkTimer = setInterval(()=>{
           if(!onScreen()){ endWalk(); return; }
           const a = currentAudio, onClip = !!(a && /ocean_instruction_bubble/.test(a.currentSrc || a.src || "") && isFinite(a.duration) && a.duration > 0 && !a.ended);
           let t;
           if(onClip){ clip = a; heard = true; t = a.currentTime / a.duration * WALK_CLIP_S; }
           else if(clip && !clip.ended){ endWalk(); return; }   // [r87 review] cut off by another clip: stop, never light ahead of the voice
-          else t = heard ? Infinity : (Date.now() - began) / 1000;
+          else t = heard ? Infinity : (lessonNow() - began) / 1000;
           if(t >= WALK_ONE_AT && alive(one)){ one.classList.add("intro-glow"); if(onLit){ const f = onLit; onLit = null; f(); } }
           if(t >= WALK_PAIR_AT && alive(many)) many.classList.add("intro-glow");
-          if(!endAt && ((heard && !onClip) || (!heard && Date.now() - began > WALK_CLIP_S * 1000 + 500))) endAt = Date.now() + 1500;
-          if(endAt && Date.now() >= endAt) endWalk();
+          if(!endAt && ((heard && !onClip) || (!heard && lessonNow() - began > WALK_CLIP_S * 1000 + 500))) endAt = lessonNow() + 1500;
+          if(endAt && lessonNow() >= endAt) endWalk();
         }, 50);
       }
       oceanAddCleanup(endWalk);
@@ -4399,10 +4525,47 @@ const SlideModules = {
          doing nothing, and 7s after that draw the eye to the word being changed. The hint never
          points at the correct option — that stays the job of the 3-attempt ladder above. */
       let hintSpoken = false;   // [r114] once the 3rd-attempt hint has spoken the instruction, the reminder stays silent
-      const idle = oceanIdle(wrap, ()=>{ if(hintSpoken) return null; setSwMood("tryagain"); return "instructionPick"; }, ()=>{   // [r108] worried face while the reminder is spoken
+      /* [r138] Q2–Q6 (pages 10–14): the instruction repeats after EVERY 7s of complete inactivity, not
+         once — see the repeating reminder below. Q1 keeps its own intro and the old single reminder. */
+      const REPEAT_IDLE = ["Q2","Q3","Q4","Q5","Q6"].includes(slide.id);
+      const idle = oceanIdle(wrap, ()=>{ if(hintSpoken || REPEAT_IDLE) return null; setSwMood("tryagain"); return "instructionPick"; }, ()=>{   // [r108] worried face while the reminder is spoken
+        if(REPEAT_IDLE && !hintSpoken) return ()=>{};   // [r138] the repeating reminder owns these beats until the 3rd-attempt hint
         pulse(srcEl); pulse(srcQty);
         return ()=>{};
       });
+      /* [r138] THE REPEATING REMINDER (Q2–Q6). Asked: with no activity at all from the child, "सही शब्द
+         चुनिए" comes again after every 7 seconds — and only then. The 7s are 7s of complete quiet: the
+         clock runs only while nothing is sounding, nothing is locked and the tab is in view, and any
+         touch (or key) anywhere restarts it from zero. So the reminder lands 7s after the opening
+         instruction, then 7s after each reminder ends, for as long as the child does nothing.
+         Same clip and worried face as the old single reminder ([r108]); from the second reminder on the
+         word being changed pulses with it, as the old second beat did. Unchanged from [r114]: once the
+         3rd wrong answer has shown the answer with the hand and said the line, nothing repeats on that
+         question (the old visual-only pulse carries on through oceanIdle above). The engine's one-per-
+         slide idle replay is marked spent here, so two reminders can never talk over each other. */
+      if(REPEAT_IDLE){
+        try{ _idleVoFired = true; stopIdleVo(); }catch(e){}
+        const QUIET_MS = (CARD.scaffold_rules && CARD.scaffold_rules.idle_vo_replay_ms) || 7000;
+        let quietSince = 0, reminders = 0;
+        const restart = ()=>{ quietSince = 0; };
+        const ticker = setInterval(()=>{
+          if(!wrap.isConnected){ clearInterval(ticker); return; }
+          if(hintSpoken || state.locked || isPlaying || document.hidden){ quietSince = 0; return; }
+          const now = lessonNow();
+          if(!quietSince){ quietSince = now; return; }
+          if(now - quietSince < QUIET_MS) return;
+          quietSince = 0; reminders++;
+          GameBus.emit("idle_vo_replay", { slide_id: slide.id, phase: slide.phase, count: reminders });
+          setSwMood("tryagain");
+          if(reminders >= 2){ pulse(srcEl); pulse(srcQty); }
+          oceanSay("instructionPick", ()=>{});
+        }, 100);
+        document.addEventListener("pointerdown", restart, true);
+        document.addEventListener("keydown", restart, true);
+        oceanAddCleanup(()=>{ clearInterval(ticker);
+          document.removeEventListener("pointerdown", restart, true);
+          document.removeEventListener("keydown", restart, true); });
+      }
       /* oceanIdle only starts counting when armed — the ocean games arm it once their instruction
          has finished. This screen does not own its audio (mountSlide speaks the prompt), so arm it
          here; the timer already defers itself while a clip is sounding. */
@@ -5101,9 +5264,10 @@ const SlideModules = {
         clearTimeout(gap);
         const upto = i;
         let k = cumulativeBeats ? 0 : upto - 1;
+        /* [r138] the lines follow one another straight away, as on the first read (see runBeat) */
         const step = ()=> sing(k, ()=>{
-          if(++k < upto) gap = setTimeout(step, PACE.tail);
-          else if(i < beats.length) gap = setTimeout(runBeat, PACE.tail);
+          if(++k < upto) step();
+          else if(i < beats.length) runBeat();
           else armNav();
         });
         step();
@@ -5126,10 +5290,13 @@ const SlideModules = {
         }
         shown[i] = fresh;
         sing(i, ()=>{
-          /* A picture-to-picture beat gets exactly one beat (PACE.tail, one second). On the final line
-             the Next button appears as soon as the VO ends, with no extra dead pause. */
-          const pause = b.reveal_next_ms != null ? 0 : PACE.tail;
-          if(++i < beats.length) gap = setTimeout(runBeat, pause); else armNav();
+          /* [r138] asked (T1–T4): the second line follows the first with no pause, and the speaker chip
+             and आगे wake only when BOTH lines are over. The one-second PACE.tail beat that used to sit
+             here was a moment of silence, so the speaker chip came alive and, on a replay, आगे turned
+             yellow in the middle of the page. The next line now starts in the same step as the previous
+             one ends, so the chip and आगे never see a silent moment between the two lines. On the final
+             line the Next button appears as soon as the VO ends, with no extra dead pause. */
+          if(++i < beats.length) runBeat(); else armNav();
         });
       };
       runBeat();
@@ -5569,9 +5736,9 @@ function mountSlide(idx){
    skips PHASE_TRANSITION + CELEBRATION so the two never double-fire. */
 function afterConfetti(fn){
   // let a correct-answer confetti burst (.conf-shot) finish falling before we move on; 8s hard cap.
-  const started = Date.now();
+  const started = lessonNow();
   (function check(){
-    if(!document.querySelector(".conf-shot") || Date.now() - started > 8000){ fn(); return; }
+    if(!document.querySelector(".conf-shot") || lessonNow() - started > 8000){ fn(); return; }
     setTimeout(check, 200);
   })();
 }
@@ -5678,7 +5845,7 @@ function phaseBlurTransition(cb, toPhase){
     settling = true;
     if(titleSyncTimer){ clearInterval(titleSyncTimer); titleSyncTimer=0; }
     if(tok !== _gateToken){ closeGate(); return; }               // a newer gate superseded us
-    const hold = Math.max(250, 2800 - (Date.now() - openedAt));  // show the complete entrance + animated beat
+    const hold = Math.max(250, 2800 - (lessonNow() - openedAt));  // show the complete entrance + animated beat
     setTimeout(()=>{
       if(closed) return;
       closed = true;
@@ -5703,7 +5870,7 @@ function phaseBlurTransition(cb, toPhase){
   function beginSyncedPlayback(){
     if(mediaStarted || tok !== _gateToken) return;
     mediaStarted = true;
-    openedAt = Date.now();
+    openedAt = lessonNow();
     setTimeout(()=>{
       if(tok !== _gateToken) return;
       if(toPhase === "tutorial"){
