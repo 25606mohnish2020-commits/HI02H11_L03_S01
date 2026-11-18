@@ -4628,6 +4628,107 @@ Verified in headless Chrome (system Chrome via Playwright; the hidden tab is the
 
 ---
 
+## Round 139 — C1–C4 pause between the singular and plural sentence, Q2 hint without VO, T4 spelling, no taps during any VO
+
+**Asked:**
+1. C1, C2, C3, C4 (pages 2, 4, 6, 8): after the first sentence of the VO, a 1-second pause before the
+   second; during that pause the speaker button and आगे stay disabled. **Corrected in the same round:**
+   the pause belongs between the singular word's sentence and the plural word's sentence. On C1 that is
+   "उसने एक गुब्बारा लगाया," | "पापा और गुब्बारे लाए।". The first cut paused between the two clips (before
+   "एक है तो गुब्बारा…"), and that pause is removed.
+2. Q2 (page 10): when the hand comes to the correct option after the 3rd wrong attempt and the other
+   options are disabled, no VO plays.
+3. T4 (page 7): बाजाएँ is misspelt in the sentence shown; use बजाएं.
+4. Whenever any VO is playing nothing is tappable; whatever is tappable becomes tappable once the VO is
+   over.
+
+Standing instruction: nothing else changes.
+
+| # | Done |
+|---|---|
+| 1 | COMPARE_VACHAN holds its `recap` clip in the breath between the two sentences, so the silence heard is 1.0s. This happens on the first read and on a speaker replay. The `explain` clip follows the recap straight away, as before |
+| 2 | PICK_VACHAN_WORD, 3rd wrong answer: on Q2 the `instructionPick` line is no longer spoken. The answer still lights, the other two options are still disabled, the hand still comes, the reminder stays visual-only |
+| 3 | T4's second line now reads "संग नाचीं *सहेलियाँ*, बजाएं तालियाँ ढेर सारी।" |
+| 4 | `.pvw-opt`, `.pvw-src`, `.mtp-bubble`, `.subg-opt`, `.end-btn` added to the `body.vo-lock` pointer-events list; the title/end-screen star taps return while `vo-lock` is on |
+
+**1 — the pause.** Both sentences are in the one recap clip (the poem's singular line + its plural
+line), so the clip is paused in the natural breath between them and played on. The boundaries were
+measured with ffmpeg `silencedetect` and confirmed against the poem clips' word cues (`vo_stanza*`), from
+which these clips were cut:
+
+| Clip | Sentence 1 \| sentence 2 | Breath (−40dB) | Held at | Hold |
+|---|---|---|---|---|
+| `vo_cmp_gubbara_1` | उसने एक गुब्बारा लगाया, \| पापा और गुब्बारे लाए। | 2.272–2.483s | 2.389s | 789ms |
+| `vo_cmp_ladka_1` | लड़का दौड़कर आया, \| पीछे-पीछे लड़के दौड़े। | 1.810–2.019s | 1.922s | 791ms |
+| `vo_cmp_topi_1` | मीरा की एक टोपी उड़कर हवा में लहराई, \| फिर सबकी टोपियाँ उड़ीं। | 3.722–3.920s | 3.831s | 802ms |
+| `vo_cmp_saheli_1` | केक कटा, खुश हुई एक सहेली प्यारी, \| संग नाचीं सहेलियाँ। | 3.178–3.373s | 3.281s | 805ms |
+
+* "Held at" is the middle of the breath at −55dB, so no word's tail is cut. Hold = 1000ms minus the
+  breath, so the silence heard is 1.0s.
+* C3 has a longer breath earlier, after उड़कर (2.36–2.67s). It is inside the singular sentence, not
+  between the sentences, so it is left alone. C4's long breath after केक कटा, (1.13–1.51s) is left alone
+  for the same reason.
+* Through the hold the clip is still the current VO: `isPlaying` stays on, so the speaker chip keeps its
+  playing/disabled look, आगे stays grey and `body.vo-lock` stays on.
+* The word-card timers wait with the voice and are re-timed from the clip's own clock when it resumes,
+  so the plural card still comes with its word, after the pause.
+* A slide change (`stopAudio`) or a replay ends the hold like any clip. A hidden tab during the hold
+  keeps it held: the pause layer does not resume a clip the lesson paused, and the hold timer is paused
+  with the tab.
+* Code: `SENTENCE_PAUSE` and the optional `hold` argument of `cueClip`, both in COMPARE_VACHAN. The first
+  cut's `holdVoPause()` is removed.
+
+**2 — Q2 only.** The ask names page 10, so Q1 and Q3–Q6 still say "सही शब्द चुनिए" with their hand.
+The `oceanRetrySfx` buzz on the wrong tap itself is a sound effect, not VO, and is unchanged.
+
+**3 — spelling.** Only the shown line changed. The clip's transcript in `assets.audio_text.vo_stanza5b`
+(not shown on screen, used for timing fallbacks) still has the old spelling. `card.json` beside the HTML
+is not the copy the lesson reads and was already out of step with it; not touched.
+
+**4 — taps during VO.** Every VO already ran through `play()`, which turns `body.vo-lock` on and off, but
+the lock only listed the shared engine's targets. This lesson's own were missing:
+* Q1–Q6: the word options and the source word (a tap during "सही शब्द चुनिए" used to count as an answer);
+* PAIR1: the bubbles. This changes r132, where the board opened mid-instruction when the first pair lit
+  up. The bubbles now open when the instruction ends;
+* SUB: the answer bubbles (a drop during VO was already refused, but a bubble could be picked up);
+* the end screen's आगे बढ़ें button (left tappable on purpose in h01 and flagged for a ruling; this is
+  the ruling);
+* the drifting stars on the title and end screens (tap-to-firework).
+The speaker chips and the Play button were already untappable during VO, and आगे was already disabled.
+
+Verified in headless Chrome (system Chrome via Playwright, real clips):
+* **C1–C4, first read and speaker replay, all 8 runs.**
+  * The recap clip pauses inside its breath (2.391–2.399 / 1.929–1.932 / 3.839–3.844 / 3.282–3.289s)
+    and holds 795–818ms. The silence heard is 1003–1016ms.
+  * The explain clip starts the moment the recap ends (0ms), as in the old build.
+  * Through the hold: chip `vo-disabled` + `aria-disabled=true`, आगे disabled, `vo-lock` on.
+  * Nothing enabled at any point before the end. At the end आगे turns yellow and the chip wakes.
+  * The plural card appears after the hold, at the same point in the speech as in the old build
+    (±0.15s). Measured on the clip's own clock, through the real path (poem page → आगे → compare page).
+* **Pre-existing, unchanged.** Opening a compare page cold with `?slide=N` reveals the plural card too
+  early in both the old and the new build. Example: C1 at 2.39s instead of ~3.2s. The card timers start
+  before a not-yet-loaded clip begins to sound. This does not happen in the lesson's own flow, where the
+  clip is already warm.
+* **Q2.** Real taps:
+  * one on a wrong option during the prompt: ignored (attempts 0, pointer-events `none`);
+  * three wrong answers after it: लड़कियाँ lit, ताली and सहेलियाँ faded, the hand shown.
+  * No clip played in the 9s after the hint. Tapping the lit answer still completes the question.
+* **Q3, the control:** the same steps still play `ocean_instruction_pick.ogg` after the hint.
+* **T4.** The caption reads "…सहेलियाँ, बजाएं तालियाँ…"; बाजाएँ is nowhere on the page.
+* **Locks.** Measured while each screen's VO was sounding, then again after it:
+  * PAIR1 bubbles, SUB answer bubbles, end button: `pointer-events: none` and `elementFromPoint` does
+    not reach them;
+  * once the VO ends: `auto`.
+* **Every screen.** Each of the 17 screens was sampled every 150ms while its VO sounded (18–70 samples
+  each). The check: a visible element with a tap handler that a tap at its centre would reach, not
+  counting disabled speaker chips. Found: none on any screen.
+* **Title stars.** A tap on a drifting star during the intro: not popped. The same after the intro:
+  popped.
+* **Whole lesson.** All 17 slides mount, no page errors.
+* **Line endings.** The HTML keeps its CRLF line endings.
+
+---
+
 ## Open items
 
 **Checklist gaps from Round 58** (18 fails, 7 partials), in rough priority order: end screen uses
