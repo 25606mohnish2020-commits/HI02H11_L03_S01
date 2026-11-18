@@ -4729,6 +4729,56 @@ Verified in headless Chrome (system Chrome via Playwright, real clips):
 
 ---
 
+## Round 140 — Q1 hand at "मछलियाँ"; submarine auto-drag demo
+
+**Asked:**
+1. Q1 (page 9): the hand nudge comes to the मछलियाँ option as soon as the VO says "मछलियाँ".
+2. SUB (page 16): the submarine stops, then the instruction VO plays. When the instruction ends, an
+   auto-drag animation shows the correct option and how to drag it. Only then can the options be
+   dragged. After 7s of complete inactivity the auto-drag animation repeats.
+
+**Q1.** `pulseMany` now calls `handOnAnswer` straight away, at the word start (4.45s), instead of
+after the four-fish pulse (r129's 1.8s delay). The pulse itself is unchanged. If the clip ends early,
+its end still brings the hand.
+
+**SUB — `dragDemo(target, done, hold)`**
+* A copy of the correct answer bubble for the first open blank is made, using the hint ghost's
+  bubble skin. A hand (`.subg-demo-hand`, a separate element so it keeps its size) fades in on it
+  and presses it. The hand then carries it to the blank. Near the blank the copy shrinks to the
+  circle's size (.533) and the circle lights orange (`hover`), as in a real drag. The hand lets go,
+  and both fade out. Duration: 3.6s, or 2.4s with reduced motion (it fades in at the blank).
+* While the copy is away, the real bubble dims to .35 (`.demo-src`). It is back at full as the copy
+  fades.
+* The fingertip holds the bubble just below its word, so the word is never covered.
+* The demo never moves a real tile and never places anything.
+
+**SUB — the flow**
+* First question: the instruction plays, then the board stays locked through the demo, then it
+  unlocks and the 7s idle clock starts.
+* `idleBeat` (7s of quiet, any question): Swiftie waves and the row outline shows, as before. The
+  demo then plays to the blank the child last worked on, or the first open one. This replaces the
+  old 2s outline-only beat. When the demo ends the 7s start again, so it repeats for as long as the
+  child does nothing.
+* A repeat ends at once on any touch, through `clearVisualHint`. The opening demo (`hold`) cannot
+  be cut short: the board is locked then, so stopping it would leave the board shut.
+* The 3rd-miss ghost hint is unchanged.
+
+Verified in headless Chrome (system Chrome via Playwright, real clips):
+* **Q1.** The hand appeared at 4.49–4.50s of `review_pick_intro_v2`, in the same 30ms sample as the
+  four-fish pulse. There was no hand before 4.40s. It sits under मछलियाँ and is still shown after
+  the clip ends.
+* **SUB opening.** The instruction played from 6.6s to 10.2s. The demo started at 10.25s, with no
+  VO sounding during it. The board was locked for the whole demo and unlocked at 13.8s, when the
+  demo ended.
+  * A drag attempted during the demo did not pick up a tile, and the demo carried on.
+  * The dimmed source and the lit circle were both seen.
+* **SUB idle.** The demo came again 7.0s after the board opened, with the wave and the row outline.
+  A tap on the sea ended it at once, leaving no copy, dim or orange circle behind. A real drag
+  straight after placed the word.
+* No page errors. The HTML keeps its CRLF line endings.
+
+---
+
 ## Open items
 
 **Checklist gaps from Round 58** (18 fails, 7 partials), in rough priority order: end screen uses

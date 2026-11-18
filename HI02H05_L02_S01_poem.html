@@ -1854,6 +1854,11 @@ body.ocean-full .stage .slide-host > .subg::before,body.ocean-full .stage .slide
    the way: it is not a tile, cannot be touched, and places nothing. */
 .subg-ghost{position:absolute;z-index:7;pointer-events:none;display:flex;align-items:center;justify-content:center;
   font-family:var(--font-hi);font-weight:800;color:#0B3D8C;line-height:1.1;filter:blur(1.3px);opacity:0;will-change:transform,opacity;}
+/* [r140] the auto-drag demonstration (SUB, page 16): the hand is its own element, so it keeps its size while the
+   carried bubble shrinks into the circle; the real answer bubble dims while its copy is being carried */
+.subg-demo-hand{position:absolute;z-index:8;width:72px;height:88px;object-fit:contain;pointer-events:none;opacity:0;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.22));will-change:transform,opacity;}
+.subg .subg-opts .subg-opt.demo-src{opacity:.35;}
 .subg-word.out{opacity:0;transform:scale(.6);transition:opacity .22s ease,transform .22s ease;}
 .subg .subg-win.filled .subg-word{color:#17794A;}         /* only the placed word turns green */
 .subg-pop{position:absolute;inset:-6px;border-radius:50%;border:4px solid rgba(255,255,255,.95);pointer-events:none;animation:subgPop .7s ease-out forwards;}
@@ -4591,10 +4596,12 @@ const SlideModules = {
            the four fish pulse; only once that pulse is over does the hand go to the answer मछलियाँ (it used to come at
            'मछलियाँ' itself). Word starts in review_pick_intro_v2: मछली 2.70s (before the छ closure at 2.86), मछलियाँ 4.45s
            (after the तो closure at 4.36). PULSE_MS = the screen's own pulse (pvwPulse .9s × 2). */
+        /* [r140] asked (Q1, page 9): the hand comes to the मछलियाँ option AS SOON AS the VO says "मछलियाँ" — the four fish
+           still pulse at that moment as before, but the hand no longer waits for the pulse to end (r129's 1.8s delay). */
         const ONE_AT = 2.70, MANY_AT = 4.45, PULSE_MS = 1800;
         let cue=0, handT=0, oneDone=false, manyDone=false;
         const pulseMany = ()=>{ if(manyDone) return; manyDone=true; pulse(tgtQty, PULSE_MS);
-          clearTimeout(handT); handT=setTimeout(()=>{ if(wrap.isConnected) handOnAnswer(correctEl(),slide); }, PULSE_MS); };
+          clearTimeout(handT); if(wrap.isConnected) handOnAnswer(correctEl(),slide); };
         const introduce = ()=>{
           clearInterval(cue);clearTimeout(handT);stopNudge(); state.locked=true; oneDone=false; manyDone=false;
           play('assets/Audio/review_pick_intro_v2.ogg',()=>{clearInterval(cue);if(wrap.isConnected){state.locked=false;idle.arm();pulseMany();}});
@@ -4884,6 +4891,7 @@ const SlideModules = {
       const isOpen = b=>b && b.isConnected && b.classList.contains('dd-zone') && !b.classList.contains('filled');
       function clearVisualHint(){
         clearTimeout(hintT); ghostOn=false; ghostStop();
+        if(!demoHold) demoStop();   // [r140] a repeat of the auto-drag demo ends on any touch; the opening one plays out
         wrap.querySelectorAll('.context-hint,.idle-hint,.hint-target,.lit,.cue').forEach(e=>e.classList.remove('context-hint','idle-hint','hint-target','lit','cue'));
         delete wrap.dataset.nudge;
       }
@@ -4895,7 +4903,9 @@ const SlideModules = {
         const b=isOpen(lastTarget)?lastTarget:blankWin(); if(!b)return;
         wrap.dataset.nudge='inactivity';
         b.closest('.subg-sentence-row').classList.add('idle-hint');
-        hintT=later(()=>{clearVisualHint();idleArm();},2000);
+        /* [r140] asked: after 7s of complete inactivity the auto-drag demo repeats (it used to be a 2s outline only);
+           the 7s start again once it is over */
+        dragDemo(b, ()=>{ clearVisualHint(); idleArm(); });
       }
       const idleArm = ()=>{ clearTimeout(idleT); idleT = later(idleBeat, 7000); };
       const idleReset = ()=>{ clearTimeout(idleT); clearVisualHint(); };
@@ -4991,6 +5001,70 @@ const SlideModules = {
         ghostT = later(()=>{ if(ghostAnim === anim){ try{ anim.finish(); }catch(e){} } }, 2400 + 300);
       }
       const ghostStart = target=>{clearVisualHint();if(!isOpen(target))return;ghostOn=true;ghostLoop(target);};
+      /* [r140] asked (SUB, page 16): once the submarine has stopped and the instruction VO is over, an AUTO-DRAG
+         demonstration shows the child the correct option and how to drag it — a hand comes onto the right answer
+         bubble, presses it, carries a copy of it to its empty circle (shrinking to the circle's size there, as a real
+         drag does, while the circle lights as it does under a real drag) and lets go; the copy fades and the real
+         bubble, dimmed while its copy was away, is back at full. Only after that do the options become draggable.
+         With 7s of complete inactivity the same demonstration repeats (idleBeat), and the 7s start again after it.
+         It never moves a real tile and never places anything. The opening one plays out in full (the board is still
+         locked, so a touch cannot cut it short and leave the board shut); a repeat ends at once on any touch. */
+      let demoEls = [], demoAnims = [], demoT = [], demoSrc = null, demoZone = null, demoHold = false, demoGen = 0;
+      function demoStop(){
+        demoGen++;
+        demoT.forEach(t => clearTimeout(t)); demoT = [];
+        demoAnims.forEach(a => { try{ a.cancel(); }catch(e){} }); demoAnims = [];
+        demoEls.forEach(e => e.remove()); demoEls = [];
+        if(demoSrc){ demoSrc.classList.remove("demo-src"); demoSrc = null; }
+        if(demoZone){ demoZone.classList.remove("hover"); demoZone = null; }
+        demoHold = false;
+      }
+      function dragDemo(target, done, hold){
+        demoStop();
+        const b = isOpen(target) ? target : blankWin();
+        const tile = b && [...opts.querySelectorAll(".subg-opt")].find(o => o.__form === b.__form && !o.classList.contains("gone") && !o.classList.contains("used"));
+        if(!alive() || !tile || !isOpen(b)){ if(alive() && done) done(); return; }
+        const my = demoGen; demoHold = !!hold;
+        const finish = ()=>{ if(my !== demoGen) return; demoStop(); if(alive() && done) done(); };
+        const wr = wrap.getBoundingClientRect(), k = wr.width / wrap.offsetWidth || 1;
+        const tr = tile.getBoundingClientRect(), br = b.getBoundingClientRect();
+        const tx = (tr.left - wr.left) / k, ty = (tr.top - wr.top) / k, tw = tr.width / k, th = tr.height / k;
+        const dx = (br.left + br.width / 2 - tr.left - tr.width / 2) / k, dy = (br.top + br.height / 2 - tr.top - tr.height / 2) / k;
+        /* the carried bubble: the same copy of the answer bubble the hint ghost uses */
+        const g = document.createElement("div"); g.className = "subg-ghost bubble subg-demo"; g.setAttribute("aria-hidden", "true");
+        g.innerHTML = '<span class="subg-opt-face"></span><span class="subg-opt-label"></span>';
+        const lab = tile.querySelector(".subg-opt-label");
+        g.lastChild.textContent = tile.dataset.word; g.lastChild.style.fontSize = lab ? lab.style.fontSize : "26px";
+        Object.assign(g.style, { left: tx + "px", top: ty + "px", width: tw + "px", height: th + "px" });
+        /* the hand: its fingertip (FT, measured on nudge_hand_new.svg at 72×88) holds the bubble at OFF from its centre,
+           just under the word so the word stays readable; it follows that point as the bubble moves and shrinks */
+        const FT = { x: 32, y: 6 }, OFF = { x: 22, y: 34 };
+        const h = document.createElement("img"); h.className = "subg-demo-hand"; h.alt = ""; h.setAttribute("aria-hidden", "true");
+        h.draggable = false; h.src = assetURL("assets/UI/nudge_hand_new.svg");
+        Object.assign(h.style, { left: (tx + tw / 2 + OFF.x - FT.x) + "px", top: (ty + th / 2 + OFF.y - FT.y) + "px", transformOrigin: FT.x + "px " + FT.y + "px" });
+        wrap.appendChild(g); wrap.appendChild(h); demoEls = [g, h];
+        /* [offset, share of the way, bubble scale, bubble opacity, hand scale, hand opacity] — fade in on the answer,
+           press (grab), carry, shrink into the circle (80 / 150, as the hint ghost), let go, fade */
+        const S = .533;
+        const P = REDUCED
+          ? [[0, 1, S, 0, 1, 0], [.3, 1, S, 1, 1, 1], [.75, 1, S, 1, 1, 1], [1, 1, S, 0, 1, 0]]
+          : [[0, 0, 1, 0, 1, 0], [.10, 0, 1, 1, 1, 1], [.20, 0, .95, 1, .88, 1], [.62, .85, .95, 1, .88, 1],
+             [.72, 1, S, 1, .88, 1], [.80, 1, S, 1, 1, 1], [.86, 1, S, 1, 1, 1], [1, 1, S, 0, 1, 0]];
+        const DUR = REDUCED ? 2400 : 3600;
+        const gk = P.map(([o, p, s, go]) => ({ offset: o, opacity: go, easing: "ease-in-out",
+          transform: "translate(" + p * dx + "px," + p * dy + "px) scale(" + s + ")" }));
+        const hk = P.map(([o, p, s, , hs, ho]) => ({ offset: o, opacity: ho, easing: "ease-in-out",
+          transform: "translate(" + (p * dx + (s - 1) * OFF.x) + "px," + (p * dy + (s - 1) * OFF.y) + "px) scale(" + hs + ")" }));
+        const ga = g.animate(gk, { duration: DUR, fill: "forwards" }), ha = h.animate(hk, { duration: DUR, fill: "forwards" });
+        demoAnims = [ga, ha];
+        demoSrc = tile;
+        demoT.push(later(()=>{ if(my === demoGen) tile.classList.add("demo-src"); }, REDUCED ? 0 : DUR * .12));   // the real bubble dims once its copy covers it
+        demoT.push(later(()=>{ if(my === demoGen && isOpen(b)){ b.classList.add("hover"); demoZone = b; } }, DUR * (REDUCED ? .3 : .62)));   // the circle lights as the bubble arrives
+        demoT.push(later(()=>{ if(my === demoGen && demoSrc) demoSrc.classList.remove("demo-src"); }, DUR * .82));   // the real bubble comes back as the copy fades
+        ga.onfinish = finish;
+        /* finish on a timer too, as arrive() does: a page that is not drawing frames never fires onfinish */
+        demoT.push(later(()=>{ if(my === demoGen){ try{ ga.finish(); }catch(e){} finish(); } }, DUR + 300));
+      }
       let optionDragCleanup = [];
       const clearOptionDrags = ()=>{ optionDragCleanup.forEach(dispose=>dispose()); optionDragCleanup = []; };
       oceanAddCleanup(clearOptionDrags);
@@ -5030,7 +5104,10 @@ const SlideModules = {
             if(first){
               /* a level opens with its instruction; the board waits for it (the text stays up throughout) */
               setSwMood("talk");
-              speak("instructionFill", ()=>{ setSwMood("point"); idleArm(); });
+              /* [r140] asked: when the instruction is over the auto-drag demo plays (dragDemo), and only then does the
+                 board open — the board stays locked from the end of the instruction to the end of the demo */
+              speak("instructionFill", ()=>{ setSwMood("point"); state.locked = true;
+                dragDemo(blankWin(), ()=>{ state.locked = false; idleArm(); }, true); });
             } else { state.locked = false; setSwMood("point"); idleArm(); }
           }, OPTS_IN_MS);
         });
