@@ -4848,6 +4848,29 @@ Verified in headless Chrome (system Chrome via Playwright, real clips, range-cap
 
 ---
 
+## Round 142 — Q2–Q6: the 3rd-miss hint looks like Q1's
+
+**Asked:** on Q2, Q3, Q4, Q5, Q6 (pages 10–14), on the 3rd wrong attempt, the correct option and the
+hand nudge behave exactly as on Q1 (r141): the correct option does not pulse, only the hand taps on it.
+Nothing else changes.
+
+* The 3rd-miss hint now adds `lit-still` on every सही-शब्द-चुनिए question, not only Q1, so the
+  answer keeps its orange border without the `pvwPulse` pulse. The other two options still fade, the
+  hand still comes to the answer, and the picture on the right still pulses once, as before.
+* Unchanged on purpose: the VO after the 3rd miss. Q1 says "ये सही उत्तर है", Q2 says nothing
+  (r139), and Q3–Q6 say "सही शब्द चुनिए". Only the animation was asked for.
+
+Verified in headless Chrome (real taps, real clips), Q1–Q6 each:
+* the answer `lit lit-still`, `animation: none`, border orange, width constant over 1s;
+* the other two options faded;
+* the hand shown under the answer (same place on all six) with its tap animation running
+  (`nhTapNew`, ripples, spark);
+* VO after the miss as before: Q1 `vo_pick_hint_q1`, Q2 none, Q3–Q6 `ocean_instruction_pick`;
+* tapping the answer completes the question.
+* All 17 screens mount; no page errors. The HTML keeps its CRLF line endings.
+
+---
+
 ## Open items
 
 **Checklist gaps from Round 58** (18 fails, 7 partials), in rough priority order: end screen uses

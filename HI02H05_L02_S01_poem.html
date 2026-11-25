@@ -1645,7 +1645,7 @@ body.is-end .sg-sky{
 .pvw-opt:hover{transform:translateY(-4px);}
 .pvw-opt.wiggle{animation:mtpWiggle .55s ease-in-out;}
 .pvw-opt.lit{border-color:#F3A81B;animation:pvwPulse 1s ease-in-out infinite;}
-.pvw-opt.lit.lit-still{animation:none;}   /* [r141] Q1: the hand alone shows the answer, no pulse */
+.pvw-opt.lit.lit-still{animation:none;}   /* [r141][r142] Q1–Q6: the hand alone shows the answer, no pulse */
 /* [r67] after the right answer the other options disappear COMPLETELY (asked, globally): they fade
    out over the existing .35s and are then hidden; their space is kept so nothing on screen jumps. */
 .pvw-opt.gone{opacity:0;visibility:hidden;pointer-events:none;box-shadow:none;transition:opacity .35s ease,visibility 0s linear .35s;}
@@ -4525,8 +4525,9 @@ const SlideModules = {
           setSwMood("hint");
           const ce = correctEl(); if(ce) ce.classList.add("lit");
           /* [r141] asked (Q1, page 9): the answer does not pulse when the hand comes to it; only the hand
-             taps. Its orange border stays. Q2–Q6 still pulse. */
-          if(ce && slide.id === "Q1") ce.classList.add("lit-still");
+             taps. Its orange border stays. [r142] asked: the same on Q2–Q6 (pages 10–14), so every
+             सही-शब्द-चुनिए question now shows it this way. */
+          if(ce) ce.classList.add("lit-still");
           opts.forEach(o=>{ if(o!==ce){o.classList.add('review-faded');o.setAttribute('aria-disabled','true');} });
           handOnAnswer(ce, slide);
           pulse(tgtQty);
