@@ -45,28 +45,28 @@ twelve sentences on one screen), **CEL** the closing screen.
 
 | file | status | line | used on |
 |---|---|---|---|
-| `vo_stanza1a.ogg` | आज है मीरा का जन्मदिन, मीरा ने एक गुब्बारा टाँगा। | T1 · stanza |
-| `vo_stanza1b.ogg` | पापा और गुब्बारे लाए, आओ, इन्हें सजाएँ! | T1 · stanza |
+| `vo_stanza1a.ogg` | आज है मीरा का जन्मदिन, मीरा ने एक गुब्बारा टाँगा। | T1 · stanza<br>C1 · recap (singular) |
+| `vo_stanza1b.ogg` | पापा और गुब्बारे लाए, आओ, इन्हें सजाएँ! | T1 · stanza<br>C1 · recap (plural) |
 | `vo_stanza_hawa.ogg` | तभी हवा का झोंका आया, फुर्र-फुर्र गुब्बारे उड़ते जाएँ! | T1B · stanza |
-| `vo_stanza3a.ogg` | एक लड़का उछलकर बोला, मैं पकड़ूँगा सारे! | T2 · stanza |
-| `vo_stanza3b.ogg` | फिर लड़के भी दौड़ पड़े— आगे-आगे गुब्बारे! | T2 · stanza |
-| `vo_stanza4a.ogg` | मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ। | T3 · stanza |
-| `vo_stanza4b.ogg` | आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ। | T3 · stanza |
-| `vo_stanza5a.ogg` | केक कटा, खुश हुई एक सहेली, झूम-झूम नाची वह अलबेली। | T4 · stanza |
-| `vo_stanza5b.ogg` | ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी सहेलियाँ! | T4 · stanza |
+| `vo_stanza3a.ogg` | एक लड़का उछलकर बोला, मैं पकड़ूँगा सारे! | T2 · stanza<br>C2 · recap (singular) |
+| `vo_stanza3b.ogg` | फिर लड़के भी दौड़ पड़े— आगे-आगे गुब्बारे! | T2 · stanza<br>C2 · recap (plural) |
+| `vo_stanza4a.ogg` | मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ। | T3 · stanza<br>C3 · recap (singular) |
+| `vo_stanza4b.ogg` | आखिर सबने पकड़ ही लीं, अपनी-अपनी टोपियाँ। | T3 · stanza<br>C3 · recap (plural) |
+| `vo_stanza5a.ogg` | केक कटा, खुश हुई एक सहेली, झूम-झूम नाची वह अलबेली। | T4 · stanza<br>C4 · recap (singular) |
+| `vo_stanza5b.ogg` | ताली बजी, गूँजीं खूब तालियाँ, संग-संग नाचीं सारी सहेलियाँ! | T4 · stanza<br>C4 · recap (plural) |
 
 
 ## शब्दों की तुलना
 
 | file | status | line | used on |
 |---|---|---|---|
-| `vo_cmp_gubbara_1.ogg` | मीरा ने एक गुब्बारा टाँगा, पापा और गुब्बारे लाए। | C1 · recap |
+| `vo_cmp_gubbara_1.ogg` | मीरा ने एक गुब्बारा टाँगा, पापा और गुब्बारे लाए। | C1 · recap — not played since Round 141 (the poem page's two clips play instead) |
 | `vo_cmp_gubbara_2b.ogg` | एक है तो गुब्बारा, अनेक है तो गुब्बारे। | C1 · explain |
-| `vo_cmp_ladka_1.ogg` | एक लड़का उछलकर बोला, फिर लड़के भी दौड़ पड़े। | C2 · recap |
+| `vo_cmp_ladka_1.ogg` | एक लड़का उछलकर बोला, फिर लड़के भी दौड़ पड़े। | C2 · recap — not played since Round 141 (the poem page's two clips play instead) |
 | `vo_cmp_ladka_2b.ogg` | एक है तो लड़का, अनेक है तो लड़के। | C2 · explain |
-| `vo_cmp_topi_1.ogg` | मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ। | C3 · recap |
+| `vo_cmp_topi_1.ogg` | मीरा की एक टोपी उड़ी, फिर उड़ीं सबकी टोपियाँ। | C3 · recap — not played since Round 141 (the poem page's two clips play instead) |
 | `vo_cmp_topi_2b.ogg` | एक है तो टोपी, अनेक है तो टोपियाँ। | C3 · explain |
-| `vo_cmp_saheli_1.ogg` | केक कटा, खुश हुई एक सहेली, संग-संग नाचीं सारी सहेलियाँ! | C4 · recap |
+| `vo_cmp_saheli_1.ogg` | केक कटा, खुश हुई एक सहेली, संग-संग नाचीं सारी सहेलियाँ! | C4 · recap — not played since Round 141 (the poem page's two clips play instead) |
 | `vo_cmp_saheli_2b.ogg` | एक है तो सहेली, अनेक है तो सहेलियाँ। | C4 · explain |
 
 
@@ -76,6 +76,7 @@ twelve sentences on one screen), **CEL** the closing screen.
 |---|---|---|---|
 | `vo_pick_prompt.ogg` | सही शब्द चुनिए। | Q1 · prompt<br>Q2 · prompt<br>Q3 · prompt<br>Q4 · prompt<br>Q5 · prompt<br>Q6 · prompt |
 | `vo_pick_retry_q1.ogg` | फिर से देखिए—यह एक मछली है। अनेक हों, तो क्या कहेंगे? | Q1 · retry |
+| `vo_pick_hint_q1.ogg` | ये सही उत्तर है। | Q1 · hint (3rd wrong answer, Round 141 — supplied recording) |
 | `vo_pick_ok_q1.ogg` | शाबाश! आपने सही शब्द चुना — मछलियाँ। | Q1 · correct |
 | `vo_pick_retry_q2.ogg` | फिर से देखिए—यह एक लड़की है। अनेक हों, तो क्या कहेंगे? | Q2 · retry |
 | `vo_pick_ok_q2.ogg` | शाबाश! आपने सही शब्द चुना — लड़कियाँ। | Q2 · correct |

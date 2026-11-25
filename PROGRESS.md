@@ -4779,6 +4779,75 @@ Verified in headless Chrome (system Chrome via Playwright, real clips):
 
 ---
 
+## Round 141 — C1–C4 read the poem page's two full lines; Q1 hand after the VO, no pulse on the hint, new hint VO
+
+**Asked:**
+1. C1, C2, C3, C4 (pages 2, 4, 6, 8): the complete VOs of both pictures of the previous page play,
+   instead of only the part of them that the recap clip held. The rest of the flow stays the same.
+2. Q1 (page 9): the hand nudge comes only once the VO is over, and straight away then. On the 3rd
+   wrong attempt, when the hand comes, the correct option does not pulse; only the hand taps on it.
+3. Q1 (page 9): the VO after the 3rd wrong attempt is replaced with `Downloads/audio_1 (18).wav`.
+
+Standing instruction: nothing else changes.
+
+**1 — the full poem lines.** Each compare screen used to read one cut clip (`vo_cmp_*_1`) holding only
+the two pair sentences, e.g. on C1 "उसने एक गुब्बारा लगाया, | पापा और गुब्बारे लाए।". It now plays the
+poem page's own two clips, each complete, then the explain clip as before:
+
+| Screen | Singular picture | 1s pause | Plural picture | then |
+|---|---|---|---|---|
+| C1 | `vo_stanza1a` आज है मीरा का जन्मदिन, उसने एक गुब्बारा लगाया, | ✓ | `vo_stanza1b` पापा और गुब्बारे लाए, मिलकर घर सजाया। | `vo_cmp_gubbara_2b` |
+| C2 | `vo_stanza3a` तभी हवा का झोंका आया, लड़का दौड़कर आया, | ✓ | `vo_stanza3b` पीछे-पीछे लड़के दौड़े, सबने फिर हाथ बढ़ाया। | `vo_cmp_ladka_2b` |
+| C3 | `vo_stanza4a` मीरा की एक टोपी उड़कर हवा में लहराई, | ✓ | `vo_stanza4b` फिर सबकी टोपियाँ उड़ीं और सबने दौड़ लगाई। | `vo_cmp_topi_2b` |
+| C4 | `vo_stanza5a` केक कटा, खुश हुई एक सहेली प्यारी, | ✓ | `vo_stanza5b` संग नाचीं सहेलियाँ, बजाएं तालियाँ ढेर सारी। | `vo_cmp_saheli_2b` |
+
+* Card: each C slide's `audio.recap` is now the singular picture's poem clip and the new
+  `audio.recap_p` the plural picture's. `vo_cmp_*_1` are no longer played; the files stay on disk.
+* **The r139 pause is kept.** The singular clip is held in its own trailing silence (`SENTENCE_PAUSE`,
+  now keyed by the stanza clip), so it stays the current VO through the pause and the speaker chip,
+  आगे and the VO tap lock behave exactly as while it sounds. Held at the middle of the trailing
+  silence (−55dB). Hold = 1000ms − (trailing silence + the plural clip's leading silence, −40dB) −
+  40ms for the switch to the next clip (measured): 424 / 344 / 355 / 500ms.
+* **The word cards** come at their word: the poem page's own measured cue for the starred pair word
+  (`beat.cues_ms`), looked up by clip id. `cueClip` cues may now carry `ms` instead of `ratio`.
+* A screen with only `recap` (no `recap_p`) still takes the old one-clip path.
+
+**2 — Q1 hand.** `pulseMany` (the four fish at मछलियाँ, 4.45s) no longer brings the hand. The hand
+comes in the intro clip's end callback, in the same step that unlocks the options (`handAfterVo`).
+The speaker replay works the same way. Speech ends at 5.11s; the clip, and so the VO lock, ends at
+5.57s, and that is when the hand comes.
+
+**2 — no pulse on the hint (Q1 only).** On the 3rd wrong answer the correct option gets `lit` plus
+`lit-still` (`.pvw-opt.lit.lit-still{animation:none}`): its orange border stays, the pulse does not.
+The other two still fade, the hand still taps, the four fish still pulse once. Q2–Q6 are unchanged.
+
+**3 — the hint VO (Q1 only).** `assets/Audio/vo_pick_hint_q1.ogg` is the supplied 1.88s WAV as Ogg
+Opus 48k (9.9 KB). It says "ये सही उत्तर है" (local Whisper transcription). Q1's card has
+`audio.hint`, and `audio_text.vo_pick_hint_q1` holds the line. On the 3rd wrong answer a slide with
+a `hint` clip plays it in place of "सही शब्द चुनिए"; only Q1 has one. The recording is as delivered,
+about 2 LU quieter than the clips around it (−21.2 vs −19 LUFS). The preload table was regenerated:
+the one new file, nothing else changed.
+
+Verified in headless Chrome (system Chrome via Playwright, real clips, range-capable local server):
+* **C1–C4, through the real path (poem page → आगे) and on a speaker replay, all 8 runs.**
+  * Order: singular stanza clip → plural stanza clip → explain clip.
+  * Hold at 3.30–4.65s, 350–503ms. Silence heard between the two lines: 1002–1038ms.
+  * Singular card at 2.17 / 2.65 / 1.39 / 3.36s of its clip (poem cues 2.21 / 2.71 / 1.44 / 3.42).
+    Plural card at 0.98–1.09s of its clip (poem cues 1.04–1.13).
+  * Through the whole read (2500–2800 samples, every 4ms): `vo-lock` on, chip disabled, आगे grey,
+    `isPlaying` on, in every sample. At the end आगे turns yellow, the chip wakes, both glows are on.
+* **Q1 intro.** The hand first showed in the same 10ms sample the clip ended (5.57s), never while
+  it played. It sits under मछलियाँ. The single fish pulsed at 2.72s and the four fish at 4.47s, as
+  before. Speaker replay: no hand during the VO, the hand back at its end.
+* **Q1, 3rd wrong answer** (real taps): मछलियाँ `lit lit-still`, `animation: none`, border orange,
+  width constant over 600ms. टोपी and लड़कियाँ faded. The hand on मछलियाँ. Clips in the next 9s:
+  only `vo_pick_hint_q1.ogg`. Tapping मछलियाँ then completes the question.
+* **Controls.** Q2: the answer still pulses (`pvwPulse`), no VO. Q3: still pulses, still says
+  `ocean_instruction_pick`.
+* All 17 screens mount; no page errors. The HTML keeps its CRLF line endings.
+
+---
+
 ## Open items
 
 **Checklist gaps from Round 58** (18 fails, 7 partials), in rough priority order: end screen uses
